@@ -87,7 +87,7 @@ export default function ReEngagementPage() {
       </div>
 
       {/* Info Banner */}
-      <div className="card mb-6 border-none bg-gradient-to-br from-indigo-950 to-indigo-600 text-white">
+      <div className="card mb-6 border-none text-white" style={{ background: 'linear-gradient(to bottom right, #312e81, #4f46e5)' }}>
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">
             <HiOutlineRefresh />

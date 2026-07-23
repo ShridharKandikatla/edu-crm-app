@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser } from 'react-icons/hi';
+import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonBlock } from '../components/Skeleton';
 import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
@@ -23,6 +23,9 @@ export default function SettingsPage() {
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const { preferences, updatePreferences } = useNotificationPreferences();
 
@@ -88,6 +91,15 @@ export default function SettingsPage() {
       setSavingPassword(false);
     }
   };
+
+  const passwordRules = [
+    { label: 'At least 6 characters', met: newPassword.length >= 6 },
+    { label: 'Contains uppercase letter', met: /[A-Z]/.test(newPassword) },
+    { label: 'Contains lowercase letter', met: /[a-z]/.test(newPassword) },
+    { label: 'Contains a number', met: /\d/.test(newPassword) },
+    { label: 'Passwords match', met: newPassword.length > 0 && newPassword === confirmPassword },
+  ];
+  const allRulesMet = passwordRules.every(r => r.met);
 
   return (
     <div>
@@ -221,40 +233,70 @@ export default function SettingsPage() {
               <h3 className="mb-6 text-base font-bold text-gray-900">Security Settings</h3>
               <div className="form-group mb-4">
                 <label className="form-label">Current Password</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Enter current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-row mb-6 flex gap-4">
-                <div className="form-group flex-1">
-                  <label className="form-label">New Password</label>
+                <div className="relative">
                   <input
-                    type="password"
-                    className="form-input"
-                    placeholder="Enter new password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    type={showCurrentPw ? 'text' : 'password'}
+                    className="form-input pr-10"
+                    placeholder="Enter current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
                     required
                   />
+                  <button type="button" onClick={() => setShowCurrentPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" tabIndex={-1}>
+                    {showCurrentPw ? <HiOutlineEyeOff className="h-4 w-4" /> : <HiOutlineEye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="form-row mb-2 flex gap-4">
+                <div className="form-group flex-1">
+                  <label className="form-label">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showNewPw ? 'text' : 'password'}
+                      className="form-input pr-10"
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                    <button type="button" onClick={() => setShowNewPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" tabIndex={-1}>
+                      {showNewPw ? <HiOutlineEyeOff className="h-4 w-4" /> : <HiOutlineEye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group flex-1">
                   <label className="form-label">Confirm Password</label>
-                  <input
-                    type="password"
-                    className="form-input"
-                    placeholder="Confirm new password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPw ? 'text' : 'password'}
+                      className="form-input pr-10"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button type="button" onClick={() => setShowConfirmPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" tabIndex={-1}>
+                      {showConfirmPw ? <HiOutlineEyeOff className="h-4 w-4" /> : <HiOutlineEye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <button type="submit" className="btn btn-primary" disabled={savingPassword}>
+              {newPassword.length > 0 && (
+                <div className="mb-5 rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <div className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Password must meet</div>
+                  <div className="space-y-1.5">
+                    {passwordRules.map((rule) => (
+                      <div key={rule.label} className="flex items-center gap-2 text-xs">
+                        <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${rule.met ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+                          {rule.met ? '✓' : ''}
+                        </span>
+                        <span className={rule.met ? 'text-emerald-600 font-medium' : 'text-gray-500'}>{rule.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <button type="submit" className="btn btn-primary" disabled={savingPassword || !allRulesMet || !currentPassword}>
                 <HiOutlineSave /> {savingPassword ? 'Updating...' : 'Update Password'}
               </button>
             </form>

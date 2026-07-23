@@ -753,6 +753,11 @@ table {
   white-space: nowrap;
   height: 38px;
 }
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
