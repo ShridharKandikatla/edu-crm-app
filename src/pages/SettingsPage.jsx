@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonBlock } from '../components/Skeleton';
+import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
 
 export default function SettingsPage() {
   const { user, setUser } = useAuth();
@@ -23,6 +24,7 @@ export default function SettingsPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const { preferences, updatePreferences } = useNotificationPreferences();
 
   useEffect(() => {
     const timer = setTimeout(() => setSettingsLoading(false), 500);
@@ -183,22 +185,27 @@ export default function SettingsPage() {
             <div className="card animate-fade-in">
               <h3 className="mb-6 text-base font-bold text-gray-900">Notification Preferences</h3>
               {[
-                { label: 'New lead assigned', desc: 'Get notified when a new lead is assigned to you', default: true },
-                { label: 'Follow-up reminders', desc: 'Receive reminders for upcoming follow-ups', default: true },
-                { label: 'Lead converted', desc: 'Get notified when a lead is successfully converted', default: true },
-                { label: 'Escalation alerts', desc: 'Receive alerts when follow-ups are escalated', default: true },
-                { label: 'Daily digest', desc: 'Receive a daily summary of your leads and tasks', default: false },
-                { label: 'Weekly report', desc: 'Receive weekly performance reports', default: true },
+                { key: 'newLeadAssigned', label: 'New lead assigned', desc: 'Get notified when a new lead is assigned to you' },
+                { key: 'followUpReminders', label: 'Follow-up reminders', desc: 'Receive reminders for upcoming follow-ups' },
+                { key: 'leadConverted', label: 'Lead converted', desc: 'Get notified when a lead is successfully converted' },
+                { key: 'escalationAlerts', label: 'Escalation alerts', desc: 'Receive alerts when follow-ups are escalated' },
+                { key: 'dailyDigest', label: 'Daily digest', desc: 'Receive a daily summary of your leads and tasks' },
+                { key: 'weeklyReport', label: 'Weekly report', desc: 'Receive weekly performance reports' },
               ].map((pref, i) => (
-                <div key={i} className={`flex items-center justify-between py-4 ${i < 5 ? 'border-b border-gray-100' : ''}`}>
+                <div key={pref.key} className={`flex items-center justify-between py-4 ${i < 5 ? 'border-b border-gray-100' : ''}`}>
                   <div>
                     <div className="text-sm font-semibold text-gray-900">{pref.label}</div>
                     <div className="text-xs text-gray-500">{pref.desc}</div>
                   </div>
                   <label className="relative inline-block h-6 w-11 cursor-pointer">
-                    <input type="checkbox" defaultChecked={pref.default} className="hidden" />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${pref.default ? 'bg-indigo-600' : 'bg-gray-300'}`}>
-                      <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-[left] ${pref.default ? '!left-[22px]' : ''}`} />
+                    <input
+                      type="checkbox"
+                      checked={!!preferences[pref.key]}
+                      onChange={() => updatePreferences({ [pref.key]: !preferences[pref.key] })}
+                      className="hidden"
+                    />
+                    <span className={`absolute inset-0 rounded-full transition-colors ${preferences[pref.key] ? 'bg-indigo-600' : 'bg-gray-300'}`}>
+                      <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-[left] ${preferences[pref.key] ? '!left-[22px]' : ''}`} />
                     </span>
                   </label>
                 </div>

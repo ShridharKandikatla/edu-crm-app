@@ -5,6 +5,7 @@ import { api } from '../../services/api';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { useToast } from '../../context/ToastContext';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useNotificationPreferences } from '../../hooks/useNotificationPreferences';
 import {
   HiOutlineSearch,
   HiOutlineBell,
@@ -17,6 +18,7 @@ export default function TopBar({ collapsed, pageTitle }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAllowed } = useNotificationPreferences();
   const [notificationsList, setNotificationsList] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -34,8 +36,10 @@ export default function TopBar({ collapsed, pageTitle }) {
       if (prev.some(n => n.id === notif.id)) return prev;
       return [notif, ...prev];
     });
-    toast.info(`${notif.title} — ${notif.message}`, 5000);
-  }, [toast]);
+    if (isAllowed(notif.type)) {
+      toast.info(`${notif.title} — ${notif.message}`, 5000);
+    }
+  }, [toast, isAllowed]);
 
   const { connected } = useWebSocket(handleWsNotification);
 

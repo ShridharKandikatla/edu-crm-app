@@ -412,6 +412,20 @@ export const api = {
     },
   },
 
+  // Notification Preferences endpoints
+  notificationPreferences: {
+    get: async (requestOptions = {}) => {
+      return request('/notification-preferences', requestOptions);
+    },
+    update: async (preferences, requestOptions = {}) => {
+      return request('/notification-preferences', {
+        ...requestOptions,
+        method: 'PUT',
+        body: { preferences },
+      });
+    },
+  },
+
   // AI endpoints
   ai: {
     scoreLead: async (leadId, requestOptions = {}) => {
