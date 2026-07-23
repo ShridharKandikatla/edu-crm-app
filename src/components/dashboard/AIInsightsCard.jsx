@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { HiOutlineSparkles, HiOutlineArrowPath, HiOutlinePaperAirplane } from 'react-icons/hi2';
 import ChartCard from './ChartCard';
 import { SkeletonText } from '../Skeleton';
@@ -45,6 +45,11 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
   const [queryResult, setQueryResult] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const [queryHistory, setQueryHistory] = useState([]);
+  const queryControllerRef = useRef(null);
+
+  useEffect(() => {
+    return () => { queryControllerRef.current?.abort(); };
+  }, []);
 
   const handleRefresh = useCallback(() => {
     if (onRefresh) onRefresh();
@@ -55,6 +60,10 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
     const text = prompt.trim();
     if (!text || queryLoading) return;
 
+    queryControllerRef.current?.abort();
+    const controller = new AbortController();
+    queryControllerRef.current = controller;
+
     setQueryLoading(true);
     setPrompt('');
 
@@ -62,17 +71,18 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
     setQueryHistory(prev => [...prev, userEntry]);
 
     try {
-      const res = await api.ai.dashboardQuery(text);
+      const res = await api.ai.dashboardQuery(text, { signal: controller.signal });
       if (res?.success) {
         const aiEntry = { role: 'ai', text: res.data.reply, engine: res.data.engine, timestamp: Date.now() };
         setQueryHistory(prev => [...prev, aiEntry]);
         setQueryResult(res.data);
       }
-    } catch {
+    } catch (err) {
+      if (err.name === 'AbortError') return;
       const errEntry = { role: 'ai', text: 'Failed to get a response. Please try again.', engine: 'error', timestamp: Date.now() };
       setQueryHistory(prev => [...prev, errEntry]);
     } finally {
-      setQueryLoading(false);
+      if (queryControllerRef.current === controller) setQueryLoading(false);
     }
   }, [prompt, queryLoading]);
 

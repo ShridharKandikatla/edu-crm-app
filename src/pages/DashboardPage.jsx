@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   HiOutlineUsers,
   HiOutlineCheckCircle,
@@ -33,17 +33,23 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('charts');
+  const insightsControllerRef = useRef(null);
 
   const fetchInsights = useCallback(async () => {
     if (!isAdmin) return;
+    insightsControllerRef.current?.abort();
+    const controller = new AbortController();
+    insightsControllerRef.current = controller;
     setInsightsLoading(true);
     try {
-      const res = await api.ai.getDashboardInsights();
+      const res = await api.ai.getDashboardInsights({ signal: controller.signal });
       if (res?.success) setInsights(res.data);
-    } catch {
-      // Insights load failed silently
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        // Insights load failed silently
+      }
     } finally {
-      setInsightsLoading(false);
+      if (insightsControllerRef.current === controller) setInsightsLoading(false);
     }
   }, [isAdmin]);
 
@@ -90,6 +96,10 @@ export default function DashboardPage() {
     }
 
     loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    return () => { insightsControllerRef.current?.abort(); };
   }, []);
 
   useEffect(() => {

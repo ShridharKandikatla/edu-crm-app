@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { config } from '../config/env';
 import ChatBot from '../components/apply/ChatBot';
 
@@ -495,16 +495,24 @@ export default function ApplyPage() {
   const [submitMessage, setSubmitMessage] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [focusedField, setFocusedField] = useState('');
+  const submitControllerRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/public/courses`)
+    return () => { submitControllerRef.current?.abort(); };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    fetch(`${API_BASE}/api/public/courses`, { signal: controller.signal })
       .then(r => r.json())
-      .then(res => { if (res.success) setCourses(res.data.courses || []); })
+      .then(res => { if (!cancelled && res.success) setCourses(res.data.courses || []); })
       .catch(() => {});
-    fetch(`${API_BASE}/api/public/intakes`)
+    fetch(`${API_BASE}/api/public/intakes`, { signal: controller.signal })
       .then(r => r.json())
-      .then(res => { if (res.success) setIntakes(res.data.intakes || []); })
+      .then(res => { if (!cancelled && res.success) setIntakes(res.data.intakes || []); })
       .catch(() => {});
+    return () => { cancelled = true; controller.abort(); };
   }, []);
 
   const selectedCourse = useMemo(() => courses.find(c => c.id === form.courseId), [courses, form.courseId]);
@@ -586,6 +594,9 @@ export default function ApplyPage() {
 
   const handleSubmit = async () => {
     if (!validateDetails()) return;
+    submitControllerRef.current?.abort();
+    const controller = new AbortController();
+    submitControllerRef.current = controller;
     setSubmitting(true);
     try {
       const payload = {
@@ -599,17 +610,18 @@ export default function ApplyPage() {
           ? `Source: ${form.otherSource.trim()}${form.notes ? `\n${form.notes}` : ''}`
           : form.notes || undefined,
       };
-      const res = await fetch(`${API_BASE}/api/public/leads`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await fetch(`${API_BASE}/api/public/leads`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
       const json = await res.json();
       if (!res.ok) { setErrors({ submit: json.message || 'Something went wrong. Please try again.' }); return; }
       const payload_data = json.data || json;
       setIsDuplicate(!!payload_data.isDuplicate);
       setSubmitMessage(payload_data.message || 'Thank you! Your inquiry has been submitted.');
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      if (err.name === 'AbortError') return;
       setErrors({ submit: 'Network error. Please check your connection and try again.' });
     } finally {
-      setSubmitting(false);
+      if (submitControllerRef.current === controller) setSubmitting(false);
     }
   };
 

@@ -11,6 +11,7 @@ const pageTitles = {
   '/leads/re-engage': 'Re-engagement Pipeline',
   '/follow-ups': 'Follow-ups',
   '/courses': 'Courses',
+  '/intakes': 'Intakes',
   '/users': 'User Management',
   '/reports': 'Reports & Analytics',
   '/import': 'Bulk Import',

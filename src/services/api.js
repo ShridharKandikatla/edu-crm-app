@@ -54,6 +54,17 @@ async function request(endpoint, options = {}, retryCount = 0) {
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+  let callerAbortHandler = null;
+  if (options.signal) {
+    if (options.signal.aborted) {
+      clearTimeout(timeoutId);
+      throw new DOMException('The operation was aborted.', 'AbortError');
+    }
+    callerAbortHandler = () => controller.abort();
+    options.signal.addEventListener('abort', callerAbortHandler, { once: true });
+  }
+
   config.signal = controller.signal;
 
   let response;
@@ -61,7 +72,9 @@ async function request(endpoint, options = {}, retryCount = 0) {
     response = await fetch(`${API_BASE_URL}${endpoint}`, config);
   } catch (err) {
     clearTimeout(timeoutId);
+    if (callerAbortHandler) options.signal.removeEventListener('abort', callerAbortHandler);
     if (err.name === 'AbortError') {
+      if (options.signal?.aborted) throw err;
       throw new NetworkError('Request timed out. Please check your connection and try again.');
     }
     if (retryCount < MAX_RETRIES && !options.method) {
@@ -70,6 +83,7 @@ async function request(endpoint, options = {}, retryCount = 0) {
     throw new NetworkError('Network error. Please check your connection and try again.');
   } finally {
     clearTimeout(timeoutId);
+    if (callerAbortHandler) options.signal?.removeEventListener('abort', callerAbortHandler);
   }
 
   let data = null;
@@ -100,8 +114,9 @@ async function request(endpoint, options = {}, retryCount = 0) {
 export const api = {
   // Auth endpoints
   auth: {
-    login: async (email, password) => {
+    login: async (email, password, requestOptions = {}) => {
       const data = await request('/auth/login', {
+        ...requestOptions,
         method: 'POST',
         body: { email, password },
       });
@@ -110,24 +125,26 @@ export const api = {
       }
       return data;
     },
-    register: async (userData) => {
+    register: async (userData, requestOptions = {}) => {
       return request('/auth/register', {
+        ...requestOptions,
         method: 'POST',
         body: userData,
       });
     },
-    getMe: async () => {
-      return request('/auth/me');
+    getMe: async (requestOptions = {}) => {
+      return request('/auth/me', requestOptions);
     },
-    changePassword: async (currentPassword, newPassword) => {
+    changePassword: async (currentPassword, newPassword, requestOptions = {}) => {
       return request('/auth/change-password', {
+        ...requestOptions,
         method: 'PUT',
         body: { currentPassword, newPassword },
       });
     },
-    logout: async () => {
+    logout: async (requestOptions = {}) => {
       try {
-        await request('/auth/logout', { method: 'POST' });
+        await request('/auth/logout', { ...requestOptions, method: 'POST' });
       } catch {
         // Token may already be invalid — proceed with client cleanup
       }
@@ -137,69 +154,78 @@ export const api = {
 
   // Leads endpoints
   leads: {
-    getAll: async (params = {}) => {
-      return request(`/leads${buildQueryString(params)}`);
+    getAll: async (params = {}, requestOptions = {}) => {
+      return request(`/leads${buildQueryString(params)}`, requestOptions);
     },
-    getById: async (id) => {
-      return request(`/leads/${id}`);
+    getById: async (id, requestOptions = {}) => {
+      return request(`/leads/${id}`, requestOptions);
     },
-    create: async (leadData) => {
+    create: async (leadData, requestOptions = {}) => {
       return request('/leads', {
+        ...requestOptions,
         method: 'POST',
         body: leadData,
       });
     },
-    update: async (id, leadData) => {
+    update: async (id, leadData, requestOptions = {}) => {
       return request(`/leads/${id}`, {
+        ...requestOptions,
         method: 'PUT',
         body: leadData,
       });
     },
-    delete: async (id) => {
+    delete: async (id, requestOptions = {}) => {
       return request(`/leads/${id}`, {
+        ...requestOptions,
         method: 'DELETE',
       });
     },
-    convert: async (id, admissionData) => {
+    convert: async (id, admissionData, requestOptions = {}) => {
       return request(`/leads/${id}/convert`, {
+        ...requestOptions,
         method: 'POST',
         body: admissionData,
       });
     },
-    fail: async (id, failData) => {
+    fail: async (id, failData, requestOptions = {}) => {
       return request(`/leads/${id}/fail`, {
+        ...requestOptions,
         method: 'POST',
         body: failData,
       });
     },
-    reEngage: async (id) => {
+    reEngage: async (id, requestOptions = {}) => {
       return request(`/leads/${id}/re-engage`, {
+        ...requestOptions,
         method: 'POST',
       });
     },
-    addComment: async (id, content) => {
+    addComment: async (id, content, requestOptions = {}) => {
       return request(`/leads/${id}/comment`, {
+        ...requestOptions,
         method: 'POST',
         body: { content },
       });
     },
-    bulkAssign: async (leadIds, userId) => {
+    bulkAssign: async (leadIds, userId, requestOptions = {}) => {
       return request('/leads/bulk-assign', {
+        ...requestOptions,
         method: 'POST',
         body: { leadIds, assignedTo: userId, userId },
       });
     },
-    checkDuplicates: async (phone, email) => {
+    checkDuplicates: async (phone, email, requestOptions = {}) => {
       const query = new URLSearchParams();
       if (phone) query.append('phone', phone);
       if (email) query.append('email', email);
-      return request(`/leads/duplicates-check?${query.toString()}`);
+      return request(`/leads/duplicates-check?${query.toString()}`, requestOptions);
     },
-    export: async (params = {}) => {
+    export: async (params = {}, requestOptions = {}) => {
       const token = localStorage.getItem('token');
       const query = buildQueryString(params);
       const res = await fetch(`${API_BASE_URL}/leads/export${query}`, {
         headers: { Authorization: `Bearer ${token}` },
+        ...requestOptions,
       });
       if (!res.ok) throw new Error('Export failed');
       const blob = await res.blob();
@@ -216,26 +242,29 @@ export const api = {
 
   // Follow-ups endpoints
   followUps: {
-    getAll: async (params = {}) => {
-      return request(`/follow-ups${buildQueryString(params)}`);
+    getAll: async (params = {}, requestOptions = {}) => {
+      return request(`/follow-ups${buildQueryString(params)}`, requestOptions);
     },
-    getStats: async () => {
-      return request('/follow-ups/stats');
+    getStats: async (requestOptions = {}) => {
+      return request('/follow-ups/stats', requestOptions);
     },
-    create: async (followUpData) => {
+    create: async (followUpData, requestOptions = {}) => {
       return request('/follow-ups', {
+        ...requestOptions,
         method: 'POST',
         body: followUpData,
       });
     },
-    complete: async (id, outcomeData) => {
+    complete: async (id, outcomeData, requestOptions = {}) => {
       return request(`/follow-ups/${id}/complete`, {
+        ...requestOptions,
         method: 'PUT',
         body: outcomeData,
       });
     },
-    delete: async (id) => {
+    delete: async (id, requestOptions = {}) => {
       return request(`/follow-ups/${id}`, {
+        ...requestOptions,
         method: 'DELETE',
       });
     },
@@ -243,29 +272,30 @@ export const api = {
 
   // Dashboard endpoints
   dashboard: {
-    getStats: async () => {
-      return request('/dashboard/stats');
+    getStats: async (requestOptions = {}) => {
+      return request('/dashboard/stats', requestOptions);
     },
-    getCharts: async () => {
-      return request('/dashboard/charts');
+    getCharts: async (requestOptions = {}) => {
+      return request('/dashboard/charts', requestOptions);
     },
   },
 
   // Reports endpoints
   reports: {
-    getSourceReport: async () => {
-      return request('/reports/source');
+    getSourceReport: async (requestOptions = {}) => {
+      return request('/reports/source', requestOptions);
     },
-    getCounselorReport: async () => {
-      return request('/reports/counselor');
+    getCounselorReport: async (requestOptions = {}) => {
+      return request('/reports/counselor', requestOptions);
     },
-    getCourseReport: async () => {
-      return request('/reports/course');
+    getCourseReport: async (requestOptions = {}) => {
+      return request('/reports/course', requestOptions);
     },
-    exportReport: async (tab) => {
+    exportReport: async (tab, requestOptions = {}) => {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/reports/export?tab=${tab}`, {
         headers: { Authorization: `Bearer ${token}` },
+        ...requestOptions,
       });
       if (!res.ok) throw new Error('Export failed');
       const blob = await res.blob();
@@ -282,46 +312,52 @@ export const api = {
 
   // Courses endpoints
   courses: {
-    getAll: async () => {
-      return request('/courses');
+    getAll: async (requestOptions = {}) => {
+      return request('/courses', requestOptions);
     },
-    create: async (courseData) => {
+    create: async (courseData, requestOptions = {}) => {
       return request('/courses', {
+        ...requestOptions,
         method: 'POST',
         body: courseData,
       });
     },
-    update: async (id, courseData) => {
+    update: async (id, courseData, requestOptions = {}) => {
       return request(`/courses/${id}`, {
+        ...requestOptions,
         method: 'PUT',
         body: courseData,
       });
     },
-    delete: async (id) => {
+    delete: async (id, requestOptions = {}) => {
       return request(`/courses/${id}`, {
+        ...requestOptions,
         method: 'DELETE',
       });
     },
-    getIntakes: async () => {
-      return request('/courses/intakes');
+    getIntakes: async (requestOptions = {}) => {
+      return request('/courses/intakes', requestOptions);
     },
-    createIntake: async (intakeData) => {
+    createIntake: async (intakeData, requestOptions = {}) => {
       return request('/courses/intakes', {
+        ...requestOptions,
         method: 'POST',
         body: intakeData,
       });
     },
-    getAllIntakes: async () => {
-      return request('/courses/intakes/all');
+    getAllIntakes: async (requestOptions = {}) => {
+      return request('/courses/intakes/all', requestOptions);
     },
-    updateIntake: async (id, intakeData) => {
+    updateIntake: async (id, intakeData, requestOptions = {}) => {
       return request(`/courses/intakes/${id}`, {
+        ...requestOptions,
         method: 'PUT',
         body: intakeData,
       });
     },
-    deleteIntake: async (id) => {
+    deleteIntake: async (id, requestOptions = {}) => {
       return request(`/courses/intakes/${id}`, {
+        ...requestOptions,
         method: 'DELETE',
       });
     },
@@ -329,26 +365,29 @@ export const api = {
 
   // Users endpoints
   users: {
-    getAll: async () => {
-      return request('/users');
+    getAll: async (requestOptions = {}) => {
+      return request('/users', requestOptions);
     },
-    getById: async (id) => {
-      return request(`/users/${id}`);
+    getById: async (id, requestOptions = {}) => {
+      return request(`/users/${id}`, requestOptions);
     },
-    update: async (id, userData) => {
+    update: async (id, userData, requestOptions = {}) => {
       return request(`/users/${id}`, {
+        ...requestOptions,
         method: 'PUT',
         body: userData,
       });
     },
-    resetPassword: async (id, password) => {
+    resetPassword: async (id, password, requestOptions = {}) => {
       return request(`/users/${id}/reset-password`, {
+        ...requestOptions,
         method: 'PUT',
         body: { newPassword: password },
       });
     },
-    delete: async (id) => {
+    delete: async (id, requestOptions = {}) => {
       return request(`/users/${id}`, {
+        ...requestOptions,
         method: 'DELETE',
       });
     },
@@ -356,16 +395,18 @@ export const api = {
 
   // Notifications endpoints
   notifications: {
-    getAll: async () => {
-      return request('/notifications');
+    getAll: async (requestOptions = {}) => {
+      return request('/notifications', requestOptions);
     },
-    markAllAsRead: async () => {
+    markAllAsRead: async (requestOptions = {}) => {
       return request('/notifications/read-all', {
+        ...requestOptions,
         method: 'PUT',
       });
     },
-    markAsRead: async (id) => {
+    markAsRead: async (id, requestOptions = {}) => {
       return request(`/notifications/${id}/read`, {
+        ...requestOptions,
         method: 'PUT',
       });
     },
@@ -373,32 +414,34 @@ export const api = {
 
   // AI endpoints
   ai: {
-    scoreLead: async (leadId) => {
-      return request(`/ai/score/${leadId}`, { method: 'POST' });
+    scoreLead: async (leadId, requestOptions = {}) => {
+      return request(`/ai/score/${leadId}`, { ...requestOptions, method: 'POST' });
     },
-    batchScore: async () => {
-      return request('/ai/score/batch', { method: 'POST' });
+    batchScore: async (requestOptions = {}) => {
+      return request('/ai/score/batch', { ...requestOptions, method: 'POST' });
     },
-    explainScore: async (leadId) => {
-      return request(`/ai/score/${leadId}/explain`);
+    explainScore: async (leadId, requestOptions = {}) => {
+      return request(`/ai/score/${leadId}/explain`, requestOptions);
     },
-    getRecommendation: async (leadId) => {
-      return request(`/ai/recommendation/${leadId}`);
+    getRecommendation: async (leadId, requestOptions = {}) => {
+      return request(`/ai/recommendation/${leadId}`, requestOptions);
     },
-    getRecommendations: async () => {
-      return request('/ai/recommendations');
+    getRecommendations: async (requestOptions = {}) => {
+      return request('/ai/recommendations', requestOptions);
     },
-    chat: async (message, conversationId) => {
+    chat: async (message, conversationId, requestOptions = {}) => {
       return request('/ai/chat', {
+        ...requestOptions,
         method: 'POST',
         body: { message, conversationId },
       });
     },
-    getDashboardInsights: async () => {
-      return request('/ai/dashboard-insights');
+    getDashboardInsights: async (requestOptions = {}) => {
+      return request('/ai/dashboard-insights', requestOptions);
     },
-    dashboardQuery: async (prompt) => {
+    dashboardQuery: async (prompt, requestOptions = {}) => {
       return request('/ai/dashboard-query', {
+        ...requestOptions,
         method: 'POST',
         body: { prompt },
       });

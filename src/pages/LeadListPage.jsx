@@ -33,7 +33,7 @@ export default function LeadListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState('createdAt');
   const [sortDir, setSortDir] = useState('desc');
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedCounselorId, setSelectedCounselorId] = useState('');
