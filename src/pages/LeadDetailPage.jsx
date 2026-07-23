@@ -1,0 +1,300 @@
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
+import { HiOutlineArrowLeft } from 'react-icons/hi';
+import { useToast } from '../context/ToastContext';
+import LeadProfileCard from '../components/leads/LeadProfileCard';
+import ActivityTimeline from '../components/leads/ActivityTimeline';
+import FollowUpsTab from '../components/leads/FollowUpsTab';
+import CommentsTab from '../components/leads/CommentsTab';
+import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
+import LeadModals from '../components/leads/LeadModals';
+import AIRecommendation from '../components/leads/AIRecommendation';
+import ConfirmModal from '../components/ConfirmModal';
+
+export default function LeadDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const [lead, setLead] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState([]);
+  const [intakes, setIntakes] = useState([]);
+
+  const [activeTab, setActiveTab] = useState('timeline');
+
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [showCompleteFUModal, setShowCompleteFUModal] = useState(false);
+  const [selectedFUId, setSelectedFUId] = useState('');
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [showFailModal, setShowFailModal] = useState(false);
+
+  const [newComment, setNewComment] = useState('');
+  const [fuType, setFuType] = useState('CALL');
+  const [fuScheduledAt, setFuScheduledAt] = useState('');
+  const [fuNotes, setFuNotes] = useState('');
+  const [fuOutcome, setFuOutcome] = useState('CONNECTED');
+  const [fuCompleteNotes, setFuCompleteNotes] = useState('');
+  const [failureReason, setFailureReason] = useState('');
+  const [convertCourseId, setConvertCourseId] = useState('');
+  const [convertIntakeId, setConvertIntakeId] = useState('');
+
+  const [submitting, setSubmitting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const fetchLeadDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.leads.getById(id);
+      if (res && res.success) {
+        setLead(res.data.lead);
+        if (res.data.lead?.courseId) setConvertCourseId(res.data.lead.courseId);
+        if (res.data.lead?.intakeId) setConvertIntakeId(res.data.lead.intakeId);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => { fetchLeadDetails(); }, [fetchLeadDetails]);
+
+  useEffect(() => {
+    Promise.all([api.courses.getAll(), api.courses.getIntakes()]).then(([courseRes, intakeRes]) => {
+      if (courseRes.success && courseRes.data?.courses) setCourses(courseRes.data.courses);
+      if (intakeRes.success && intakeRes.data?.intakes) setIntakes(intakeRes.data.intakes);
+    }).catch(() => {});
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-gray-500">
+        <p>Loading lead details...</p>
+      </div>
+    );
+  }
+
+  if (!lead) {
+    return (
+      <div className="empty-state">
+        <div className="empty-state-icon">🔍</div>
+        <div className="empty-state-title">Lead not found</div>
+        <button className="btn btn-primary" onClick={() => navigate('/leads')}>Back to Leads</button>
+      </div>
+    );
+  }
+
+  const leadFollowUps = lead.followUps || [];
+  const leadActivities = lead.activities || [];
+  const leadComments = lead.comments || [];
+  const counselor = lead.counselor;
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+  };
+
+  const getActivityDotClass = (action) => {
+    if (action.includes('CONVERTED') || action.includes('COMPLETED')) return 'success';
+    if (action.includes('FAILED') || action.includes('ESCALAT')) return 'danger';
+    if (action.includes('FOLLOW') || action.includes('COMMENT') || action.includes('NOTE')) return 'warning';
+    return 'primary';
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    try {
+      setSubmitting(true);
+      await api.leads.addComment(id, newComment);
+      setNewComment('');
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to add comment');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleScheduleFollowUp = async (e) => {
+    e.preventDefault();
+    if (!fuScheduledAt) return;
+    try {
+      setSubmitting(true);
+      await api.followUps.create({
+        leadId: id,
+        type: fuType,
+        scheduledAt: new Date(fuScheduledAt).toISOString(),
+        notes: fuNotes
+      });
+      setFuNotes('');
+      setShowFollowUpModal(false);
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to schedule follow-up');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCompleteFollowUp = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      await api.followUps.complete(selectedFUId, {
+        outcome: fuOutcome,
+        notes: fuCompleteNotes
+      });
+      setFuCompleteNotes('');
+      setShowCompleteFUModal(false);
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to log outcome');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleConvertLead = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      await api.leads.convert(id, {
+        courseId: convertCourseId || undefined,
+        intakeId: convertIntakeId || undefined
+      });
+      setShowConvertModal(false);
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to convert lead');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleFailLead = async (e) => {
+    e.preventDefault();
+    if (!failureReason) return;
+    try {
+      setSubmitting(true);
+      await api.leads.fail(id, { failureReason });
+      setShowFailModal(false);
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to mark lead as failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleReEngage = async () => {
+    setConfirmOpen(true);
+  };
+
+  const confirmReEngage = async () => {
+    setConfirmLoading(true);
+    try {
+      await api.leads.reEngage(id);
+      setConfirmOpen(false);
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to re-engage lead');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleFUComplete = (fuId) => {
+    setSelectedFUId(fuId);
+    setShowCompleteFUModal(true);
+  };
+
+  const initials = (lead.name || '').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+  return (
+    <div>
+      <button
+        className="btn btn-ghost mb-4"
+        onClick={() => navigate('/leads')}
+      >
+        <HiOutlineArrowLeft /> Back to Leads
+      </button>
+
+      <div className="lead-detail-grid">
+        <div>
+          <LeadProfileCard lead={lead} initials={initials} counselor={counselor} formatDate={formatDate} />
+
+          <div className="mb-4">
+            <AIRecommendation leadId={id} />
+          </div>
+
+          <div className="tabs">
+            <button className={`tab ${activeTab === 'timeline' ? 'active' : ''}`} onClick={() => setActiveTab('timeline')}>
+              Activity Timeline
+            </button>
+            <button className={`tab ${activeTab === 'followups' ? 'active' : ''}`} onClick={() => setActiveTab('followups')}>
+              Follow-ups ({leadFollowUps.length})
+            </button>
+            <button className={`tab ${activeTab === 'comments' ? 'active' : ''}`} onClick={() => setActiveTab('comments')}>
+              Comments ({leadComments.length})
+            </button>
+          </div>
+
+          {activeTab === 'timeline' && (
+            <ActivityTimeline activities={leadActivities} formatDate={formatDate} formatDateTime={formatDateTime} getActivityDotClass={getActivityDotClass} />
+          )}
+
+          {activeTab === 'followups' && (
+            <FollowUpsTab followUps={leadFollowUps} onSchedule={() => setShowFollowUpModal(true)} onComplete={handleFUComplete} formatDateTime={formatDateTime} />
+          )}
+
+          {activeTab === 'comments' && (
+            <CommentsTab comments={leadComments} newComment={newComment} setNewComment={setNewComment} onSubmit={handleAddComment} submitting={submitting} formatDateTime={formatDateTime} />
+          )}
+        </div>
+
+        <div>
+          <QuickActionsSidebar lead={lead} counselor={counselor} user={user} onConvert={() => setShowConvertModal(true)} onFollowUp={() => setShowFollowUpModal(true)} onFail={() => setShowFailModal(true)} onReEngage={handleReEngage} />
+        </div>
+      </div>
+
+      <LeadModals
+        showFollowUpModal={showFollowUpModal} setShowFollowUpModal={setShowFollowUpModal}
+        showCompleteFUModal={showCompleteFUModal} setShowCompleteFUModal={setShowCompleteFUModal}
+        showConvertModal={showConvertModal} setShowConvertModal={setShowConvertModal}
+        showFailModal={showFailModal} setShowFailModal={setShowFailModal}
+        fuType={fuType} setFuType={setFuType} fuScheduledAt={fuScheduledAt} setFuScheduledAt={setFuScheduledAt}
+        fuNotes={fuNotes} setFuNotes={setFuNotes} handleScheduleFollowUp={handleScheduleFollowUp}
+        fuOutcome={fuOutcome} setFuOutcome={setFuOutcome} fuCompleteNotes={fuCompleteNotes} setFuCompleteNotes={setFuCompleteNotes}
+        handleCompleteFollowUp={handleCompleteFollowUp}
+        convertCourseId={convertCourseId} setConvertCourseId={setConvertCourseId}
+        convertIntakeId={convertIntakeId} setConvertIntakeId={setConvertIntakeId}
+        courses={courses} intakes={intakes} handleConvertLead={handleConvertLead}
+        failureReason={failureReason} setFailureReason={setFailureReason} handleFailLead={handleFailLead}
+        submitting={submitting}
+      />
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmReEngage}
+        title="Re-engage Lead"
+        message="Are you sure you want to re-engage this failed lead? It will be assigned for re-engagement."
+        confirmText="Re-engage"
+        loading={confirmLoading}
+      />
+    </div>
+  );
+}

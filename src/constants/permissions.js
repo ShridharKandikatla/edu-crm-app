@@ -1,0 +1,28 @@
+export const ROLE_PERMISSIONS = {
+  ADMIN: [
+    'view_all_leads',
+    'create_lead',
+    'assign_leads',
+    'bulk_import',
+    'view_all_reports',
+    'manage_users',
+    'manage_courses',
+    'delete_leads',
+    'export_data',
+    'follow_up',
+    're_engage',
+  ],
+  MANAGER: [
+    'view_all_leads',
+    'create_lead',
+    'assign_leads',
+    'bulk_import',
+    'view_team_reports',
+    'manage_courses',
+    'export_data',
+    'follow_up',
+    're_engage',
+  ],
+  COUNSELOR: ['view_own_leads', 'create_lead', 'view_own_reports', 'export_own_data', 'follow_up'],
+  TELECALLER: ['view_own_leads', 'create_lead', 'follow_up'],
+};
