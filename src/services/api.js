@@ -415,14 +415,28 @@ export const api = {
   // Notification Preferences endpoints
   notificationPreferences: {
     get: async (requestOptions = {}) => {
-      return request('/notification-preferences', requestOptions);
+      try {
+        return await request('/notification-preferences', requestOptions);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return { success: true, data: { preferences: null } };
+        }
+        throw err;
+      }
     },
     update: async (preferences, requestOptions = {}) => {
-      return request('/notification-preferences', {
-        ...requestOptions,
-        method: 'PUT',
-        body: { preferences },
-      });
+      try {
+        return await request('/notification-preferences', {
+          ...requestOptions,
+          method: 'PUT',
+          body: { preferences },
+        });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return { success: true };
+        }
+        throw err;
+      }
     },
   },
 
