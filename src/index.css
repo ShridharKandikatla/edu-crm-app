@@ -424,6 +424,27 @@ table {
   color: white;
 }
 
+.sidebar-close-mobile {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  color: var(--gray-400);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.sidebar-close-mobile:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+
 /* ── TopBar ── */
 .topbar {
   position: fixed;
@@ -1731,6 +1752,13 @@ table {
   }
   .sidebar.collapsed .sidebar-link-badge {
     display: inline-flex;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+  .sidebar-close-mobile {
+    display: flex !important;
   }
 
   /* ── Sidebar Backdrop ── */

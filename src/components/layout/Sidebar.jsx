@@ -16,6 +16,7 @@ import {
   HiOutlineCog,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
+  HiOutlineX,
 } from 'react-icons/hi';
 
 const menuSections = [
@@ -82,6 +83,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
       <div className="sidebar-header">
         <div className="sidebar-logo">U</div>
         <span className="sidebar-brand">UniCRM</span>
+        <button className="sidebar-close-mobile" onClick={onMobileClose} aria-label="Close menu">
+          <HiOutlineX size={20} />
+        </button>
       </div>
 
       <nav className="sidebar-nav" role="navigation" aria-label="Main navigation">

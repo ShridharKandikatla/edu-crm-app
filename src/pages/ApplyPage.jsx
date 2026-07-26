@@ -691,7 +691,7 @@ export default function ApplyPage() {
                   </button>
                 </div>
               )}
-              {!submitted && <StepBar step={step} onStepClick={(i) => { if (i < step) setStep(i); }} />}
+              {!submitted && mode === 'form' && <StepBar step={step} onStepClick={(i) => { if (i < step) setStep(i); }} />}
             </div>
           </div>
 
