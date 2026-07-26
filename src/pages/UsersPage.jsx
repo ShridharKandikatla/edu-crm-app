@@ -174,12 +174,12 @@ export default function UsersPage() {
         )}
       </div>
 
-      <div className="filter-bar mb-6">
-        <span className="text-xs font-semibold text-gray-700">Role:</span>
+      <div className="filter-bar mb-6 overflow-x-auto">
+        <span className="text-xs font-semibold text-gray-700 shrink-0">Role:</span>
         {['ALL', 'ADMIN', 'MANAGER', 'COUNSELOR', 'TELECALLER'].map(role => (
           <button
             key={role}
-            className={`btn ${roleFilter === role ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            className={`btn ${roleFilter === role ? 'btn-primary' : 'btn-secondary'} btn-sm shrink-0`}
             aria-label={`Filter by ${role === 'ALL' ? 'all roles' : role}`}
             aria-pressed={roleFilter === role}
             onClick={() => setRoleFilter(role)}
@@ -190,7 +190,7 @@ export default function UsersPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : filteredUsers.length === 0 ? (
@@ -200,7 +200,7 @@ export default function UsersPage() {
           text={roleFilter === 'ALL' ? 'Add a user to get started.' : 'Try a different role filter.'}
         />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
           {filteredUsers.map(user => {
             const stats = getUserStats(user);
             const userColor = ROLE_COLORS[user.role] || '#6b7280';

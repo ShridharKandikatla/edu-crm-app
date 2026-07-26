@@ -98,7 +98,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="tabs" role="tablist" aria-label="Report types">
+      <div className="tabs overflow-x-auto" role="tablist" aria-label="Report types">
         <button className={`tab ${activeTab === 'source' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'source'} onClick={() => setActiveTab('source')}>Source Performance</button>
         <button className={`tab ${activeTab === 'counselor' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'counselor'} onClick={() => setActiveTab('counselor')}>Counselor Performance</button>
         <button className={`tab ${activeTab === 'course' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'course'} onClick={() => setActiveTab('course')}>Course Performance</button>
@@ -142,7 +142,7 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <div className="data-table-wrapper mt-6">
+              <div className="data-table-wrapper mt-6 overflow-x-auto">
                 <div className="data-table-header">
                   <div className="data-table-title">Source Performance Details</div>
                 </div>
@@ -216,7 +216,7 @@ export default function ReportsPage() {
               {counselorReport.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">No details available</div>
               ) : (
-                <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
                   {counselorReport.map((c, i) => {
                     const avatarInitials = c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                     return (
@@ -260,7 +260,7 @@ export default function ReportsPage() {
           {/* Course Performance */}
           {activeTab === 'course' && (
             <div className="animate-fade-in">
-              <div className="data-table-wrapper">
+              <div className="data-table-wrapper overflow-x-auto">
                 <div className="data-table-header">
                   <div className="data-table-title">Course-wise Performance</div>
                 </div>
@@ -304,7 +304,7 @@ export default function ReportsPage() {
           {/* Follow-up Compliance */}
           {activeTab === 'followup' && (
             <div className="animate-fade-in">
-              <div className="kpi-grid mb-6">
+              <div className="kpi-grid mb-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="kpi-card primary">
                   <div className="kpi-value">{followUpStats?.total || 0}</div>
                   <div className="kpi-label">Total Follow-ups</div>

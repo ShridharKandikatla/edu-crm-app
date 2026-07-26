@@ -12,9 +12,11 @@ import {
   HiOutlineLogout,
   HiOutlineUser,
   HiOutlineCog,
+  HiOutlineMenu,
+  HiOutlineX,
 } from 'react-icons/hi';
 
-export default function TopBar({ collapsed, pageTitle }) {
+export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuOpen }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -26,9 +28,11 @@ export default function TopBar({ collapsed, pageTitle }) {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const notifRef = useRef(null);
   const userRef = useRef(null);
   const searchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const handleWsNotification = useCallback((notif) => {
@@ -86,6 +90,9 @@ export default function TopBar({ collapsed, pageTitle }) {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowResults(false);
       }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target)) {
+        setMobileSearchOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -118,16 +125,19 @@ export default function TopBar({ collapsed, pageTitle }) {
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       setShowResults(false);
+      setMobileSearchOpen(false);
       navigate(`/leads?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
     if (e.key === 'Escape') {
       setShowResults(false);
+      setMobileSearchOpen(false);
     }
   };
 
   const handleResultClick = (leadId) => {
     setShowResults(false);
+    setMobileSearchOpen(false);
     setSearchQuery('');
     navigate(`/leads/${leadId}`);
   };
@@ -157,6 +167,14 @@ export default function TopBar({ collapsed, pageTitle }) {
   return (
     <header className={`topbar ${collapsed ? 'sidebar-collapsed' : ''}`}>
       <div className="topbar-left">
+        <button
+          className="topbar-hamburger btn btn-ghost btn-icon"
+          onClick={onMenuToggle}
+          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          style={{ display: 'none' }}
+        >
+          {mobileMenuOpen ? <HiOutlineX size={20} /> : <HiOutlineMenu size={20} />}
+        </button>
         <h1 className="topbar-page-title">{pageTitle}</h1>
       </div>
 
@@ -222,6 +240,40 @@ export default function TopBar({ collapsed, pageTitle }) {
                   </button>
                 </>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Search Toggle */}
+        <div className="relative" ref={mobileSearchRef}>
+          <button
+            className="topbar-icon-btn md:hidden"
+            aria-label="Search leads"
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            style={{ display: 'none' }}
+          >
+            <HiOutlineSearch size={20} />
+          </button>
+          {mobileSearchOpen && (
+            <div className="fixed left-0 top-0 z-[210] w-full bg-white p-3 shadow-lg border-b border-gray-200 md:hidden" style={{ display: 'none' }}>
+              <div className="relative">
+                <HiOutlineSearch className="topbar-search-icon" />
+                <input
+                  type="text"
+                  className="topbar-search-input"
+                  placeholder="Search leads..."
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                />
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  onClick={() => { setMobileSearchOpen(false); setSearchQuery(''); }}
+                >
+                  <HiOutlineX size={18} />
+                </button>
+              </div>
             </div>
           )}
         </div>

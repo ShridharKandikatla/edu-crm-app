@@ -443,6 +443,10 @@ table {
   transition: left var(--transition-slow);
 }
 
+.topbar-hamburger {
+  display: none;
+}
+
 .topbar.sidebar-collapsed {
   left: var(--sidebar-collapsed-width);
 }
@@ -1658,8 +1662,13 @@ table {
   border-top: 1px solid var(--gray-100);
 }
 
-/* ── Responsive ── */
-@media (max-width: 1200px) {
+/* ── Sidebar Mobile Backdrop ── */
+.sidebar-backdrop {
+  display: none;
+}
+
+/* ── Responsive: Tablet (≤1024px) ── */
+@media (max-width: 1024px) {
   .chart-grid {
     grid-template-columns: 1fr;
   }
@@ -1669,31 +1678,290 @@ table {
   .lead-detail-grid {
     grid-template-columns: 1fr;
   }
+  .form-row-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .notification-dropdown {
+    width: 340px;
+  }
+  .settings-content-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .settings-nav {
+    flex-direction: row !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .settings-nav .sidebar-link {
+    white-space: nowrap;
+  }
 }
 
+/* ── Responsive: Mobile (≤768px) ── */
 @media (max-width: 768px) {
+  /* ── Sidebar: Hidden drawer ── */
   .sidebar {
-    width: var(--sidebar-collapsed-width);
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: transform var(--transition-slow);
+    z-index: 200;
   }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .sidebar.collapsed {
+    width: var(--sidebar-width);
+  }
+  .sidebar.collapsed .sidebar-brand {
+    opacity: 1;
+    width: auto;
+  }
+  .sidebar.collapsed .sidebar-section-title {
+    opacity: 1;
+    height: auto;
+    margin-bottom: var(--space-2);
+    padding: 0 var(--space-3);
+  }
+  .sidebar.collapsed .sidebar-link-text {
+    opacity: 1;
+    width: auto;
+  }
+  .sidebar.collapsed .sidebar-link-badge {
+    display: inline-flex;
+  }
+
+  /* ── Sidebar Backdrop ── */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 190;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* ── Layout ── */
   .main-wrapper {
-    margin-left: var(--sidebar-collapsed-width);
+    margin-left: 0;
   }
-  .topbar {
-    left: var(--sidebar-collapsed-width);
+  .main-wrapper.sidebar-collapsed {
+    margin-left: 0;
   }
   .main-content {
     padding: var(--space-4);
   }
+
+  /* ── TopBar ── */
+  .topbar {
+    left: 0;
+    padding: 0 var(--space-4);
+  }
+  .topbar.sidebar-collapsed {
+    left: 0;
+  }
+  .topbar-page-title {
+    font-size: var(--font-size-base);
+  }
+  .topbar-hamburger {
+    display: flex !important;
+  }
+  .topbar-search {
+    display: none;
+  }
+  .topbar-user-info {
+    display: none;
+  }
+  .topbar-right {
+    gap: var(--space-2);
+  }
+
+  /* ── KPI Grid ── */
   .kpi-grid {
     grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
   }
+
+  /* ── Charts ── */
+  .chart-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  /* ── Forms ── */
   .form-row {
     grid-template-columns: 1fr;
   }
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Page Header ── */
   .page-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-4);
+    gap: var(--space-3);
+  }
+  .page-header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .page-header-actions .btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+
+  /* ── Cards ── */
+  .card {
+    padding: var(--space-4);
+  }
+
+  /* ── Filter Bar ── */
+  .filter-bar {
+    padding: var(--space-3);
+    gap: var(--space-2);
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-bar .form-select,
+  .filter-bar .form-input {
+    width: 100%;
+    min-width: 0;
+  }
+  .filter-bar .topbar-search {
+    display: block;
+    width: 100%;
+  }
+
+  /* ── Data Tables ── */
+  .data-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+  .data-table-footer {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    text-align: center;
+  }
+  .data-table-footer .pagination {
+    justify-content: center;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-xs);
+  }
+
+  /* ── Notification Dropdown ── */
+  .notification-dropdown {
+    width: calc(100vw - 2rem);
+    right: -1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* ── Bulk Action Bar ── */
+  .bulk-action-bar {
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    transform: none;
+    width: auto;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ── Modals ── */
+  .modal {
+    width: 95%;
+    max-height: 85vh;
+    margin: var(--space-4);
+  }
+
+  /* ── Follow-up Cards ── */
+  .followup-cards {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Empty State ── */
+  .empty-state {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  /* ── Leaderboard ── */
+  .leaderboard-bar {
+    display: none;
+  }
+
+  /* ── Pagination ── */
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ── Settings ── */
+  .settings-content-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .settings-nav {
+    flex-direction: row !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: var(--space-1);
+  }
+  .settings-nav .sidebar-link {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Responsive: Small Mobile (≤480px) ── */
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .main-content {
+    padding: var(--space-3);
+  }
+  .topbar {
+    padding: 0 var(--space-3);
+  }
+  .page-header-actions .btn {
+    font-size: var(--font-size-xs);
+    height: 34px;
+    padding: var(--space-1) var(--space-2);
+  }
+  .btn-lg {
+    height: 40px;
+    padding: var(--space-2) var(--space-5);
   }
 }
 

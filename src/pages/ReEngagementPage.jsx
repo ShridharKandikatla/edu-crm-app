@@ -88,7 +88,7 @@ export default function ReEngagementPage() {
 
       {/* Info Banner */}
       <div className="card mb-6 border-none text-white" style={{ background: 'linear-gradient(to bottom right, #312e81, #4f46e5)' }}>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">
             <HiOutlineRefresh />
           </div>
@@ -102,11 +102,11 @@ export default function ReEngagementPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
           {reEngageableLeads.map((lead) => {
             const isReEngaged = lead.status === 'RE_ENGAGED';
             return (

@@ -106,7 +106,7 @@ export default function FailedLeadsPage() {
 
       {loading ? (
         <div className="space-y-6">
-          <div className="chart-grid mb-6">
+          <div className="chart-grid mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="chart-card">
               <SkeletonBlock height="24px" width="40%" className="mb-4" />
               <SkeletonBlock height="250px" />
@@ -121,7 +121,7 @@ export default function FailedLeadsPage() {
       ) : (
         <>
           {/* Stats Row */}
-          <div className="chart-grid mb-6">
+          <div className="chart-grid mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="chart-card">
               <div className="chart-card-header">
                 <div>
@@ -186,8 +186,8 @@ export default function FailedLeadsPage() {
           </div>
 
           {/* Filter */}
-          <div className="filter-bar mb-6" role="group" aria-label="Filter by failure reason">
-            <span className="text-xs font-semibold text-gray-700">Reason:</span>
+          <div className="filter-bar mb-6 overflow-x-auto" role="group" aria-label="Filter by failure reason">
+            <span className="text-xs font-semibold text-gray-700 shrink-0">Reason:</span>
             <select
               className="form-select"
               aria-label="Filter by failure reason"

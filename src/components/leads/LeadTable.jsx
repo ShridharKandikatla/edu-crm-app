@@ -28,20 +28,20 @@ export default function LeadTable({
           <th className="cursor-pointer" scope="col" onClick={() => handleSort('name')} aria-sort={sortField === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
             Name {sortField === 'name' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
-          <th scope="col">Contact</th>
-          <th scope="col">Course</th>
-          <th className="cursor-pointer" scope="col" onClick={() => handleSort('source')} aria-sort={sortField === 'source' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+          <th scope="col" className="hidden md:table-cell">Contact</th>
+          <th scope="col" className="hidden lg:table-cell">Course</th>
+          <th scope="col" className="hidden lg:table-cell cursor-pointer" onClick={() => handleSort('source')} aria-sort={sortField === 'source' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
             Source {sortField === 'source' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
           <th className="cursor-pointer" scope="col" onClick={() => handleSort('status')} aria-sort={sortField === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
             Status {sortField === 'status' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
-          <th scope="col">Score</th>
-          <th className="cursor-pointer" scope="col" onClick={() => handleSort('aiScore')} aria-sort={sortField === 'aiScore' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+          <th scope="col" className="hidden lg:table-cell">Score</th>
+          <th scope="col" className="hidden xl:table-cell cursor-pointer" onClick={() => handleSort('aiScore')} aria-sort={sortField === 'aiScore' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
             AI Score {sortField === 'aiScore' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
-          <th scope="col">Counselor</th>
-          <th className="cursor-pointer" scope="col" onClick={() => handleSort('createdAt')} aria-sort={sortField === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+          <th scope="col" className="hidden md:table-cell">Counselor</th>
+          <th scope="col" className="hidden lg:table-cell cursor-pointer" onClick={() => handleSort('createdAt')} aria-sort={sortField === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
             Created {sortField === 'createdAt' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
           <th className="w-[50px]" scope="col"></th>
@@ -67,17 +67,18 @@ export default function LeadTable({
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900 text-[0.8125rem]">{lead.name}</div>
-                    <div className="text-[0.7rem] text-gray-400">{lead.email || 'No Email'}</div>
+                    <div className="text-[0.7rem] text-gray-400 md:hidden">{lead.phone}</div>
+                    <div className="text-[0.7rem] text-gray-400 hidden md:block">{lead.email || 'No Email'}</div>
                   </div>
                 </div>
               </td>
-              <td className="text-[0.8125rem]">{lead.phone}</td>
-              <td>
+              <td className="text-[0.8125rem] hidden md:table-cell">{lead.phone}</td>
+              <td className="hidden lg:table-cell">
                 <div className="text-[0.8125rem] max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap">
                   {lead.course?.name || lead.courseName || '—'}
                 </div>
               </td>
-              <td>
+              <td className="hidden lg:table-cell">
                 <span className="text-[0.75rem] text-gray-500">
                   {(lead.source || '').replace(/_/g, ' ')}
                 </span>
@@ -87,13 +88,13 @@ export default function LeadTable({
                   {(lead.status || '').replace(/_/g, ' ')}
                 </span>
               </td>
-              <td>
+              <td className="hidden lg:table-cell">
                 <span className={`score-badge score-${(lead.score || '').toLowerCase()}`}>
                   <span className="score-dot"></span>
                   {lead.score}
                 </span>
               </td>
-              <td>
+              <td className="hidden xl:table-cell">
                 {typeof lead.aiScore === 'number' && lead.aiScore > 0 ? (
                   <div className="flex items-center gap-1.5">
                     <div className="h-1.5 w-8 overflow-hidden rounded-full bg-white/10">
@@ -109,8 +110,8 @@ export default function LeadTable({
                   <span className="text-[0.75rem] text-gray-400">—</span>
                 )}
               </td>
-              <td className="text-[0.8125rem]">{lead.counselor?.name || lead.assignedCounselor || '—'}</td>
-              <td className="text-[0.75rem] text-gray-500">{formatDate(lead.createdAt)}</td>
+              <td className="text-[0.8125rem] hidden md:table-cell">{lead.counselor?.name || lead.assignedCounselor || '—'}</td>
+              <td className="hidden lg:table-cell text-[0.75rem] text-gray-500">{formatDate(lead.createdAt)}</td>
               <td onClick={(e) => e.stopPropagation()}>
                 <button className="btn btn-ghost btn-icon btn-sm" aria-label={`View details for ${lead.name}`} onClick={() => navigate(`/leads/${lead.id}`)}>
                   <HiOutlineDotsVertical />

@@ -135,13 +135,13 @@ export default function LeadListPage() {
     <div>
       <PageHeader title="Lead Management" subtitle={`${totalLeads} leads total`}>
         <button className="btn btn-secondary" onClick={() => setShowFilters(!showFilters)}>
-          <HiOutlineFilter /> Filters
+          <HiOutlineFilter /> <span className="hidden sm:inline">Filters</span>
         </button>
         <button className="btn btn-secondary" onClick={handleExport}>
-          <HiOutlineDownload /> Export CSV
+          <HiOutlineDownload /> <span className="hidden sm:inline">Export CSV</span>
         </button>
         <button className="btn btn-primary" onClick={() => navigate('/leads/new')}>
-          <HiOutlinePlus /> Add Lead
+          <HiOutlinePlus /> <span className="hidden sm:inline">Add Lead</span>
         </button>
       </PageHeader>
 

@@ -52,7 +52,7 @@ const menuSections = [
   },
 ];
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
   const { user, hasPermission } = useAuth();
   const [pendingFollowUps, setPendingFollowUps] = useState(0);
 
@@ -71,8 +71,14 @@ export default function Sidebar({ collapsed, onToggle }) {
     return () => clearInterval(interval);
   }, [fetchStats]);
 
+  const handleNavClick = () => {
+    if (window.innerWidth <= 768) {
+      onMobileClose();
+    }
+  };
+
   return (
-    <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-logo">U</div>
         <span className="sidebar-brand">UniCRM</span>
@@ -102,6 +108,7 @@ export default function Sidebar({ collapsed, onToggle }) {
                       `sidebar-link ${isActive ? 'active' : ''}`
                     }
                     aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
+                    onClick={handleNavClick}
                   >
                     <span className="sidebar-link-icon">
                       <item.icon />

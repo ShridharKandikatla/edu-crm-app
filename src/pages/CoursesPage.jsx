@@ -133,7 +133,7 @@ export default function CoursesPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : coursesList.length === 0 ? (
@@ -148,7 +148,7 @@ export default function CoursesPage() {
             <h3 className="mb-4 flex items-center gap-2 text-[0.875rem] font-bold uppercase tracking-wider text-gray-700">
               <HiOutlineAcademicCap /> {dept}
             </h3>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
               {coursesList.filter(c => c.department === dept).map(course => (
                 <div key={course.id} className="card relative overflow-hidden">
                   {course.image && (

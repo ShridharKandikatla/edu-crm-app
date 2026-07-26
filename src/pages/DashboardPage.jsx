@@ -123,12 +123,12 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div>
-        <div className="kpi-grid">
+      <div className="kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-5 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
           <SkeletonCard className="h-[300px]" />
           <SkeletonCard className="h-[300px]" />
         </div>
@@ -159,7 +159,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex items-center gap-1 mt-6 mb-5 border-b border-gray-200 pb-px">
+      <div className="flex items-center gap-1 mt-6 mb-5 border-b border-gray-200 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('charts')}
           className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors -mb-px ${

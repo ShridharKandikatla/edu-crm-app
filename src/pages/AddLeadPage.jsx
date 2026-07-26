@@ -221,11 +221,11 @@ export default function AddLeadPage() {
           </div>
         </div>
 
-        <div className="flex max-w-[800px] gap-3">
-          <button type="submit" className="btn btn-primary btn-lg" disabled={saving}>
+        <div className="flex flex-col sm:flex-row max-w-[800px] gap-3">
+          <button type="submit" className="btn btn-primary btn-lg w-full sm:w-auto" disabled={saving}>
             <HiOutlineSave /> {saving ? 'Saving...' : 'Save Lead'}
           </button>
-          <button type="button" className="btn btn-secondary btn-lg" onClick={() => navigate('/leads')} disabled={saving}>
+          <button type="button" className="btn btn-secondary btn-lg w-full sm:w-auto" onClick={() => navigate('/leads')} disabled={saving}>
             <HiOutlineX /> Cancel
           </button>
         </div>

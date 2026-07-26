@@ -240,7 +240,7 @@ export default function LeadDetailPage() {
             <AIRecommendation leadId={id} />
           </div>
 
-          <div className="tabs">
+          <div className="tabs overflow-x-auto">
             <button className={`tab ${activeTab === 'timeline' ? 'active' : ''}`} onClick={() => setActiveTab('timeline')}>
               Activity Timeline
             </button>

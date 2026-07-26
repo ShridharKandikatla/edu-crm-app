@@ -100,7 +100,7 @@ export default function FollowUpsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="kpi-grid mb-6">
+      <div className="kpi-grid mb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
         {filters.map((f) => (
           <button
             key={f.key}
@@ -116,12 +116,12 @@ export default function FollowUpsPage() {
       </div>
 
       {/* Type Filter */}
-      <div className="filter-bar mb-6" role="group" aria-label="Follow-up type filter">
-        <span className="text-xs font-semibold text-gray-700">Type:</span>
+      <div className="filter-bar mb-6 overflow-x-auto" role="group" aria-label="Follow-up type filter">
+        <span className="text-xs font-semibold text-gray-700 shrink-0">Type:</span>
         {['ALL', 'CALL', 'EMAIL', 'WHATSAPP', 'SMS', 'IN_PERSON'].map(type => (
           <button
             key={type}
-            className={`btn ${typeFilter === type ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            className={`btn ${typeFilter === type ? 'btn-primary' : 'btn-secondary'} btn-sm shrink-0`}
             onClick={() => setTypeFilter(type)}
           >
             {type === 'ALL' ? 'All' : type.replace(/_/g, ' ')}
@@ -158,7 +158,7 @@ export default function FollowUpsPage() {
       )}
 
       {/* Follow-up Cards */}
-      <div className="followup-cards">
+      <div className="followup-cards grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
         {loadingList ? (
           <div className="col-span-full py-20 text-center text-gray-500" role="status">
             <div className="spinner mx-auto mb-4 h-[30px] w-[30px] rounded-full border-[3px] border-black/10 border-l-indigo-600 animate-spin"></div>

@@ -10,7 +10,7 @@ export default function LeadFilters({
 
   return (
     <div className="filter-bar animate-fade-in-up">
-      <div className="topbar-search w-[220px]">
+      <div className="topbar-search w-full sm:w-[220px]">
         <HiOutlineSearch className="topbar-search-icon" />
         <input
           type="text"

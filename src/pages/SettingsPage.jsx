@@ -110,9 +110,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-[240px_1fr] gap-6">
+      <div className="settings-content-grid grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
         {/* Settings Nav */}
-        <div className="card h-fit p-3" role="tablist" aria-label="Settings sections">
+        <div className="settings-nav card h-fit p-3 flex flex-col" role="tablist" aria-label="Settings sections">
           {[
             { key: 'profile', label: 'Profile', icon: HiOutlineUser },
             { key: 'notifications', label: 'Notifications', icon: HiOutlineBell },

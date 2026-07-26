@@ -5,7 +5,7 @@ export default function LeadPagination({ currentPage, setCurrentPage, totalPages
 
   return (
     <div className="data-table-footer">
-      <span>
+      <span className="text-[0.8125rem]">
         Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalLeads)} of {totalLeads}
       </span>
       <div className="pagination" role="navigation" aria-label="Pagination">
