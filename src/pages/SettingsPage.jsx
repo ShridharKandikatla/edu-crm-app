@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
@@ -9,7 +10,11 @@ import { useNotificationPreferences } from '../hooks/useNotificationPreferences'
 export default function SettingsPage() {
   const { user, setUser } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    ['profile', 'notifications', 'security'].includes(initialTab) ? initialTab : 'profile'
+  );
   
   // Profile Form States
   const [profileName, setProfileName] = useState(user?.name || '');

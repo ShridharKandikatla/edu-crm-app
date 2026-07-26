@@ -364,14 +364,14 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
             <div className="notification-dropdown w-[200px] right-0">
               <button
                 className="notification-item w-full border-none text-left"
-                onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                onClick={() => { navigate('/settings?tab=profile'); setShowUserMenu(false); }}
               >
                 <HiOutlineUser size={18} className="text-gray-500" />
                 <span className="notification-text">My Profile</span>
               </button>
               <button
                 className="notification-item w-full border-none text-left"
-                onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                onClick={() => { navigate('/settings?tab=security'); setShowUserMenu(false); }}
               >
                 <HiOutlineCog size={18} className="text-gray-500" />
                 <span className="notification-text">Settings</span>
