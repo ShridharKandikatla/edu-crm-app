@@ -1,7 +1,7 @@
 import {
   HiOutlinePhone, HiOutlineMail, HiOutlineCalendar,
   HiOutlineUser, HiOutlineTag, HiOutlineClock, HiOutlineX,
-  HiOutlineLightningBolt
+  HiOutlineLightningBolt, HiPencil
 } from 'react-icons/hi';
 
 function AiScoreGauge({ score }) {
@@ -35,29 +35,41 @@ function AiScoreGauge({ score }) {
   );
 }
 
-export default function LeadProfileCard({ lead, initials, counselor, formatDate }) {
+export default function LeadProfileCard({ lead, initials, counselor, formatDate, onEdit }) {
   return (
     <div className="lead-profile-card mb-6">
       <div className="lead-profile-header">
-        <div className="flex items-center gap-5">
-          <div className="lead-profile-avatar">
-            {initials}
-          </div>
-          <div>
-            <div className="lead-profile-name">{lead.name}</div>
-            <div className="lead-profile-course">{lead.course?.name || 'No Course Selected'} · {lead.intake?.name || 'No Intake'}</div>
-            <div className="lead-profile-badges">
-              <span className={`badge badge-${lead.status.toLowerCase().replace(/_/g, '-')} bg-white/20 text-white`}>
-                {lead.status.replace(/_/g, ' ')}
-              </span>
-              <span className={`score-badge bg-white/20 ${
-                lead.score === 'HOT' ? 'text-red-400' : lead.score === 'WARM' ? 'text-yellow-400' : 'text-green-400'
-              }`}>
-                <span className="score-dot" style={{ background: lead.score === 'HOT' ? '#f87171' : lead.score === 'WARM' ? '#fbbf24' : '#60a5fa' }}></span>
-                {lead.score}
-              </span>
+        <div className="flex items-start justify-between gap-5">
+          <div className="flex items-center gap-5">
+            <div className="lead-profile-avatar">
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="lead-profile-name truncate">{lead.name}</div>
+              <div className="lead-profile-course">{lead.course?.name || 'No Course Selected'} · {lead.intake?.name || 'No Intake'}</div>
+              <div className="lead-profile-badges">
+                <span className={`badge badge-${lead.status.toLowerCase().replace(/_/g, '-')} bg-white/20 text-white`}>
+                  {lead.status.replace(/_/g, ' ')}
+                </span>
+                <span className={`score-badge bg-white/20 ${
+                  lead.score === 'HOT' ? 'text-red-400' : lead.score === 'WARM' ? 'text-yellow-400' : 'text-green-400'
+                }`}>
+                  <span className="score-dot" style={{ background: lead.score === 'HOT' ? '#f87171' : lead.score === 'WARM' ? '#fbbf24' : '#60a5fa' }}></span>
+                  {lead.score}
+                </span>
+              </div>
             </div>
           </div>
+          {onEdit && (
+            <button
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-blue-600 bg-white hover:bg-white/90 shadow-sm transition-colors flex-shrink-0"
+              onClick={onEdit}
+              title="Edit lead details"
+            >
+              <HiPencil className="h-4 w-4" />
+              <span className="text-sm font-medium">Edit Lead</span>
+            </button>
+          )}
         </div>
         {typeof lead.aiScore === 'number' && lead.aiScore > 0 && (
           <div className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-3">

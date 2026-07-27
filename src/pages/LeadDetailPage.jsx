@@ -12,6 +12,12 @@ import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
 import LeadModals from '../components/leads/LeadModals';
 import AIRecommendation from '../components/leads/AIRecommendation';
 import ConfirmModal from '../components/ConfirmModal';
+import Modal from '../components/Modal';
+
+const LEAD_SOURCES = [
+  'WEBSITE', 'FACEBOOK', 'GOOGLE_ADS', 'INSTAGRAM', 'JUSTDIAL',
+  'WALK_IN', 'REFERRAL', 'PHONE_INQUIRY', 'EMAIL_INQUIRY', 'EVENT', 'OTHER'
+];
 
 export default function LeadDetailPage() {
   const { id } = useParams();
@@ -45,6 +51,13 @@ export default function LeadDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editSource, setEditSource] = useState('');
+  const [editNotes, setEditNotes] = useState('');
 
   const fetchLeadDetails = useCallback(async () => {
     try {
@@ -203,6 +216,36 @@ export default function LeadDetailPage() {
     setConfirmOpen(true);
   };
 
+  const openEditModal = () => {
+    setEditName(lead.name || '');
+    setEditEmail(lead.email || '');
+    setEditPhone(lead.phone || '');
+    setEditSource(lead.source || '');
+    setEditNotes(lead.notes || '');
+    setShowEditModal(true);
+  };
+
+  const handleEditLead = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      await api.leads.update(id, {
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        source: editSource,
+        notes: editNotes,
+      });
+      setShowEditModal(false);
+      toast.success('Lead updated successfully');
+      fetchLeadDetails();
+    } catch (error) {
+      toast.error(error.message || 'Failed to update lead');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const confirmReEngage = async () => {
     setConfirmLoading(true);
     try {
@@ -234,7 +277,7 @@ export default function LeadDetailPage() {
 
       <div className="lead-detail-grid">
         <div>
-          <LeadProfileCard lead={lead} initials={initials} counselor={counselor} formatDate={formatDate} />
+          <LeadProfileCard lead={lead} initials={initials} counselor={counselor} formatDate={formatDate} onEdit={openEditModal} />
 
           <div className="mb-4">
             <AIRecommendation leadId={id} />
@@ -285,6 +328,47 @@ export default function LeadDetailPage() {
         failureReason={failureReason} setFailureReason={setFailureReason} handleFailLead={handleFailLead}
         submitting={submitting}
       />
+
+      <Modal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit Lead Details"
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={() => setShowEditModal(false)} disabled={submitting}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleEditLead} disabled={submitting}>
+              {submitting ? 'Saving...' : 'Save Changes'}
+            </button>
+          </>
+        }
+      >
+        <form onSubmit={handleEditLead} className="flex flex-col gap-4">
+          <div className="form-group">
+            <label className="form-label">Name</label>
+            <input className="form-input" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Phone</label>
+            <input className="form-input" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Source</label>
+            <select className="form-select" value={editSource} onChange={(e) => setEditSource(e.target.value)}>
+              {LEAD_SOURCES.map((s) => (
+                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Notes</label>
+            <textarea className="form-input" rows={3} value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+          </div>
+        </form>
+      </Modal>
 
       <ConfirmModal
         open={confirmOpen}
