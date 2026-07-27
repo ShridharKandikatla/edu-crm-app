@@ -51,7 +51,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
     try {
       const res = await api.notifications.getAll();
       if (res && res.success && res.data) setNotificationsList(res.data.notifications || []);
-    } catch {}
+    } catch { /* silent */ }
   }, []);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
     try {
       await api.notifications.markAllAsRead();
       setNotificationsList(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch {}
+    } catch { /* silent */ }
   };
 
   const handleMarkAsRead = async (id, e) => {
@@ -74,7 +74,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
     try {
       await api.notifications.markAsRead(id);
       setNotificationsList(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    } catch {}
+    } catch { /* silent */ }
   };
 
   const unreadCount = notificationsList.filter((n) => !n.isRead).length;

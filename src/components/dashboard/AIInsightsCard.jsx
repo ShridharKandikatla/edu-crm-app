@@ -42,7 +42,6 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
   const [expandedRecs, setExpandedRecs] = useState(true);
 
   const [prompt, setPrompt] = useState('');
-  const [queryResult, setQueryResult] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const [queryHistory, setQueryHistory] = useState([]);
   const queryControllerRef = useRef(null);
@@ -75,7 +74,6 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
       if (res?.success) {
         const aiEntry = { role: 'ai', text: res.data.reply, engine: res.data.engine, timestamp: Date.now() };
         setQueryHistory(prev => [...prev, aiEntry]);
-        setQueryResult(res.data);
       }
     } catch (err) {
       if (err.name === 'AbortError') return;
@@ -203,7 +201,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
               </div>
             )}
             <button
-              onClick={() => { setQueryHistory([]); setQueryResult(null); }}
+              onClick={() => { setQueryHistory([]); }}
               className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
             >
               Clear chat

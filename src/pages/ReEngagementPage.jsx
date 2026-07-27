@@ -28,7 +28,7 @@ export default function ReEngagementPage() {
       ]);
       if (failedRes.success) setFailedLeads(failedRes.data || []);
       if (reEngagedRes.success) setReEngagedLeads(reEngagedRes.data || []);
-    } catch {} finally {
+    } catch { /* silent */ } finally {
       setLoading(false);
     }
   }, []);

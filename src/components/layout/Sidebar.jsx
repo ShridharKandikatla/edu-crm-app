@@ -54,7 +54,7 @@ const menuSections = [
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
-  const { user, hasPermission } = useAuth();
+  const { hasPermission } = useAuth();
   const [pendingFollowUps, setPendingFollowUps] = useState(0);
 
   const fetchStats = useCallback(async () => {
@@ -63,7 +63,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
       if (res && res.success && res.data) {
         setPendingFollowUps((res.data.overdue || 0) + (res.data.today || 0) + (res.data.upcoming || 0));
       }
-    } catch {}
+    } catch { /* silent */ }
   }, []);
 
   useEffect(() => {

@@ -36,7 +36,7 @@ export default function FollowUpsPage() {
     try {
       const res = await api.followUps.getStats();
       if (res && res.success && res.data) setStats(res.data);
-    } catch {}
+    } catch { /* silent */ }
   }, []);
 
   const fetchFollowUps = useCallback(async () => {
@@ -46,7 +46,7 @@ export default function FollowUpsPage() {
       if (typeFilter !== 'ALL') params.type = typeFilter;
       const res = await api.followUps.getAll(params);
       if (res && res.success && res.data) setFollowUpsList(res.data || []);
-    } catch {} finally {
+    } catch { /* silent */ } finally {
       setLoadingList(false);
     }
   }, [activeFilter, typeFilter]);

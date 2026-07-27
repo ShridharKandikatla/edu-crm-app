@@ -46,7 +46,7 @@ export default function UsersPage() {
       ]);
       if (usersRes.success) setUsersList(usersRes.data || []);
       if (reportRes.success) setCounselorStats(reportRes.data.report || []);
-    } catch {} finally {
+    } catch { /* silent */ } finally {
       setLoading(false);
     }
   }, []);

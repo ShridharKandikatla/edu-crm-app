@@ -32,7 +32,7 @@ export default function FailedLeadsPage() {
       setLoading(true);
       const res = await api.leads.getAll({ status: 'FAILED', limit: 1000 });
       if (res && res.success && res.data) setFailedLeadsList(res.data || []);
-    } catch {} finally {
+    } catch { /* silent */ } finally {
       setLoading(false);
     }
   }, []);

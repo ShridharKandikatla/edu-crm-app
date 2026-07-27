@@ -7,7 +7,6 @@ import {
 function AiScoreGauge({ score }) {
   const tier = score >= 70 ? 'HOT' : score >= 40 ? 'WARM' : 'COLD';
   const color = score >= 70 ? '#f87171' : score >= 40 ? '#fbbf24' : '#60a5fa';
-  const bg = score >= 70 ? 'from-red-500/20 to-red-500/5' : score >= 40 ? 'from-amber-500/20 to-amber-500/5' : 'from-blue-500/20 to-blue-500/5';
   const circumference = 2 * Math.PI * 28;
   const offset = circumference - (score / 100) * circumference;
 

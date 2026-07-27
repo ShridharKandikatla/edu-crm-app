@@ -246,7 +246,7 @@ function CourseStep({ courses, selectedId, onSelect, onSkip }) {
 }
 
 /* ─── Details Step ─── */
-function DetailsStep({ form, errors, focusedField, inputClass, onChange, onFocus, onBlur, selectedCourse, onClearCourse, courses, intakes }) {
+function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, selectedCourse, onClearCourse, intakes }) {
   const charCount = (cur, max) => (
     <span className={`mt-1 block text-right text-[0.65rem] ${cur > max * 0.9 ? 'text-amber-400' : 'text-white/15'}`}>
       {cur}/{max}
@@ -580,11 +580,6 @@ export default function ApplyPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleBlur = (name) => {
-    setFocusedField('');
-    if (form[name] !== undefined) validateField(name);
-  };
-
   const validateDetails = () => {
     const fields = ['name', 'phone', 'email', 'source', 'otherSource', 'notes'];
     let valid = true;
@@ -744,12 +739,11 @@ export default function ApplyPage() {
           ) : (
             <>
               <DetailsStep
-                form={form} errors={errors} focusedField={focusedField}
+                form={form} errors={errors}
                 inputClass={inputClass} onChange={handleChange}
                 onFocus={setFocusedField} onBlur={() => setFocusedField('')}
                 selectedCourse={selectedCourse}
                 onClearCourse={() => setForm(prev => ({ ...prev, courseId: '' }))}
-                courses={courses}
                 intakes={intakes}
               />
               <div className="mt-8 flex items-center justify-center gap-4" style={{ animation: 'fadeUp 0.4s ease 0.2s both' }}>

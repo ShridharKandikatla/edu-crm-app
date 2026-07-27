@@ -78,7 +78,7 @@ export default function ReportsPage() {
         }
       }
       fetchedTabs.current.add(activeTab);
-    } catch {} finally {
+    } catch { /* silent */ } finally {
       setLoading(false);
     }
   }, [activeTab]);

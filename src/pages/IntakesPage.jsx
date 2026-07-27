@@ -111,7 +111,6 @@ export default function IntakesPage() {
     return start <= now && end >= now;
   };
   const isUpcoming = (intake) => new Date(intake.startDate) > now;
-  const isPast = (intake) => new Date(intake.endDate) < now;
 
   return (
     <div>
@@ -149,7 +148,6 @@ export default function IntakesPage() {
               {intakes.map((intake) => {
                 const active = isActive(intake);
                 const upcoming = isUpcoming(intake);
-                const past = isPast(intake);
 
                 return (
                   <tr key={intake.id}>
