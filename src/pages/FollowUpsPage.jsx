@@ -6,7 +6,6 @@ import {
   HiOutlineCalendar, HiOutlineX, HiOutlineLightningBolt
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
-import FeatureGuard from '../components/FeatureGuard';
 import { FEATURES } from '../constants/features';
 
 const typeIcons = {
@@ -133,8 +132,7 @@ export default function FollowUpsPage() {
       </div>
 
       {/* AI Recommendations */}
-      <FeatureGuard feature="AI_BULK_RECOMMENDATIONS">
-        {!loadingRecs && recs.length > 0 && (
+      {FEATURES.AI_BULK_RECOMMENDATIONS && !loadingRecs && recs.length > 0 && (
           <div className="mb-6">
             <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800">
               <HiOutlineLightningBolt className="h-4 w-4 text-indigo-500" />
@@ -160,7 +158,6 @@ export default function FollowUpsPage() {
             </div>
           </div>
         )}
-      </FeatureGuard>
 
       {/* Follow-up Cards */}
       <div className="followup-cards grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">

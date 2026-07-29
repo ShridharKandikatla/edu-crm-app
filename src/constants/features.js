@@ -1,7 +1,7 @@
 export const FEATURES = {
-  AI_INSIGHTS: false,
-  AI_RECOMMENDATIONS: false,
-  AI_SCORE: false,
-  AI_CHATBOT: false,
-  AI_BULK_RECOMMENDATIONS: false,
+  AI_INSIGHTS: true,
+  AI_RECOMMENDATIONS: true,
+  AI_SCORE: true,
+  AI_CHATBOT: true,
+  AI_BULK_RECOMMENDATIONS: true,
 }
