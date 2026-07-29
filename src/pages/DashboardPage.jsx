@@ -16,6 +16,7 @@ import CounselorLeaderboard from '../components/dashboard/CounselorLeaderboard';
 import RecentLeadsTable from '../components/dashboard/RecentLeadsTable';
 import UpcomingFollowUps from '../components/dashboard/UpcomingFollowUps';
 import AIInsightsCard from '../components/dashboard/AIInsightsCard';
+import FeatureGuard from '../components/FeatureGuard';
 import { FunnelChart, SourcePieChart, TrendAreaChart } from '../components/dashboard/Charts';
 import { StatusDistributionChart, ConversionDonutChart, MonthlyComparisonChart } from '../components/dashboard/AdditionalCharts';
 
@@ -231,11 +232,13 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'ai' && isAdmin && (
-        <AIInsightsCard
-          insights={insights}
-          loading={insightsLoading}
-          onRefresh={fetchInsights}
-        />
+        <FeatureGuard feature="AI_INSIGHTS">
+          <AIInsightsCard
+            insights={insights}
+            loading={insightsLoading}
+            onRefresh={fetchInsights}
+          />
+        </FeatureGuard>
       )}
     </div>
   );

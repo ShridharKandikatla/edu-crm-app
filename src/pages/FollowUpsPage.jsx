@@ -6,6 +6,8 @@ import {
   HiOutlineCalendar, HiOutlineX, HiOutlineLightningBolt
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
+import FeatureGuard from '../components/FeatureGuard';
+import { FEATURES } from '../constants/features';
 
 const typeIcons = {
   CALL: HiOutlinePhone,
@@ -54,6 +56,7 @@ export default function FollowUpsPage() {
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchFollowUps(); }, [fetchFollowUps]);
   useEffect(() => {
+    if (!FEATURES.AI_BULK_RECOMMENDATIONS) { setLoadingRecs(false); return; }
     setLoadingRecs(true);
     api.ai.getRecommendations()
       .then(res => { if (res?.success) setRecs(res.data?.recommendations || []); })
@@ -130,32 +133,34 @@ export default function FollowUpsPage() {
       </div>
 
       {/* AI Recommendations */}
-      {!loadingRecs && recs.length > 0 && (
-        <div className="mb-6">
-          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800">
-            <HiOutlineLightningBolt className="h-4 w-4 text-indigo-500" />
-            AI-Powered Recommendations
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {recs.slice(0, 6).map((r, i) => (
-              <div key={i} className={`flex items-center gap-3 rounded-xl border p-3 ${
-                r.priority === 'critical' ? 'border-red-300 bg-red-50' :
-                r.priority === 'high' ? 'border-amber-300 bg-amber-50' :
-                'border-gray-200 bg-gray-50'
-              }`}>
-                <div className="text-lg">
-                  {r.action === 'CALL' ? '📞' : r.action === 'WHATSAPP' ? '💬' : r.action === 'EMAIL' ? '✉️' : r.action === 'SMS' ? '📝' : '💡'}
+      <FeatureGuard feature="AI_BULK_RECOMMENDATIONS">
+        {!loadingRecs && recs.length > 0 && (
+          <div className="mb-6">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800">
+              <HiOutlineLightningBolt className="h-4 w-4 text-indigo-500" />
+              AI-Powered Recommendations
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {recs.slice(0, 6).map((r, i) => (
+                <div key={i} className={`flex items-center gap-3 rounded-xl border p-3 ${
+                  r.priority === 'critical' ? 'border-red-300 bg-red-50' :
+                  r.priority === 'high' ? 'border-amber-300 bg-amber-50' :
+                  'border-gray-200 bg-gray-50'
+                }`}>
+                  <div className="text-lg">
+                    {r.action === 'CALL' ? '📞' : r.action === 'WHATSAPP' ? '💬' : r.action === 'EMAIL' ? '✉️' : r.action === 'SMS' ? '📝' : '💡'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-bold text-gray-900">{r.leadName || 'Unknown'}</div>
+                    <div className="truncate text-[0.7rem] text-gray-500">{r.message}</div>
+                  </div>
+                  {r.dueIn && <span className="whitespace-nowrap text-[0.6rem] text-gray-400">{r.dueIn}</span>}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-bold text-gray-900">{r.leadName || 'Unknown'}</div>
-                  <div className="truncate text-[0.7rem] text-gray-500">{r.message}</div>
-                </div>
-                {r.dueIn && <span className="whitespace-nowrap text-[0.6rem] text-gray-400">{r.dueIn}</span>}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </FeatureGuard>
 
       {/* Follow-up Cards */}
       <div className="followup-cards grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">

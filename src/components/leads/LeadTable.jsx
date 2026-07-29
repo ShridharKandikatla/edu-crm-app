@@ -1,5 +1,6 @@
 import { HiOutlineDotsVertical } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
+import { FEATURES } from '../../constants/features';
 
 export default function LeadTable({
   leads, selectedLeads, toggleSelect, toggleSelectAll,
@@ -37,9 +38,11 @@ export default function LeadTable({
             Status {sortField === 'status' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
           <th scope="col" className="hidden lg:table-cell">Score</th>
-          <th scope="col" className="hidden xl:table-cell cursor-pointer" onClick={() => handleSort('aiScore')} aria-sort={sortField === 'aiScore' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-            AI Score {sortField === 'aiScore' && (sortDir === 'asc' ? '↑' : '↓')}
-          </th>
+          {FEATURES.AI_SCORE && (
+            <th scope="col" className="hidden xl:table-cell cursor-pointer" onClick={() => handleSort('aiScore')} aria-sort={sortField === 'aiScore' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+              AI Score {sortField === 'aiScore' && (sortDir === 'asc' ? '↑' : '↓')}
+            </th>
+          )}
           <th scope="col" className="hidden md:table-cell">Counselor</th>
           <th scope="col" className="hidden lg:table-cell cursor-pointer" onClick={() => handleSort('createdAt')} aria-sort={sortField === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
             Created {sortField === 'createdAt' && (sortDir === 'asc' ? '↑' : '↓')}
@@ -94,22 +97,24 @@ export default function LeadTable({
                   {lead.score}
                 </span>
               </td>
-              <td className="hidden xl:table-cell">
-                {typeof lead.aiScore === 'number' && lead.aiScore > 0 ? (
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-1.5 w-8 overflow-hidden rounded-full bg-white/10">
-                      <div className={`h-full rounded-full transition-all duration-500 ${
-                        lead.aiScore >= 70 ? 'bg-red-500' : lead.aiScore >= 40 ? 'bg-amber-500' : 'bg-blue-500'
-                      }`} style={{ width: `${lead.aiScore}%` }} />
+              {FEATURES.AI_SCORE && (
+                <td className="hidden xl:table-cell">
+                  {typeof lead.aiScore === 'number' && lead.aiScore > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-8 overflow-hidden rounded-full bg-white/10">
+                        <div className={`h-full rounded-full transition-all duration-500 ${
+                          lead.aiScore >= 70 ? 'bg-red-500' : lead.aiScore >= 40 ? 'bg-amber-500' : 'bg-blue-500'
+                        }`} style={{ width: `${lead.aiScore}%` }} />
+                      </div>
+                      <span className={`text-[0.75rem] font-bold ${
+                        lead.aiScore >= 70 ? 'text-red-500' : lead.aiScore >= 40 ? 'text-amber-500' : 'text-blue-500'
+                      }`}>{lead.aiScore}</span>
                     </div>
-                    <span className={`text-[0.75rem] font-bold ${
-                      lead.aiScore >= 70 ? 'text-red-500' : lead.aiScore >= 40 ? 'text-amber-500' : 'text-blue-500'
-                    }`}>{lead.aiScore}</span>
-                  </div>
-                ) : (
-                  <span className="text-[0.75rem] text-gray-400">—</span>
-                )}
-              </td>
+                  ) : (
+                    <span className="text-[0.75rem] text-gray-400">—</span>
+                  )}
+                </td>
+              )}
               <td className="text-[0.8125rem] hidden md:table-cell">{lead.counselor?.name || lead.assignedCounselor || '—'}</td>
               <td className="hidden lg:table-cell text-[0.75rem] text-gray-500">{formatDate(lead.createdAt)}</td>
               <td onClick={(e) => e.stopPropagation()}>

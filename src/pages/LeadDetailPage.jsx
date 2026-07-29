@@ -11,6 +11,7 @@ import CommentsTab from '../components/leads/CommentsTab';
 import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
 import LeadModals from '../components/leads/LeadModals';
 import AIRecommendation from '../components/leads/AIRecommendation';
+import FeatureGuard from '../components/FeatureGuard';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
 
@@ -280,7 +281,9 @@ export default function LeadDetailPage() {
           <LeadProfileCard lead={lead} initials={initials} counselor={counselor} formatDate={formatDate} onEdit={openEditModal} />
 
           <div className="mb-4">
-            <AIRecommendation leadId={id} />
+            <FeatureGuard feature="AI_RECOMMENDATIONS">
+              <AIRecommendation leadId={id} />
+            </FeatureGuard>
           </div>
 
           <div className="tabs overflow-x-auto">
