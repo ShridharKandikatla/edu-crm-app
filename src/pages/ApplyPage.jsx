@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { config } from '../config/env';
 import ChatBot from '../components/apply/ChatBot';
-
 import FeatureGuard from '../components/FeatureGuard';
+import { FEATURES } from '../constants/features';
 
 const API_BASE = config.apiUrl.replace(/\/api\/?$/, '');
 
@@ -674,7 +674,7 @@ export default function ApplyPage() {
                     </svg>
                     Fill Form
                   </button>
-                  <FeatureGuard feature="AI_CHATBOT">
+                  {FEATURES.AI_CHATBOT && (
                     <button
                       onClick={() => setMode('chat')}
                       className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs ${
@@ -687,7 +687,7 @@ export default function ApplyPage() {
                       Chat with AI
                       <span className="rounded bg-indigo-500/30 px-1 py-0.5 text-[0.55rem] font-bold text-indigo-300 sm:text-[0.6rem]">NEW</span>
                     </button>
-                  </FeatureGuard>
+                  )}
                 </div>
               )}
               {!submitted && mode === 'form' && <StepBar step={step} onStepClick={(i) => { if (i < step) setStep(i); }} />}
@@ -707,17 +707,15 @@ export default function ApplyPage() {
           {/* Steps */}
           {submitted ? (
             <SuccessStep isDuplicate={isDuplicate} message={submitMessage} onReset={handleReset} />
-          ) : mode === 'chat' ? (
+          ) : mode === 'chat' && FEATURES.AI_CHATBOT ? (
             <div className="mx-auto max-w-2xl" style={{ animation: 'fadeUp 0.5s ease' }}>
-              <FeatureGuard feature="AI_CHATBOT">
-                <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
-                  <ChatBot onLeadCreated={(data) => {
-                    setIsDuplicate(false);
-                    setSubmitMessage(data.message || 'Your inquiry has been submitted!');
-                    setSubmitted(true);
-                  }} />
-                </div>
-              </FeatureGuard>
+              <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
+                <ChatBot onLeadCreated={(data) => {
+                  setIsDuplicate(false);
+                  setSubmitMessage(data.message || 'Your inquiry has been submitted!');
+                  setSubmitted(true);
+                }} />
+              </div>
               <p className="mt-4 text-center text-xs text-white/20">
                 Prefer to fill out a form?{' '}
                 <button onClick={() => setMode('form')} className="underline transition-colors hover:text-indigo-400">
