@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { config } from '../config/env';
 import ChatBot from '../components/apply/ChatBot';
-import FeatureGuard from '../components/FeatureGuard';
 import { FEATURES } from '../constants/features';
 
 const API_BASE = config.apiUrl.replace(/\/api\/?$/, '');

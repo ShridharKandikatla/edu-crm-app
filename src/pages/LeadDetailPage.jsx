@@ -11,7 +11,7 @@ import CommentsTab from '../components/leads/CommentsTab';
 import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
 import LeadModals from '../components/leads/LeadModals';
 import AIRecommendation from '../components/leads/AIRecommendation';
-import FeatureGuard from '../components/FeatureGuard';
+import { FEATURES } from '../constants/features';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
 
@@ -280,11 +280,11 @@ export default function LeadDetailPage() {
         <div>
           <LeadProfileCard lead={lead} initials={initials} counselor={counselor} formatDate={formatDate} onEdit={openEditModal} />
 
-          <div className="mb-4">
-            <FeatureGuard feature="AI_RECOMMENDATIONS">
+          {FEATURES.AI_RECOMMENDATIONS && (
+            <div className="mb-4">
               <AIRecommendation leadId={id} />
-            </FeatureGuard>
-          </div>
+            </div>
+          )}
 
           <div className="tabs overflow-x-auto">
             <button className={`tab ${activeTab === 'timeline' ? 'active' : ''}`} onClick={() => setActiveTab('timeline')}>
