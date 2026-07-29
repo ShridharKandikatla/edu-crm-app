@@ -17,6 +17,14 @@ const ACTION_ICONS = {
   WAIT: '⏰',
 };
 
+const formatDueIn = (dateStr) => {
+  const diff = new Date(dateStr) - new Date();
+  if (diff < 0) return 'overdue';
+  const hours = Math.round(diff / 3600000);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.round(hours / 24)}d`;
+};
+
 export default function AIRecommendation({ leadId, compact = false }) {
   const [rec, setRec] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,8 +36,17 @@ export default function AIRecommendation({ leadId, compact = false }) {
     setError('');
     api.ai.getRecommendation(leadId)
       .then(res => {
-        if (res?.success) setRec(res.data);
-        else setError('Could not load recommendation');
+        if (res?.success && res.data) {
+          setRec({
+            action: res.data.type,
+            message: res.data.notes,
+            priority: res.data.confidence,
+            reasons: res.data.reason ? [res.data.reason] : [],
+            dueIn: res.data.scheduledAt ? formatDueIn(res.data.scheduledAt) : undefined,
+          });
+        } else {
+          setError('Could not load recommendation');
+        }
       })
       .catch(() => setError('Could not load recommendation'))
       .finally(() => setLoading(false));
