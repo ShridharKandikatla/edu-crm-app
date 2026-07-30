@@ -76,16 +76,16 @@ export default function AIRecommendation({ leadId, compact = false }) {
   }
 
   return (
-    <div className={`rounded-xl border p-4 ${PRIORITY_STYLES[rec.priority] || PRIORITY_STYLES.medium}`}>
-      <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider opacity-70">
+    <div className="rounded-xl p-4 text-white" style={{ background: 'linear-gradient(135deg, var(--primary-600), var(--primary-800))' }}>
+      <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/70">
         <HiOutlineLightningBolt className="h-3.5 w-3.5" />
         AI Recommendation
       </div>
       <div className="mb-2 flex items-start gap-2">
         <span className="mt-0.5 text-lg">{ACTION_ICONS[rec.action] || '💡'}</span>
         <div>
-          <div className="text-sm font-bold">{rec.message}</div>
-          <div className="mt-1 flex items-center gap-3 text-xs opacity-60">
+          <div className="text-sm font-bold text-white">{rec.message}</div>
+          <div className="mt-1 flex items-center gap-3 text-xs text-white/70">
             <span>Priority: {rec.priority}</span>
             {rec.confidence && <span>Confidence: {rec.confidence}</span>}
             {rec.dueIn && <span>Due: {rec.dueIn}</span>}
@@ -95,7 +95,7 @@ export default function AIRecommendation({ leadId, compact = false }) {
       {rec.reasons && rec.reasons.length > 0 && (
         <div className="mt-2 space-y-1 border-t border-white/10 pt-2">
           {rec.reasons.map((r, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-xs opacity-70">
+            <div key={i} className="flex items-start gap-1.5 text-xs text-white/70">
               <HiOutlineInformationCircle className="mt-0.5 h-3 w-3 flex-shrink-0" />
               {r}
             </div>
