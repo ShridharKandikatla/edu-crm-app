@@ -1,12 +1,13 @@
 import { HiOutlineDotsVertical } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
-import { FEATURES } from '../../constants/features';
+import { useFeatures } from '../../hooks/useFeatures';
 
 export default function LeadTable({
   leads, selectedLeads, toggleSelect, toggleSelectAll,
   sortField, sortDir, handleSort, formatDate,
 }) {
   const navigate = useNavigate();
+  const features = useFeatures()
   const allSelected = selectedLeads.length === leads.length && leads.length > 0;
 
   return (
@@ -38,7 +39,7 @@ export default function LeadTable({
             Status {sortField === 'status' && (sortDir === 'asc' ? '↑' : '↓')}
           </th>
           <th scope="col" className="hidden lg:table-cell">Score</th>
-          {FEATURES.AI_SCORE && (
+              {features.AI_SCORE && (
             <th scope="col" className="hidden xl:table-cell cursor-pointer" onClick={() => handleSort('aiScore')} aria-sort={sortField === 'aiScore' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
               AI Score {sortField === 'aiScore' && (sortDir === 'asc' ? '↑' : '↓')}
             </th>
@@ -97,7 +98,7 @@ export default function LeadTable({
                   {lead.score}
                 </span>
               </td>
-              {FEATURES.AI_SCORE && (
+          {features.AI_SCORE && (
                 <td className="hidden xl:table-cell">
                   {typeof lead.aiScore === 'number' && lead.aiScore > 0 ? (
                     <div className="flex items-center gap-1.5">

@@ -1,12 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { ROLE_PERMISSIONS } from '../constants/permissions';
+import { loadFeatures, DEFAULT_FEATURES } from '../constants/features';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [features, setFeatures] = useState(DEFAULT_FEATURES);
 
   const isAuthenticated = !!user;
 
@@ -19,6 +21,7 @@ export function AuthProvider({ children }) {
           const res = await api.auth.getMe();
           if (res && res.success && res.data && res.data.user) {
             setUser(res.data.user);
+            loadFeatures().then(setFeatures).catch(() => {});
           } else {
             localStorage.removeItem('token');
           }
@@ -36,6 +39,7 @@ export function AuthProvider({ children }) {
       const res = await api.auth.login(email, password);
       if (res && res.success && res.data) {
         setUser(res.data.user);
+        loadFeatures().then(setFeatures).catch(() => {});
         return { success: true };
       }
       return { success: false, message: 'Invalid response from server' };
@@ -88,7 +92,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isAuthenticated, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, setUser, features, isAuthenticated, login, logout, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

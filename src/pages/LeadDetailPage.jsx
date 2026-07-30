@@ -11,7 +11,7 @@ import CommentsTab from '../components/leads/CommentsTab';
 import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
 import LeadModals from '../components/leads/LeadModals';
 import AIRecommendation from '../components/leads/AIRecommendation';
-import { FEATURES } from '../constants/features';
+import { useFeatures } from '../hooks/useFeatures';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
 
@@ -25,6 +25,7 @@ export default function LeadDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const features = useFeatures()
 
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -280,7 +281,7 @@ export default function LeadDetailPage() {
         <div>
           <LeadProfileCard lead={lead} initials={initials} counselor={counselor} formatDate={formatDate} onEdit={openEditModal} />
 
-          {FEATURES.AI_RECOMMENDATIONS && (
+          {features.AI_RECOMMENDATIONS && (
             <div className="mb-4">
               <AIRecommendation leadId={id} />
             </div>

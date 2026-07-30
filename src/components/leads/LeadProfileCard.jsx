@@ -3,7 +3,7 @@ import {
   HiOutlineUser, HiOutlineTag, HiOutlineClock, HiOutlineX,
   HiOutlineLightningBolt, HiPencil
 } from 'react-icons/hi';
-import { FEATURES } from '../../constants/features';
+import { useFeatures } from '../../hooks/useFeatures';
 
 function AiScoreGauge({ score }) {
   const tier = score >= 70 ? 'HOT' : score >= 40 ? 'WARM' : 'COLD';
@@ -36,6 +36,7 @@ function AiScoreGauge({ score }) {
 }
 
 export default function LeadProfileCard({ lead, initials, counselor, formatDate, onEdit }) {
+  const features = useFeatures()
   return (
     <div className="lead-profile-card mb-6">
       <div className="lead-profile-header">
@@ -71,7 +72,7 @@ export default function LeadProfileCard({ lead, initials, counselor, formatDate,
             </button>
           )}
         </div>
-        {FEATURES.AI_SCORE && typeof lead.aiScore === 'number' && lead.aiScore > 0 && (
+        {features.AI_SCORE && typeof lead.aiScore === 'number' && lead.aiScore > 0 && (
           <div className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-3">
             <AiScoreGauge score={lead.aiScore} />
           </div>

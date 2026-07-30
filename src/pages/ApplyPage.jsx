@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { config } from '../config/env';
 import ChatBot from '../components/apply/ChatBot';
-import { FEATURES } from '../constants/features';
+import { useFeatures } from '../hooks/useFeatures';
 
 const API_BASE = config.apiUrl.replace(/\/api\/?$/, '');
 
@@ -485,6 +485,7 @@ function Chevron() {
 
 /* ═══ MAIN COMPONENT ═══ */
 export default function ApplyPage() {
+  const features = useFeatures()
   const [mode, setMode] = useState('form'); // 'form' | 'chat'
   const [courses, setCourses] = useState([]);
   const [intakes, setIntakes] = useState([]);
@@ -673,7 +674,7 @@ export default function ApplyPage() {
                     </svg>
                     Fill Form
                   </button>
-                  {FEATURES.AI_CHATBOT && (
+                  {features.AI_CHATBOT && (
                     <button
                       onClick={() => setMode('chat')}
                       className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs ${
@@ -706,7 +707,7 @@ export default function ApplyPage() {
           {/* Steps */}
           {submitted ? (
             <SuccessStep isDuplicate={isDuplicate} message={submitMessage} onReset={handleReset} />
-          ) : mode === 'chat' && FEATURES.AI_CHATBOT ? (
+          ) : mode === 'chat' && features.AI_CHATBOT ? (
             <div className="mx-auto max-w-2xl" style={{ animation: 'fadeUp 0.5s ease' }}>
               <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
                 <ChatBot onLeadCreated={(data) => {

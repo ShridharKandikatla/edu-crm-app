@@ -32,7 +32,7 @@ export default defineConfig([
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' }],
       'react/jsx-uses-vars': 'error',
-      'react-refresh/only-export-components': ['warn', { allowExportNames: ['useAuth', 'useToast'] }],
+      'react-refresh/only-export-components': ['warn', { allowExportNames: ['useAuth', 'useToast', 'AuthContext'] }],
       'react-hooks/refs': 'off',
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/immutability': 'off',

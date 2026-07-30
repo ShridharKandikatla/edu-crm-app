@@ -1,8 +1,9 @@
 import { HiOutlineLockClosed } from 'react-icons/hi'
-import { FEATURES } from '../constants/features'
+import { useFeatures } from '../hooks/useFeatures'
 
 export default function FeatureGuard({ feature, children }) {
-  if (FEATURES[feature]) return children
+  const features = useFeatures()
+  if (features[feature]) return children
 
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">

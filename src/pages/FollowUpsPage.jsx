@@ -6,7 +6,7 @@ import {
   HiOutlineCalendar, HiOutlineX, HiOutlineLightningBolt
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
-import { FEATURES } from '../constants/features';
+import { useFeatures } from '../hooks/useFeatures';
 
 const typeIcons = {
   CALL: HiOutlinePhone,
@@ -18,6 +18,7 @@ const typeIcons = {
 
 export default function FollowUpsPage() {
   const { toast } = useToast();
+  const features = useFeatures()
   const [activeFilter, setActiveFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('ALL');
   
@@ -55,13 +56,13 @@ export default function FollowUpsPage() {
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchFollowUps(); }, [fetchFollowUps]);
   useEffect(() => {
-    if (!FEATURES.AI_BULK_RECOMMENDATIONS) { setLoadingRecs(false); return; }
+    if (!features.AI_BULK_RECOMMENDATIONS) { setLoadingRecs(false); return; }
     setLoadingRecs(true);
     api.ai.getRecommendations()
       .then(res => { if (res?.success) setRecs(res.data?.recommendations || []); })
       .catch(() => {})
       .finally(() => setLoadingRecs(false));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleComplete = async (e) => {
     e.preventDefault();
@@ -132,7 +133,7 @@ export default function FollowUpsPage() {
       </div>
 
       {/* AI Recommendations */}
-      {FEATURES.AI_BULK_RECOMMENDATIONS && !loadingRecs && recs.length > 0 && (
+      {features.AI_BULK_RECOMMENDATIONS && !loadingRecs && recs.length > 0 && (
           <div className="mb-6">
             <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800">
               <HiOutlineLightningBolt className="h-4 w-4 text-indigo-500" />

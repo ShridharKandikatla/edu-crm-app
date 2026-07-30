@@ -426,6 +426,20 @@ export const api = {
     },
   },
 
+  // Features endpoints
+  features: {
+    getAll: async (requestOptions = {}) => {
+      return request('/features', requestOptions);
+    },
+    update: async (key, data, requestOptions = {}) => {
+      return request(`/features/${key}`, {
+        ...requestOptions,
+        method: 'PUT',
+        body: data,
+      });
+    },
+  },
+
   // AI endpoints
   ai: {
     scoreLead: async (leadId, requestOptions = {}) => {
