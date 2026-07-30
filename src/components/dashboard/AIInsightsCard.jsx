@@ -90,7 +90,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
 
   if (loading && !insights) {
     return (
-      <ChartCard title="AI Insights" subtitle="Powered by Groq" delay="0.75s">
+      <ChartCard title="AI Insights" subtitle="Powered by Grok" delay="0.75s">
         <div className="space-y-4 mt-2">
           <SkeletonText lines={2} />
           <div className="grid grid-cols-2 gap-3">

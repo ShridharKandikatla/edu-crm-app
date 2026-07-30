@@ -136,7 +136,7 @@ export default function ChatBot({ onLeadCreated }) {
               engine === 'openai' ? 'bg-emerald-500/15 text-emerald-300' :
               'bg-white/10 text-white/40'
             }`}>
-              {engine === 'groq' && '✦ Powered by Groq'}
+              {engine === 'groq' && '✦ Powered by Grok'}
               {engine === 'openai' && '✦ Powered by GPT'}
               {engine === 'mock' && 'Demo Mode'}
             </span>
