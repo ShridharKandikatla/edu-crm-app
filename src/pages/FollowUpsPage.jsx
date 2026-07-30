@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import {
   HiOutlinePhone, HiOutlineMail, HiOutlineChatAlt2, HiOutlineChat,
@@ -18,6 +18,7 @@ const typeIcons = {
 };
 
 export default function FollowUpsPage() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const features = useFeatures()
   const [activeFilter, setActiveFilter] = useState('all');
@@ -182,9 +183,9 @@ export default function FollowUpsPage() {
             const TypeIcon = typeIcons[fu.type] || HiOutlinePhone;
 
             return (
-              <div key={fu.id} className={`followup-card ${isOverdue ? 'overdue' : isToday ? 'today' : isCompleted ? '' : 'upcoming'}`}>
+              <div key={fu.id} onClick={() => navigate(`/leads/${fu.lead?.id || fu.leadId}`)} className={`followup-card cursor-pointer ${isOverdue ? 'overdue' : isToday ? 'today' : isCompleted ? '' : 'upcoming'}`}>
                 <div className="followup-card-header">
-                    <Link to={`/leads/${fu.lead?.id || fu.leadId}`} className="followup-card-lead hover:underline">{fu.lead?.name || fu.leadName}</Link>
+                  <span className="followup-card-lead">{fu.lead?.name || fu.leadName}</span>
                   <span className="followup-card-type">
                     <TypeIcon />
                     {fu.type}
@@ -210,7 +211,8 @@ export default function FollowUpsPage() {
                         <button
                           className="btn btn-success btn-sm"
                           aria-label={`Complete follow-up for ${fu.lead?.name || fu.leadName}`}
-                          onClick={() => {
+                          onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedFUId(fu.id);
                           setShowCompleteModal(true);
                         }}
