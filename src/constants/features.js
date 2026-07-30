@@ -15,10 +15,7 @@ export async function loadFeatures() {
   try {
     const res = await api.features.getAll();
     if (res?.success && res.data) {
-      const map = {};
-      res.data.forEach(f => { map[f.key] = f.enabled; });
-      loaded = true;
-      return map;
+      return { ...res.data };
     }
   } catch {
     /* keep defaults */
