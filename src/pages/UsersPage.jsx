@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import {
   HiOutlinePlus, HiOutlinePencil, HiOutlineBan,
-  HiOutlineCheckCircle, HiOutlineX,
+  HiOutlineCheckCircle, HiOutlineX, HiOutlineEye, HiOutlineEyeOff,
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonCard } from '../components/Skeleton';
@@ -32,6 +32,7 @@ export default function UsersPage() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', role: 'COUNSELOR', monthlyTarget: 0, password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toggleTarget, setToggleTarget] = useState(null);
@@ -366,16 +367,21 @@ export default function UsersPage() {
                 {!editUser && (
                   <div className="form-group">
                     <label className="form-label">Initial Password *</label>
-                    <input
-                      type="password"
-                      className="form-input"
-                      name="password"
-                      value={form.password}
-                      onChange={handleChange}
-                      placeholder="Set initial password (min 6 characters)"
-                      minLength={6}
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        className="form-input pr-10"
+                        name="password"
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Set initial password (min 6 characters)"
+                        minLength={6}
+                        required
+                      />
+                      <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" tabIndex={-1}>
+                        {showPassword ? <HiOutlineEyeOff className="h-4 w-4" /> : <HiOutlineEye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
