@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import {
   HiOutlinePhone, HiOutlineMail, HiOutlineChatAlt2, HiOutlineChat,
@@ -183,7 +184,7 @@ export default function FollowUpsPage() {
             return (
               <div key={fu.id} className={`followup-card ${isOverdue ? 'overdue' : isToday ? 'today' : isCompleted ? '' : 'upcoming'}`}>
                 <div className="followup-card-header">
-                  <span className="followup-card-lead">{fu.lead?.name || fu.leadName}</span>
+                    <Link to={`/leads/${fu.lead?.id || fu.leadId}`} className="followup-card-lead hover:underline">{fu.lead?.name || fu.leadName}</Link>
                   <span className="followup-card-type">
                     <TypeIcon />
                     {fu.type}
