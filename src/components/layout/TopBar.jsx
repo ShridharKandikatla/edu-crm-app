@@ -15,6 +15,7 @@ import {
   HiOutlineMenu,
   HiOutlineX,
 } from 'react-icons/hi';
+import { APP_INITIAL } from '../../constants/app';
 
 export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuOpen }) {
   const { user, logout } = useAuth();
@@ -353,7 +354,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
               setShowNotifications(false);
             }}
           >
-            <div className="topbar-avatar">{user?.avatar || user?.name?.charAt(0)?.toUpperCase() || 'U'}</div>
+            <div className="topbar-avatar">{user?.avatar || user?.name?.charAt(0)?.toUpperCase() || APP_INITIAL}</div>
             <div className="topbar-user-info">
               <span className="topbar-user-name">{user?.name || 'User'}</span>
               <span className="topbar-user-role">{user?.role || 'Admin'}</span>

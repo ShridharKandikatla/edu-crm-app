@@ -1,4 +1,5 @@
 import { HiOutlineChat } from 'react-icons/hi';
+import { APP_INITIAL } from '../../constants/app';
 
 export default function CommentsTab({ comments, newComment, setNewComment, onSubmit, submitting, formatDateTime }) {
   return (
@@ -19,7 +20,7 @@ export default function CommentsTab({ comments, newComment, setNewComment, onSub
       {comments.length > 0 ? (
         <div className="flex flex-col gap-3">
           {comments.map((comment) => {
-            const authorInitials = comment.user?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+            const authorInitials = comment.user?.name.split(' ').map(n => n[0]).join('').toUpperCase() || APP_INITIAL;
             return (
               <div key={comment.id} className="card p-4 flex gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-semibold text-[0.8125rem]">

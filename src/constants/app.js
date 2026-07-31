@@ -1,3 +1,3 @@
-export const APP_NAME = 'UniCRM';
-export const APP_INITIAL = APP_NAME.charAt(0).toUpperCase();
-export const APP_UNIVERSITY_NAME = 'UniCRM University';
+export const APP_NAME = 'EduCRM';
+export const APP_INITIAL = APP_NAME.charAt(0).toUpperCase() || 'E';
+export const APP_UNIVERSITY_NAME = 'EduCRM University';
