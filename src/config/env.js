@@ -1,3 +1,5 @@
+import { APP_NAME } from '../constants/app';
+
 const requiredEnvVars = [
   'VITE_API_URL',
 ];
@@ -6,7 +8,7 @@ const missing = requiredEnvVars.filter((key) => !import.meta.env[key]);
 
 if (import.meta.env.PROD && missing.length > 0) {
   console.error(
-    `[UniCRM] Missing required environment variables: ${missing.join(', ')}. ` +
+    `[${APP_NAME}] Missing required environment variables: ${missing.join(', ')}. ` +
     'The application may not function correctly.'
   );
 }

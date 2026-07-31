@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
+import { APP_NAME } from '../constants/app';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
@@ -53,7 +54,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl font-bold text-white shadow-xl shadow-indigo-500/30">
             U
           </div>
-          <h1 className="text-2xl font-bold text-white">UniCRM</h1>
+          <h1 className="text-2xl font-bold text-white">{APP_NAME}</h1>
           <p className="mt-1 text-sm text-indigo-200/50">Education Admission Management</p>
         </div>
 
@@ -130,7 +131,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-indigo-300/30">
-          UniCRM &copy; {new Date().getFullYear()} &mdash; All rights reserved
+          {APP_NAME} &copy; {new Date().getFullYear()} &mdash; All rights reserved
         </p>
       </div>
     </div>

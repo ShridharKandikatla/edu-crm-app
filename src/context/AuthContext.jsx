@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { ROLE_PERMISSIONS } from '../constants/permissions';
 import { loadFeatures, DEFAULT_FEATURES } from '../constants/features';
+import { APP_NAME } from '../constants/app';
 
 export const AuthContext = createContext(null);
 
@@ -79,7 +80,7 @@ export function AuthProvider({ children }) {
             animation: 'spin 1s linear infinite',
             margin: '0 auto 20px'
           }}></div>
-          <p>Loading UniCRM...</p>
+          <p>Loading {APP_NAME}...</p>
           <style>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }

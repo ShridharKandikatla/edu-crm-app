@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { APP_NAME } from '../../constants/app';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
@@ -24,7 +25,7 @@ export default function MainLayout() {
   const location = useLocation();
   const prevPathnameRef = useRef(location.pathname);
 
-  const pageTitle = pageTitles[location.pathname] || 'UniCRM';
+  const pageTitle = pageTitles[location.pathname] || APP_NAME;
 
   if (prevPathnameRef.current !== location.pathname) {
     prevPathnameRef.current = location.pathname;

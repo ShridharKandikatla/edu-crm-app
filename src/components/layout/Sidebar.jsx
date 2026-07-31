@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
+import { APP_NAME, APP_INITIAL } from '../../constants/app';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import {
@@ -81,8 +82,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
-        <div className="sidebar-logo">U</div>
-        <span className="sidebar-brand">UniCRM</span>
+        <div className="sidebar-logo">{APP_INITIAL}</div>
+        <span className="sidebar-brand">{APP_NAME}</span>
         <button className="sidebar-close-mobile" onClick={onMobileClose} aria-label="Close menu">
           <HiOutlineX size={20} />
         </button>
