@@ -1,4 +1,5 @@
 import { HiOutlineX } from 'react-icons/hi';
+import { renderTemplate } from '../../utils/renderTemplate';
 
 export default function LeadModals({
   showFollowUpModal, setShowFollowUpModal,
@@ -12,6 +13,7 @@ export default function LeadModals({
   convertCourseId, setConvertCourseId, convertIntakeId, setConvertIntakeId,
   courses, intakes, handleConvertLead,
   failureReason, setFailureReason, handleFailLead,
+  templates, templateContext,
   submitting
 }) {
   return (
@@ -48,6 +50,24 @@ export default function LeadModals({
                     required
                   />
                 </div>
+                {(templates || []).filter(t => t.isActive).length > 0 && (
+                  <div className="form-group">
+                    <label className="form-label">Use Template</label>
+                    <select
+                      className="form-select"
+                      defaultValue=""
+                      onChange={(e) => {
+                        const t = (templates || []).find(x => x.id === e.target.value);
+                        if (t) setFuNotes(renderTemplate(t.body, templateContext || {}));
+                      }}
+                    >
+                      <option value="">Select a template...</option>
+                      {templates.filter(t => t.isActive).map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="form-group">
                   <label className="form-label">Notes</label>
                   <textarea

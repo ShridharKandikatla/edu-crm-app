@@ -15,6 +15,7 @@ import WhatsAppTab from '../components/leads/WhatsAppTab';
 import { useFeatures } from '../hooks/useFeatures';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
+import { APP_UNIVERSITY_NAME } from '../constants/app';
 
 const LEAD_SOURCES = [
   'WEBSITE', 'FACEBOOK', 'GOOGLE_ADS', 'INSTAGRAM', 'JUSTDIAL',
@@ -32,6 +33,7 @@ export default function LeadDetailPage() {
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState([]);
   const [intakes, setIntakes] = useState([]);
+  const [templates, setTemplates] = useState([]);
 
   const [activeTab, setActiveTab] = useState('timeline');
 
@@ -87,6 +89,13 @@ export default function LeadDetailPage() {
     }).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!features.CAMPAIGNS) return;
+    api.templates.getAll().then((res) => {
+      if (res && res.success && res.data) setTemplates(res.data.templates || []);
+    }).catch(() => {});
+  }, [features.CAMPAIGNS]);
+
   if (loading) {
     return (
       <div className="py-20 text-center text-gray-500">
@@ -109,6 +118,14 @@ export default function LeadDetailPage() {
   const leadActivities = lead.activities || [];
   const leadComments = lead.comments || [];
   const counselor = lead.counselor;
+
+  const templateContext = {
+    name: lead.name || '',
+    phone: lead.phone || '',
+    course: lead.course?.name || '',
+    intake: lead.intake?.name || '',
+    university: APP_UNIVERSITY_NAME,
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
@@ -318,7 +335,7 @@ export default function LeadDetailPage() {
           )}
 
           {activeTab === 'whatsapp' && features.WHATSAPP && (
-            <WhatsAppTab leadId={id} />
+            <WhatsAppTab leadId={id} lead={lead} />
           )}
         </div>
 
@@ -340,6 +357,7 @@ export default function LeadDetailPage() {
         convertIntakeId={convertIntakeId} setConvertIntakeId={setConvertIntakeId}
         courses={courses} intakes={intakes} handleConvertLead={handleConvertLead}
         failureReason={failureReason} setFailureReason={setFailureReason} handleFailLead={handleFailLead}
+        templates={templates} templateContext={templateContext}
         submitting={submitting}
       />
 

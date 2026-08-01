@@ -177,7 +177,8 @@ export default function MessageTemplatesPage() {
           </div>
           <div className="form-group">
             <label className="form-label">Message Body</label>
-            <textarea className="form-input" rows={4} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required placeholder="Hi {{name}}, ..." />
+            <textarea className="form-input" rows={4} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required placeholder='Hi {{name}}, welcome to {{university}}. Your {{course}} ({{intake}}) inquiry received. Reach us at {{phone}}.' />
+            <span className="text-xs text-gray-500">Available variables: {`{{name}} {{phone}} {{course}} {{intake}} {{university}}`}</span>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />

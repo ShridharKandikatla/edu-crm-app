@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../../services/api';
 import { HiOutlinePaperAirplane } from 'react-icons/hi';
 import { useToast } from '../../context/ToastContext';
+import { renderTemplate } from '../../utils/renderTemplate';
+import { APP_UNIVERSITY_NAME } from '../../constants/app';
 
-export default function WhatsAppTab({ leadId }) {
+export default function WhatsAppTab({ leadId, lead }) {
   const { toast } = useToast();
   const [messages, setMessages] = useState([]);
   const [configured, setConfigured] = useState(false);
@@ -11,6 +13,7 @@ export default function WhatsAppTab({ leadId }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [templates, setTemplates] = useState([]);
   const scrollRef = useRef(null);
 
   const fetchThread = useCallback(async () => {
@@ -32,6 +35,14 @@ export default function WhatsAppTab({ leadId }) {
   useEffect(() => { fetchThread(); }, [fetchThread]);
 
   useEffect(() => {
+    api.templates.getAll().then((res) => {
+      if (res && res.success && res.data) {
+        setTemplates((res.data.templates || []).filter((t) => t.isActive));
+      }
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
@@ -39,6 +50,10 @@ export default function WhatsAppTab({ leadId }) {
     e.preventDefault();
     const body = text.trim();
     if (!body || sending) return;
+    if (!configured) {
+      toast.error('WhatsApp integration is not configured');
+      return;
+    }
     try {
       setSending(true);
       await api.whatsapp.sendMessage(leadId, { body });
@@ -93,20 +108,53 @@ export default function WhatsAppTab({ leadId }) {
         )}
       </div>
 
-      {configured && (
-        <form onSubmit={handleSend} className="mt-4 flex items-center gap-2">
-          <input
-            className="form-input flex-1"
+      <div className="mt-4">
+        {!configured && (
+          <div className="mb-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[0.8125rem] text-amber-800">
+            WhatsApp integration is not configured.
+          </div>
+        )}
+        {templates.length > 0 && (
+          <div className="mb-2 flex items-center gap-2">
+            <label htmlFor="wa-template" className="text-sm font-semibold text-gray-700">Use template</label>
+            <select
+              id="wa-template"
+              className="form-select"
+              defaultValue=""
+              onChange={(e) => {
+                const t = templates.find((x) => x.id === e.target.value);
+                if (!t) return;
+                const vars = {
+                  name: lead?.name || '',
+                  phone: lead?.phone || '',
+                  course: lead?.course?.name || '',
+                  intake: lead?.intake?.name || '',
+                  university: APP_UNIVERSITY_NAME,
+                };
+                setText(renderTemplate(t.body, vars));
+              }}
+            >
+              <option value="">Select a template...</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        <form onSubmit={handleSend} className="flex items-end gap-2">
+          <textarea
+            className="form-input flex-1 resize-y"
+            rows={5}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type a message..."
             maxLength={4000}
           />
-          <button className="btn btn-primary" type="submit" disabled={sending || !text.trim()} aria-label="Send message">
+          <button className="btn btn-primary" type="submit" disabled={sending || !text.trim() || !configured} aria-label="Send message">
             <HiOutlinePaperAirplane /> {sending ? 'Sending...' : 'Send'}
           </button>
         </form>
-      )}
+      </div>
     </div>
   );
 }
