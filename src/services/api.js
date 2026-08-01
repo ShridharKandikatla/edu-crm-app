@@ -515,6 +515,9 @@ export const api = {
         body: data,
       });
     },
+    listTemplates: async (requestOptions = {}) => {
+      return request(`/whatsapp/templates`, requestOptions);
+    },
   },
 
   // AI endpoints

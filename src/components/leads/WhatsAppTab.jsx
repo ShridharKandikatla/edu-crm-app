@@ -114,7 +114,7 @@ export default function WhatsAppTab({ leadId, lead }) {
             WhatsApp integration is not configured.
           </div>
         )}
-        {templates.length > 0 && (
+        {configured && templates.length > 0 && (
           <div className="mb-2 flex items-center gap-2">
             <label htmlFor="wa-template" className="text-sm font-semibold text-gray-700">Use template</label>
             <select
