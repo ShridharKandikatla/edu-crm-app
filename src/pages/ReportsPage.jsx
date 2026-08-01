@@ -6,6 +6,7 @@ import {
 import { api } from '../services/api';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
+import { useFeatures } from '../hooks/useFeatures';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -23,20 +24,34 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6', '#ec4899', '#64748b'];
 
+function currentMonthRange() {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const to = now.toISOString().slice(0, 10);
+  return { from, to };
+}
+
 export default function ReportsPage() {
   const { toast } = useToast();
+  const features = useFeatures();
   const [activeTab, setActiveTab] = useState('source');
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState(currentMonthRange());
   
   const [sourceReport, setSourceReport] = useState([]);
   const [counselorReport, setCounselorReport] = useState([]);
   const [courseReport, setCourseReport] = useState([]);
   const [followUpStats, setFollowUpStats] = useState(null);
   const [followUpOutcomes, setFollowUpOutcomes] = useState([]);
+  const [funnelData, setFunnelData] = useState(null);
+  const [roiReport, setRoiReport] = useState([]);
+  const [roiTotals, setRoiTotals] = useState(null);
+  const [forecastData, setForecastData] = useState(null);
 
   const handleExport = async () => {
     try {
-      await api.reports.exportReport(activeTab);
+      const params = ['funnel', 'roi'].includes(activeTab) ? dateRange : {};
+      await api.reports.exportReport(activeTab, params);
       toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} report downloaded!`);
     } catch (error) {
       toast.error(error.message || 'Failed to export report');
@@ -45,8 +60,11 @@ export default function ReportsPage() {
 
   const fetchedTabs = useRef(new Set());
 
+  const isDateTab = ['funnel', 'roi', 'forecast'].includes(activeTab);
+  const cacheKey = isDateTab ? `${activeTab}|${dateRange.from}|${dateRange.to}` : activeTab;
+
   const loadReportData = useCallback(async () => {
-    if (fetchedTabs.current.has(activeTab)) {
+    if (fetchedTabs.current.has(cacheKey)) {
       setLoading(false);
       return;
     }
@@ -76,12 +94,24 @@ export default function ReportsPage() {
           })).filter(c => c.value > 0);
           setFollowUpOutcomes(counts);
         }
+      } else if (activeTab === 'funnel') {
+        const res = await api.reports.getFunnelReport(dateRange);
+        if (res.success) setFunnelData(res.data);
+      } else if (activeTab === 'roi') {
+        const res = await api.reports.getRoiReport(dateRange);
+        if (res.success) {
+          setRoiReport(res.data.report || []);
+          setRoiTotals(res.data.totals || null);
+        }
+      } else if (activeTab === 'forecast') {
+        const res = await api.reports.getForecastReport(dateRange);
+        if (res.success) setForecastData(res.data);
       }
-      fetchedTabs.current.add(activeTab);
+      fetchedTabs.current.add(cacheKey);
     } catch { /* silent */ } finally {
       setLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, cacheKey, dateRange]);
 
   useEffect(() => { loadReportData(); }, [loadReportData]);
 
@@ -103,7 +133,28 @@ export default function ReportsPage() {
         <button className={`tab ${activeTab === 'counselor' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'counselor'} onClick={() => setActiveTab('counselor')}>Counselor Performance</button>
         <button className={`tab ${activeTab === 'course' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'course'} onClick={() => setActiveTab('course')}>Course Performance</button>
         <button className={`tab ${activeTab === 'followup' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'followup'} onClick={() => setActiveTab('followup')}>Follow-up Compliance</button>
+        {features.ADVANCED_REPORTS && (
+          <>
+            <button className={`tab ${activeTab === 'funnel' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'funnel'} onClick={() => setActiveTab('funnel')}>Funnel</button>
+            <button className={`tab ${activeTab === 'roi' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'roi'} onClick={() => setActiveTab('roi')}>ROI</button>
+            <button className={`tab ${activeTab === 'forecast' ? 'active' : ''}`} role="tab" aria-selected={activeTab === 'forecast'} onClick={() => setActiveTab('forecast')}>Forecast</button>
+          </>
+        )}
       </div>
+
+      {isDateTab && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
+          <span className="text-sm font-semibold text-gray-700">Date Range</span>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            From
+            <input type="date" className="form-input w-auto" value={dateRange.from} onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })} />
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            To
+            <input type="date" className="form-input w-auto" value={dateRange.to} onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })} />
+          </label>
+        </div>
+      )}
 
       {loading ? (
         <div className="py-20 text-center text-gray-500" role="status">
@@ -373,6 +424,160 @@ export default function ReportsPage() {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+          {/* Funnel */}
+          {activeTab === 'funnel' && (
+            <div className="animate-fade-in">
+              <div className="kpi-grid mb-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="kpi-card primary"><div className="kpi-value">{funnelData?.total || 0}</div><div className="kpi-label">Total Leads</div></div>
+                <div className="kpi-card success"><div className="kpi-value">{funnelData?.converted || 0}</div><div className="kpi-label">Converted</div></div>
+                <div className="kpi-card info"><div className="kpi-value">{funnelData?.avgDaysToConvert || 0}d</div><div className="kpi-label">Avg Days to Convert</div></div>
+                <div className="kpi-card"><div className="kpi-value">₹{(funnelData?.pipelineRevenue || 0).toLocaleString()}</div><div className="kpi-label">Pipeline Revenue</div></div>
+              </div>
+
+              <div className="chart-card">
+                <div className="chart-card-header">
+                  <div>
+                    <div className="chart-card-title">Stage Funnel</div>
+                    <div className="chart-card-subtitle">Cumulative leads by lifecycle stage in selected range</div>
+                  </div>
+                </div>
+                {(funnelData?.funnel || []).length === 0 ? (
+                  <div className="flex h-[350px] items-center justify-center text-gray-500">No funnel data for selected range</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={funnelData.funnel} layout="vertical" margin={{ left: 20, right: 30 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                      <XAxis type="number" tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="stage" width={130} tick={{ fontSize: 12, fill: '#6b7280' }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="count" name="Leads" fill="#6366f1" radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ROI */}
+          {activeTab === 'roi' && (
+            <div className="animate-fade-in">
+              <div className="kpi-grid mb-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="kpi-card primary"><div className="kpi-value">₹{(roiTotals?.spend || 0).toLocaleString()}</div><div className="kpi-label">Total Spend</div></div>
+                <div className="kpi-card info"><div className="kpi-value">₹{(roiTotals?.revenue || 0).toLocaleString()}</div><div className="kpi-label">Attributed Revenue</div></div>
+                <div className="kpi-card success"><div className="kpi-value">{(roiTotals?.roas || 0).toFixed(2)}x</div><div className="kpi-label">ROAS</div></div>
+                <div className="kpi-card"><div className="kpi-value">₹{(roiTotals?.cpl || 0).toLocaleString()}</div><div className="kpi-label">Cost per Lead</div></div>
+              </div>
+
+              <div className="data-table-wrapper overflow-x-auto">
+                <div className="data-table-header">
+                  <div className="data-table-title">Channel-wise ROI</div>
+                </div>
+                {roiReport.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">No campaign or source data in selected range</div>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Channel</th>
+                        <th>Leads</th>
+                        <th>Admissions</th>
+                        <th>Spend</th>
+                        <th>Revenue</th>
+                        <th>ROAS</th>
+                        <th>CPL</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roiReport.map(r => (
+                        <tr key={r.source}>
+                          <td className="font-semibold">{r.source}</td>
+                          <td>{r.leads}</td>
+                          <td>{r.admissions}</td>
+                          <td>₹{r.spend.toLocaleString()}</td>
+                          <td>₹{r.revenue.toLocaleString()}</td>
+                          <td>
+                            <span className={`font-bold ${r.roas >= 1 ? 'text-emerald-600' : 'text-red-600'}`}>{r.roas.toFixed(2)}x</span>
+                          </td>
+                          <td>₹{r.cpl.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Forecast */}
+          {activeTab === 'forecast' && (
+            <div className="animate-fade-in">
+              {(() => {
+                const intakes = forecastData?.intakes || [];
+                const totalLeads = intakes.reduce((s, i) => s + i.total, 0);
+                const predicted = intakes.reduce((s, i) => s + i.projected, 0);
+                const projectedRevenue = intakes.reduce((s, i) => s + i.openPipelineRevenue, 0);
+                const sourceForecast = forecastData?.sourceForecast || [];
+                return (
+                  <>
+                    <div className="kpi-grid mb-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="kpi-card primary"><div className="kpi-value">{totalLeads}</div><div className="kpi-label">Total Leads</div></div>
+                      <div className="kpi-card success"><div className="kpi-value">{predicted}</div><div className="kpi-label">Predicted Admissions</div></div>
+                      <div className="kpi-card info"><div className="kpi-value">{forecastData?.globalConversionRate || 0}%</div><div className="kpi-label">Global Conversion Rate</div></div>
+                      <div className="kpi-card"><div className="kpi-value">₹{projectedRevenue.toLocaleString()}</div><div className="kpi-label">Open Pipeline Revenue</div></div>
+                    </div>
+
+                    <div className="chart-grid">
+                      <div className="chart-card">
+                        <div className="chart-card-header">
+                          <div>
+                            <div className="chart-card-title">Forecast by Intake</div>
+                          </div>
+                        </div>
+                        {intakes.length === 0 ? (
+                          <div className="flex h-[280px] items-center justify-center text-gray-500">No forecast data available</div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height={280}>
+                            <BarChart data={intakes}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Legend wrapperStyle={{ fontSize: '12px' }} />
+                              <Bar dataKey="total" name="Current Leads" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                              <Bar dataKey="projected" name="Predicted Admissions" fill="#10b981" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
+
+                      <div className="chart-card">
+                        <div className="chart-card-header">
+                          <div>
+                            <div className="chart-card-title">Source-level Projection</div>
+                          </div>
+                        </div>
+                        {sourceForecast.length === 0 ? (
+                          <div className="flex h-[280px] items-center justify-center text-gray-500">No source projection available</div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height={280}>
+                            <BarChart data={sourceForecast}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                              <XAxis dataKey="source" tick={{ fontSize: 11, fill: '#6b7280' }} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Legend wrapperStyle={{ fontSize: '12px' }} />
+                              <Bar dataKey="open" name="Open Leads" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                              <Bar dataKey="projected" name="Projected Admissions" fill="#10b981" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
         </>

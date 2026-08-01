@@ -291,9 +291,18 @@ export const api = {
     getCourseReport: async (requestOptions = {}) => {
       return request('/reports/course', requestOptions);
     },
-    exportReport: async (tab, requestOptions = {}) => {
+    getFunnelReport: async (params = {}, requestOptions = {}) => {
+      return request(`/reports/funnel${buildQueryString(params)}`, requestOptions);
+    },
+    getRoiReport: async (params = {}, requestOptions = {}) => {
+      return request(`/reports/roi${buildQueryString(params)}`, requestOptions);
+    },
+    getForecastReport: async (params = {}, requestOptions = {}) => {
+      return request(`/reports/forecast${buildQueryString(params)}`, requestOptions);
+    },
+    exportReport: async (tab, params = {}, requestOptions = {}) => {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE_URL}/reports/export?tab=${tab}`, {
+      const res = await fetch(`${API_BASE_URL}/reports/export?tab=${tab}${buildQueryString(params)}`, {
         headers: { Authorization: `Bearer ${token}` },
         ...requestOptions,
       });
@@ -435,6 +444,74 @@ export const api = {
       return request(`/features/${key}`, {
         ...requestOptions,
         method: 'PUT',
+        body: data,
+      });
+    },
+  },
+
+  // Message templates endpoints
+  templates: {
+    getAll: async (requestOptions = {}) => {
+      return request('/templates', requestOptions);
+    },
+    create: async (data, requestOptions = {}) => {
+      return request('/templates', {
+        ...requestOptions,
+        method: 'POST',
+        body: data,
+      });
+    },
+    update: async (id, data, requestOptions = {}) => {
+      return request(`/templates/${id}`, {
+        ...requestOptions,
+        method: 'PUT',
+        body: data,
+      });
+    },
+    remove: async (id, requestOptions = {}) => {
+      return request(`/templates/${id}`, {
+        ...requestOptions,
+        method: 'DELETE',
+      });
+    },
+  },
+
+  // Marketing campaigns endpoints
+  campaigns: {
+    getAll: async (requestOptions = {}) => {
+      return request('/campaigns', requestOptions);
+    },
+    create: async (data, requestOptions = {}) => {
+      return request('/campaigns', {
+        ...requestOptions,
+        method: 'POST',
+        body: data,
+      });
+    },
+    update: async (id, data, requestOptions = {}) => {
+      return request(`/campaigns/${id}`, {
+        ...requestOptions,
+        method: 'PUT',
+        body: data,
+      });
+    },
+    remove: async (id, requestOptions = {}) => {
+      return request(`/campaigns/${id}`, {
+        ...requestOptions,
+        method: 'DELETE',
+      });
+    },
+  },
+
+  // WhatsApp endpoints
+  whatsapp: {
+    getThread: async (leadId, requestOptions = {}) => {
+      return request(`/leads/${leadId}/whatsapp`, requestOptions);
+    },
+    sendMessage: async (leadId, data, requestOptions = {}) => {
+      return request(`/leads/${leadId}/whatsapp`, {
+        ...requestOptions,
+        method: 'POST',
         body: data,
       });
     },

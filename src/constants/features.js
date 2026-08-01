@@ -6,6 +6,9 @@ export const DEFAULT_FEATURES = {
   AI_SCORE: false,
   AI_CHATBOT: false,
   AI_BULK_RECOMMENDATIONS: false,
+  WHATSAPP: false,
+  CAMPAIGNS: false,
+  ADVANCED_REPORTS: false,
 };
 
 let loaded = false;

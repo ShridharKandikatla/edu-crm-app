@@ -17,6 +17,8 @@ const ReEngagementPage = lazy(() => import(/* webpackChunkName: "re-engagement" 
 const CoursesPage = lazy(() => import(/* webpackChunkName: "courses" */ './pages/CoursesPage'));
 const IntakesPage = lazy(() => import(/* webpackChunkName: "intakes" */ './pages/IntakesPage'));
 const UsersPage = lazy(() => import(/* webpackChunkName: "users" */ './pages/UsersPage'));
+const MessageTemplatesPage = lazy(() => import(/* webpackChunkName: "templates" */ './pages/MessageTemplatesPage'));
+const CampaignsPage = lazy(() => import(/* webpackChunkName: "campaigns" */ './pages/CampaignsPage'));
 const ReportsPage = lazy(() => import(/* webpackChunkName: "reports" */ './pages/ReportsPage'));
 const SettingsPage = lazy(() => import(/* webpackChunkName: "settings" */ './pages/SettingsPage'));
 const ApplyPage = lazy(() => import(/* webpackChunkName: "apply" */ './pages/ApplyPage'));
@@ -105,6 +107,8 @@ function AppRoutes() {
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/intakes" element={<IntakesPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/templates" element={<MessageTemplatesPage />} />
+          <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

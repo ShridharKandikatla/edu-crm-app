@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
 import { APP_NAME, APP_INITIAL } from '../../constants/app';
 import { useAuth } from '../../context/AuthContext';
+import { useFeatures } from '../../hooks/useFeatures';
 import { api } from '../../services/api';
 import {
   HiOutlineHome,
@@ -18,6 +19,8 @@ import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
   HiOutlineX,
+  HiOutlineChatAlt2,
+  HiOutlineSpeakerphone,
 } from 'react-icons/hi';
 
 const menuSections = [
@@ -43,6 +46,8 @@ const menuSections = [
       { path: '/courses', icon: HiOutlineAcademicCap, label: 'Courses', permission: null },
       { path: '/intakes', icon: HiOutlineCalendar, label: 'Intakes', permission: null },
       { path: '/users', icon: HiOutlineUserGroup, label: 'Users', permission: 'manage_users' },
+      { path: '/templates', icon: HiOutlineChatAlt2, label: 'Message Templates', permission: null, feature: 'CAMPAIGNS' },
+      { path: '/campaigns', icon: HiOutlineSpeakerphone, label: 'Campaigns', permission: null, feature: 'CAMPAIGNS' },
     ],
   },
   {
@@ -56,6 +61,7 @@ const menuSections = [
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
   const { hasPermission } = useAuth();
+  const features = useFeatures();
   const [pendingFollowUps, setPendingFollowUps] = useState(0);
 
   const fetchStats = useCallback(async () => {
@@ -92,7 +98,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
       <nav className="sidebar-nav" role="navigation" aria-label="Main navigation">
         {menuSections.map((section) => {
           const visibleItems = section.items.filter(
-            (item) => !item.permission || hasPermission(item.permission)
+            (item) => (!item.permission || hasPermission(item.permission)) && (!item.feature || features[item.feature])
           );
           if (visibleItems.length === 0) return null;
 

@@ -11,13 +11,14 @@ import CommentsTab from '../components/leads/CommentsTab';
 import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
 import LeadModals from '../components/leads/LeadModals';
 import AIRecommendation from '../components/leads/AIRecommendation';
+import WhatsAppTab from '../components/leads/WhatsAppTab';
 import { useFeatures } from '../hooks/useFeatures';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
 
 const LEAD_SOURCES = [
   'WEBSITE', 'FACEBOOK', 'GOOGLE_ADS', 'INSTAGRAM', 'JUSTDIAL',
-  'WALK_IN', 'REFERRAL', 'PHONE_INQUIRY', 'EMAIL_INQUIRY', 'EVENT', 'OTHER'
+  'WALK_IN', 'REFERRAL', 'PHONE_INQUIRY', 'EMAIL_INQUIRY', 'EVENT', 'WHATSAPP', 'CAMPAIGN', 'OTHER'
 ];
 
 export default function LeadDetailPage() {
@@ -297,6 +298,11 @@ export default function LeadDetailPage() {
             <button className={`tab ${activeTab === 'comments' ? 'active' : ''}`} onClick={() => setActiveTab('comments')}>
               Comments ({leadComments.length})
             </button>
+            {features.WHATSAPP && (
+              <button className={`tab ${activeTab === 'whatsapp' ? 'active' : ''}`} onClick={() => setActiveTab('whatsapp')}>
+                WhatsApp
+              </button>
+            )}
           </div>
 
           {activeTab === 'timeline' && (
@@ -309,6 +315,10 @@ export default function LeadDetailPage() {
 
           {activeTab === 'comments' && (
             <CommentsTab comments={leadComments} newComment={newComment} setNewComment={setNewComment} onSubmit={handleAddComment} submitting={submitting} formatDateTime={formatDateTime} />
+          )}
+
+          {activeTab === 'whatsapp' && features.WHATSAPP && (
+            <WhatsAppTab leadId={id} />
           )}
         </div>
 
