@@ -19,6 +19,7 @@ const IntakesPage = lazy(() => import(/* webpackChunkName: "intakes" */ './pages
 const UsersPage = lazy(() => import(/* webpackChunkName: "users" */ './pages/UsersPage'));
 const MessageTemplatesPage = lazy(() => import(/* webpackChunkName: "templates" */ './pages/MessageTemplatesPage'));
 const CampaignsPage = lazy(() => import(/* webpackChunkName: "campaigns" */ './pages/CampaignsPage'));
+const ApplicationsPage = lazy(() => import(/* webpackChunkName: "applications" */ './pages/ApplicationsPage'));
 const ReportsPage = lazy(() => import(/* webpackChunkName: "reports" */ './pages/ReportsPage'));
 const SettingsPage = lazy(() => import(/* webpackChunkName: "settings" */ './pages/SettingsPage'));
 const ApplyPage = lazy(() => import(/* webpackChunkName: "apply" */ './pages/ApplyPage'));
@@ -109,6 +110,7 @@ function AppRoutes() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/templates" element={<MessageTemplatesPage />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route path="/applications" element={<ApplicationsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

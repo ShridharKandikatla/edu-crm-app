@@ -21,6 +21,7 @@ import {
   HiOutlineX,
   HiOutlineChatAlt2,
   HiOutlineSpeakerphone,
+  HiOutlineDocumentText,
 } from 'react-icons/hi';
 
 const menuSections = [
@@ -45,6 +46,7 @@ const menuSections = [
     items: [
       { path: '/courses', icon: HiOutlineAcademicCap, label: 'Courses', permission: null },
       { path: '/intakes', icon: HiOutlineCalendar, label: 'Intakes', permission: null },
+      { path: '/applications', icon: HiOutlineDocumentText, label: 'Applications', permission: null },
       { path: '/users', icon: HiOutlineUserGroup, label: 'Users', permission: 'manage_users' },
       { path: '/templates', icon: HiOutlineChatAlt2, label: 'Message Templates', permission: null, feature: 'CAMPAIGNS' },
       { path: '/campaigns', icon: HiOutlineSpeakerphone, label: 'Campaigns', permission: null, feature: 'CAMPAIGNS' },

@@ -17,6 +17,7 @@ const pageTitles = {
   '/reports': 'Reports & Analytics',
   '/import': 'Bulk Import',
   '/settings': 'Settings',
+  '/applications': 'Applications & Fee Tracking',
 };
 
 export default function MainLayout() {

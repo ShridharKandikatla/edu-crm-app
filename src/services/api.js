@@ -34,6 +34,48 @@ export class NetworkError extends Error {
   }
 }
 
+async function uploadFile(endpoint, file, extraFields = {}, requestOptions = {}) {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  formData.append('file', file);
+  Object.entries(extraFields).forEach(([key, val]) => {
+    if (val !== undefined && val !== null && val !== '') formData.append(key, val);
+  });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...requestOptions,
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...requestOptions.headers,
+      },
+      body: formData,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  let data = null;
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = { message: await response.text() };
+  }
+
+  if (!response.ok) {
+    throw new ApiError(data.message || `Upload failed (${response.status})`, response.status, data);
+  }
+
+  return data;
+}
+
 async function request(endpoint, options = {}, retryCount = 0) {
   const token = localStorage.getItem('token');
 
@@ -517,6 +559,54 @@ export const api = {
     },
     listTemplates: async (requestOptions = {}) => {
       return request(`/whatsapp/templates`, requestOptions);
+    },
+  },
+
+  // Applications & fee tracking endpoints
+  applications: {
+    getAll: async (params = {}, requestOptions = {}) => {
+      return request(`/applications${buildQueryString(params)}`, requestOptions);
+    },
+    getById: async (id, requestOptions = {}) => {
+      return request(`/applications/${id}`, requestOptions);
+    },
+    getByLead: async (leadId, requestOptions = {}) => {
+      return request(`/applications/lead/${leadId}`, requestOptions);
+    },
+    create: async (data, requestOptions = {}) => {
+      return request('/applications', { ...requestOptions, method: 'POST', body: data });
+    },
+    update: async (id, data, requestOptions = {}) => {
+      return request(`/applications/${id}`, { ...requestOptions, method: 'PUT', body: data });
+    },
+    remove: async (id, requestOptions = {}) => {
+      return request(`/applications/${id}`, { ...requestOptions, method: 'DELETE' });
+    },
+    uploadDocument: async (id, file, fields = {}, requestOptions = {}) => {
+      return uploadFile(`/applications/${id}/documents`, file, fields, requestOptions);
+    },
+    deleteDocument: async (id, docId, requestOptions = {}) => {
+      return request(`/applications/${id}/documents/${docId}`, { ...requestOptions, method: 'DELETE' });
+    },
+    addPayment: async (id, data, requestOptions = {}) => {
+      return request(`/applications/${id}/payments`, { ...requestOptions, method: 'POST', body: data });
+    },
+    deletePayment: async (id, paymentId, requestOptions = {}) => {
+      return request(`/applications/${id}/payments/${paymentId}`, { ...requestOptions, method: 'DELETE' });
+    },
+  },
+
+  // Student self-service portal endpoints (public)
+  portal: {
+    track: async (applicationNumber, phone, requestOptions = {}) => {
+      const query = new URLSearchParams({ applicationNumber, phone });
+      return request(`/public/applications/track?${query.toString()}`, requestOptions);
+    },
+    submit: async (data, requestOptions = {}) => {
+      return request('/public/applications', { ...requestOptions, method: 'POST', body: data });
+    },
+    uploadDocument: async (applicationNumber, phone, file, type = 'OTHER', requestOptions = {}) => {
+      return uploadFile('/public/applications/upload', file, { applicationNumber, phone, type }, requestOptions);
     },
   },
 

@@ -12,6 +12,7 @@ import QuickActionsSidebar from '../components/leads/QuickActionsSidebar';
 import LeadModals from '../components/leads/LeadModals';
 import AIRecommendation from '../components/leads/AIRecommendation';
 import WhatsAppTab from '../components/leads/WhatsAppTab';
+import ApplicationDetail from '../components/applications/ApplicationDetail';
 import { useFeatures } from '../hooks/useFeatures';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
@@ -64,6 +65,9 @@ export default function LeadDetailPage() {
   const [editSource, setEditSource] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
+  const [application, setApplication] = useState(null);
+  const [applicationLoading, setApplicationLoading] = useState(false);
+
   const fetchLeadDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -81,6 +85,42 @@ export default function LeadDetailPage() {
   }, [id]);
 
   useEffect(() => { fetchLeadDetails(); }, [fetchLeadDetails]);
+
+  const fetchApplication = useCallback(async () => {
+    try {
+      setApplicationLoading(true);
+      const res = await api.applications.getByLead(id);
+      if (res && res.success) setApplication(res.data.application || null);
+    } catch {
+      setApplication(null);
+    } finally {
+      setApplicationLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchApplication();
+  }, [fetchApplication]);
+
+  const createApplicationForLead = async () => {
+    try {
+      setSubmitting(true);
+      const res = await api.applications.create({
+        leadId: id,
+        courseId: lead?.courseId || undefined,
+        intakeId: lead?.intakeId || undefined,
+        status: 'INQUIRY',
+      });
+      if (res?.success) {
+        setApplication(res.data.application);
+        toast.success(`Application ${res.data.application.applicationNumber} created`);
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to create application');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     Promise.all([api.courses.getAll(), api.courses.getIntakes()]).then(([courseRes, intakeRes]) => {
@@ -320,6 +360,9 @@ export default function LeadDetailPage() {
                 WhatsApp
               </button>
             )}
+            <button className={`tab ${activeTab === 'application' ? 'active' : ''}`} onClick={() => setActiveTab('application')}>
+              Application
+            </button>
           </div>
 
           {activeTab === 'timeline' && (
@@ -336,6 +379,23 @@ export default function LeadDetailPage() {
 
           {activeTab === 'whatsapp' && features.WHATSAPP && (
             <WhatsAppTab leadId={id} lead={lead} />
+          )}
+
+          {activeTab === 'application' && (
+            applicationLoading ? (
+              <div className="py-10 text-center text-gray-500"><p>Loading application...</p></div>
+            ) : application ? (
+              <ApplicationDetail application={application} courses={courses} intakes={intakes} onRefresh={setApplication} />
+            ) : (
+              <div className="empty-state">
+                <div className="empty-state-icon">📄</div>
+                <div className="empty-state-title">No application yet</div>
+                <p className="empty-state-text">Create an application to track documents, status and fee payments.</p>
+                <button className="btn btn-primary" onClick={createApplicationForLead} disabled={submitting}>
+                  {submitting ? 'Creating...' : 'Create Application'}
+                </button>
+              </div>
+            )
           )}
         </div>
 

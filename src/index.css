@@ -948,6 +948,14 @@ table {
 .badge-failed { background: var(--danger-50); color: var(--danger-600); }
 .badge-re-engaged { background: #fefce8; color: #ca8a04; }
 
+.badge-app-inquiry { background: #eef2ff; color: #4f46e5; }
+.badge-app-applied { background: #eff6ff; color: #2563eb; }
+.badge-app-offered { background: #fefce8; color: #ca8a04; }
+.badge-app-enrolled { background: #f0fdf4; color: #16a34a; }
+.badge-fee-pending { background: #f3f4f6; color: #6b7280; }
+.badge-fee-partial { background: #fefce8; color: #ca8a04; }
+.badge-fee-paid { background: #f0fdf4; color: #16a34a; }
+
 .score-badge {
   display: inline-flex;
   align-items: center;

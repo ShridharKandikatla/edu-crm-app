@@ -1,9 +1,11 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { HiOutlineX } from 'react-icons/hi';
 
-export default function Modal({ open, onClose, title, children, footer, danger = false }) {
+export default function Modal({ open, onClose, title, children, footer, danger = false, size = 'md' }) {
   const modalRef = useRef(null);
   const previousFocusRef = useRef(null);
+
+  const maxWidth = size === 'lg' ? '900px' : size === 'sm' ? '400px' : '500px';
 
   useEffect(() => {
     if (open) {
@@ -61,12 +63,13 @@ export default function Modal({ open, onClose, title, children, footer, danger =
     >
       <div
         ref={modalRef}
-        className="modal bg-white p-5 sm:p-6 rounded-2xl w-[95%] sm:w-[90%] max-w-[500px] shadow-xl max-h-[85vh] overflow-y-auto"
+        className={`modal bg-white p-5 sm:p-6 rounded-2xl w-[95%] sm:w-[90%] shadow-xl max-h-[85vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         tabIndex="-1"
+        style={{ maxWidth }}
       >
         <div className="flex justify-between mb-4">
           <h3 id="modal-title" className={`text-xl font-bold ${danger ? 'text-red-600' : 'text-slate-900'}`}>

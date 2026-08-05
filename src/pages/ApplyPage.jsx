@@ -3,6 +3,7 @@ import { config } from '../config/env';
 import { APP_NAME, APP_INITIAL, APP_UNIVERSITY_NAME } from '../constants/app';
 import ChatBot from '../components/apply/ChatBot';
 import { useFeatures } from '../hooks/useFeatures';
+import { api } from '../services/api';
 
 const API_BASE = config.apiUrl.replace(/\/api\/?$/, '');
 
@@ -70,6 +71,8 @@ const formatFee = (n) => {
   if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
   return String(n);
 };
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE_MB = 10;
 
 /* ─── Step indicator ─── */
 function StepBar({ step, onStepClick }) {
@@ -386,7 +389,7 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
 }
 
 /* ─── Success Step ─── */
-function SuccessStep({ isDuplicate, message, onReset }) {
+function SuccessStep({ isDuplicate, message, application, onTrack, onReset }) {
   return (
     <div className="mx-auto max-w-lg text-center" style={{ animation: 'scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1)' }}>
       <div className="rounded-3xl border border-white/[0.08] bg-white/[0.04] p-10 backdrop-blur-xl">
@@ -405,7 +408,15 @@ function SuccessStep({ isDuplicate, message, onReset }) {
         <h2 className="mb-3 text-3xl font-extrabold text-white">
           {isDuplicate ? 'Welcome Back!' : "You're All Set!"}
         </h2>
-        <p className="mb-8 text-sm leading-relaxed text-white/40">{message}</p>
+        <p className="mb-6 text-sm leading-relaxed text-white/40">{message}</p>
+
+        {application?.applicationNumber && (
+          <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-indigo-500/10 px-6 py-4" style={{ animation: 'fadeUp 0.4s ease 0.2s both' }}>
+            <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-indigo-300/70">Your Application Number</div>
+            <div className="mt-1 text-xl font-extrabold tracking-wide text-white select-all">{application.applicationNumber}</div>
+            <div className="mt-0.5 text-[0.7rem] text-white/30">Keep this safe — you'll need it to track your application</div>
+          </div>
+        )}
 
         {/* Next steps */}
         <div className="mb-8 grid grid-cols-2 gap-3 text-left">
@@ -430,6 +441,13 @@ function SuccessStep({ isDuplicate, message, onReset }) {
         </div>
 
         <button
+          onClick={onTrack}
+          className="mb-3 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30"
+        >
+          Track My Application
+        </button>
+
+        <button
           onClick={onReset}
           className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] py-3.5 text-sm font-semibold text-white transition-all hover:bg-white/[0.1]"
         >
@@ -448,6 +466,7 @@ const ICONS = {
   globe: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>,
   info: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
   calendar: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+  doc: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
 };
 
 function Field({ label, required, optional, error, icon, children }) {
@@ -484,10 +503,406 @@ function Chevron() {
   );
 }
 
+/* ═══ Track portal (self-service) ═══ */
+const STATUS_STEPS = [
+  { key: 'INQUIRY', label: 'Inquiry', color: '#818cf8' },
+  { key: 'APPLIED', label: 'Applied', color: '#38bdf8' },
+  { key: 'OFFERED', label: 'Offered', color: '#fbbf24' },
+  { key: 'ENROLLED', label: 'Enrolled', color: '#34d399' },
+];
+const DOC_TYPE_LABELS = {
+  PHOTO_ID: 'Photo ID',
+  MARKSHEET_10: 'Marksheet (10th)',
+  MARKSHEET_12: 'Marksheet (12th)',
+  DEGREE_CERTIFICATE: 'Degree Certificate',
+  TRANSFER_CERTIFICATE: 'Transfer Certificate',
+  ID_PROOF: 'ID Proof',
+  RESUME: 'Resume',
+  OTHER: 'Other',
+};
+const FEE_STATUS_LABELS = { PENDING: 'Pending', PARTIAL: 'Partially Paid', PAID: 'Paid' };
+const FEE_STATUS_COLORS = { PENDING: '#f87171', PARTIAL: '#fbbf24', PAID: '#34d399' };
+const formatDateTime = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '—' : d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+};
+const formatSize = (bytes) => {
+  if (!bytes && bytes !== 0) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+function TrackPortal({ initialNumber, onNewApplication }) {
+  const [appNumber, setAppNumber] = useState(initialNumber || '');
+  const [phone, setPhone] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [docType, setDocType] = useState('OTHER');
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState(null);
+  const fileRef = useRef(null);
+  const trackInput = 'w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[0.9375rem] text-white outline-none transition-all duration-200 placeholder:text-white/20 border-white/[0.08] hover:border-white/[0.15] focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20';
+
+  const track = async (e) => {
+    e.preventDefault();
+    if (!appNumber.trim()) { setError('Please enter your application number.'); return; }
+    if (phone.length < 10) { setError('Please enter the 10-digit phone number you used when applying.'); return; }
+    setError('');
+    setResult(null);
+    setLoading(true);
+    try {
+      const data = await api.portal.track(appNumber.trim().toUpperCase(), phone);
+      setResult(data?.data?.application || null);
+    } catch (err) {
+      setError(err.message || 'Could not find your application. Please check the number and phone.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uploadDoc = async (e) => {
+    e.preventDefault();
+    if (!result) return;
+    if (!file) { setUploadMsg({ ok: false, text: 'Please choose a file to upload.' }); return; }
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadMsg({ ok: false, text: `File too large. Maximum allowed size is ${MAX_FILE_SIZE_MB}MB.` });
+      setFile(null);
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
+    setUploadMsg(null);
+    setUploading(true);
+    try {
+      await api.portal.uploadDocument(result.applicationNumber, phone, file, docType);
+      setUploadMsg({ ok: true, text: 'Document uploaded successfully.' });
+      setFile(null);
+      if (fileRef.current) fileRef.current.value = '';
+      const fresh = await api.portal.track(result.applicationNumber, phone);
+      setResult(fresh?.data?.application || result);
+    } catch (err) {
+      setUploadMsg({ ok: false, text: err.message || 'Upload failed. Please try again.' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const statusIndex = STATUS_STEPS.findIndex((s) => s.key === result?.status);
+
+  return (
+    <div className="mx-auto max-w-2xl" style={{ animation: 'fadeUp 0.5s ease' }}>
+      {!result ? (
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-extrabold text-white">Track Your Application</h3>
+            <p className="mt-1 text-sm text-white/40">Enter the application number you received and the phone number you applied with.</p>
+          </div>
+          <form onSubmit={track} className="space-y-4">
+            <Field label="Application Number" required icon="doc">
+              <input
+                className={trackInput}
+                value={appNumber}
+                onChange={(e) => setAppNumber(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20))}
+                placeholder="e.g. APP-2026-000123"
+                autoComplete="off"
+              />
+            </Field>
+            <Field label="Phone Number" required icon="phone">
+              <input
+                className={trackInput}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="10-digit mobile number"
+                inputMode="numeric"
+              />
+            </Field>
+            {error && (
+              <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+                <svg className="mt-0.5 h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                {error}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  Track Application
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-xs text-white/20">
+            Don't have an application yet?{' '}
+            <button onClick={onNewApplication} className="underline transition-colors hover:text-indigo-400">
+              Apply now
+            </button>
+          </p>
+        </div>
+      ) : (
+        <TrackResult
+          application={result}
+          statusIndex={statusIndex}
+          fileRef={fileRef}
+          docType={docType}
+          setDocType={setDocType}
+          setFile={setFile}
+          uploading={uploading}
+          uploadMsg={uploadMsg}
+          uploadDoc={uploadDoc}
+          onReset={() => { setResult(null); setUploadMsg(null); setFile(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function TrackResult({ application, statusIndex, fileRef, docType, setDocType, setFile, uploading, uploadMsg, uploadDoc, onReset }) {
+  const feePct = application.feeTotal > 0 ? Math.min(100, Math.round((application.feePaid / application.feeTotal) * 100)) : 0;
+  const feeColor = FEE_STATUS_COLORS[application.feeStatus] || '#818cf8';
+
+  return (
+    <div className="space-y-5">
+      {/* Header card */}
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm sm:p-7" style={{ animation: 'fadeUp 0.4s ease' }}>
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/30">Application</div>
+            <div className="mt-0.5 text-xl font-extrabold tracking-wide text-white select-all">{application.applicationNumber}</div>
+            <div className="mt-0.5 text-xs text-white/40">
+              {application.lead?.name ? `${application.lead.name} · ` : ''}
+              {application.course?.name ? `Applied for ${application.course.name}` : 'Course not selected yet'}
+            </div>
+          </div>
+          <button onClick={onReset} className="flex items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/60 transition-all hover:bg-white/[0.1] hover:text-white">
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" /></svg>
+            Track Another
+          </button>
+        </div>
+
+        {/* Status pipeline */}
+        <div className="mb-5">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/30">Status</span>
+            <span className="rounded-full px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide" style={{ color: STATUS_STEPS[Math.max(0, statusIndex)]?.color, background: `${STATUS_STEPS[Math.max(0, statusIndex)]?.color}1a` }}>
+              {STATUS_STEPS[Math.max(0, statusIndex)]?.label || application.status}
+            </span>
+          </div>
+          <div className="flex items-center">
+            {STATUS_STEPS.map((s, i) => (
+              <div key={s.key} className="flex flex-1 items-center last:flex-none">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all"
+                    style={{
+                      background: i <= statusIndex ? s.color : 'rgba(255,255,255,0.06)',
+                      color: i <= statusIndex ? '#0a0a1a' : 'rgba(255,255,255,0.3)',
+                      boxShadow: i === statusIndex ? `0 0 0 4px ${s.color}26` : 'none',
+                    }}
+                  >
+                    {i < statusIndex ? (
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      i + 1
+                    )}
+                  </div>
+                  <span className="mt-1.5 text-[0.6rem] font-semibold" style={{ color: i <= statusIndex ? s.color : 'rgba(255,255,255,0.25)' }}>{s.label}</span>
+                </div>
+                {i < STATUS_STEPS.length - 1 && (
+                  <div className="mx-2 mb-4 h-0.5 flex-1 rounded-full" style={{ background: i < statusIndex ? s.color : 'rgba(255,255,255,0.08)' }} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dates */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5">
+            <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-white/25">Applied</div>
+            <div className="mt-0.5 text-xs font-semibold text-white/80">{formatDateTime(application.appliedAt)}</div>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5">
+            <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-white/25">Offer</div>
+            <div className="mt-0.5 text-xs font-semibold text-white/80">{formatDateTime(application.offerDate)}</div>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5">
+            <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-white/25">Enrolled</div>
+            <div className="mt-0.5 text-xs font-semibold text-white/80">{formatDateTime(application.enrolledAt)}</div>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5">
+            <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-white/25">Intake</div>
+            <div className="mt-0.5 text-xs font-semibold text-white/80">
+              {application.intake ? (
+                <>
+                  {application.intake.name}
+                  {application.intake.startDate ? (
+                    <span className="text-white/40"> · {formatDateTime(application.intake.startDate).split(',')[0]}</span>
+                  ) : null}
+                </>
+              ) : (
+                'Not selected'
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fee card */}
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm sm:p-7" style={{ animation: 'fadeUp 0.4s ease 0.08s both' }}>
+        <div className="mb-4 flex items-center justify-between">
+          <h4 className="flex items-center gap-2 text-sm font-bold text-white">
+            <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h2m4 0h4m-6 4l3-8m-1.293-1.293a1 1 0 112.586 0l3 3M17 7l1 1" /></svg>
+            Fees
+          </h4>
+          <span className="rounded-full px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide" style={{ color: feeColor, background: `${feeColor}1a` }}>
+            {FEE_STATUS_LABELS[application.feeStatus] || application.feeStatus}
+          </span>
+        </div>
+        <div className="mb-2 flex items-end justify-between text-sm">
+          <span className="text-white/40">Paid so far</span>
+          <span className="font-bold text-white">
+            ₹{formatFee(application.feePaid)} <span className="font-normal text-white/30">of ₹{formatFee(application.feeTotal)}</span>
+          </span>
+        </div>
+        <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${feePct}%`, background: `linear-gradient(90deg, ${feeColor}, ${feeColor}cc)` }} />
+        </div>
+        <div className="mt-2 text-right text-[0.7rem] font-semibold" style={{ color: feeColor }}>{feePct}% paid</div>
+
+        {application.payments?.length > 0 && (
+          <div className="mt-5">
+            <div className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-white/25">Payment History</div>
+            <div className="space-y-2">
+              {application.payments.map((p) => (
+                <div key={p.id} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-2.5">
+                  <div>
+                    <div className="text-sm font-semibold text-white">₹{formatFee(p.amount)}</div>
+                    <div className="text-[0.7rem] text-white/30">
+                      {p.method || 'Payment'}
+                      {p.reference ? ` · ${p.reference}` : ''}
+                    </div>
+                  </div>
+                  <div className="text-[0.7rem] font-medium text-white/40">{formatDateTime(p.paidAt)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Documents card */}
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm sm:p-7" style={{ animation: 'fadeUp 0.4s ease 0.16s both' }}>
+        <h4 className="mb-4 flex items-center gap-2 text-sm font-bold text-white">
+          <svg className="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+          Documents
+        </h4>
+
+        {application.documents?.length > 0 && (
+          <div className="mb-5 space-y-2">
+            {application.documents.map((d) => (
+              <div key={d.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-[0.6rem] font-bold text-indigo-300">
+                    {d.type?.split('_')[0] || 'DOC'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-white">{d.originalName}</div>
+                    <div className="text-[0.7rem] text-white/30">
+                      {DOC_TYPE_LABELS[d.type] || d.type}
+                      {d.size != null ? ` · ${formatSize(d.size)}` : ''}
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href={`${API_BASE}${d.url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/[0.12] hover:text-white"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  View
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Upload form */}
+        <form onSubmit={uploadDoc} className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] p-4">
+          <div className="mb-3 text-[0.65rem] font-semibold uppercase tracking-widest text-white/25">Upload a document</div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <select
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+              className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-indigo-500/60"
+            >
+              {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
+                <option key={k} value={k} className="bg-[#15152b]">{v}</option>
+              ))}
+            </select>
+            <input
+              ref={fileRef}
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="block w-full cursor-pointer rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-xs text-white/60 outline-none file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-indigo-500/20 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-300"
+            />
+            <p className="col-span-full text-[0.65rem] text-white/25">Max file size: {MAX_FILE_SIZE_MB}MB (PDF, image, Word or text)</p>
+          </div>
+          {uploadMsg && (
+            <p className={`mt-3 flex items-center gap-1.5 text-xs font-medium ${uploadMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+              {uploadMsg.ok ? (
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              ) : (
+                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+              )}
+              {uploadMsg.text}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={uploading}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {uploading ? (
+              <>
+                <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                Upload Document
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ═══ MAIN COMPONENT ═══ */
 export default function ApplyPage() {
   const features = useFeatures()
-  const [mode, setMode] = useState('form'); // 'form' | 'chat'
+  const [mode, setMode] = useState('form'); // 'form' | 'chat' | 'track'
   const [courses, setCourses] = useState([]);
   const [intakes, setIntakes] = useState([]);
   const [step, setStep] = useState(0);
@@ -497,6 +912,8 @@ export default function ApplyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const [submittedApp, setSubmittedApp] = useState(null);
+  const [trackNumber, setTrackNumber] = useState('');
   const [focusedField, setFocusedField] = useState('');
   const submitControllerRef = useRef(null);
 
@@ -614,6 +1031,7 @@ export default function ApplyPage() {
       const payload_data = json.data || json;
       setIsDuplicate(!!payload_data.isDuplicate);
       setSubmitMessage(payload_data.message || 'Thank you! Your inquiry has been submitted.');
+      setSubmittedApp(payload_data.application || null);
       setSubmitted(true);
     } catch (err) {
       if (err.name === 'AbortError') return;
@@ -632,8 +1050,15 @@ export default function ApplyPage() {
 
   const handleReset = () => {
     setSubmitted(false);
+    setSubmittedApp(null);
     setForm({ name: '', email: '', phone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
     setStep(0);
+  };
+
+  const handleTrackNow = () => {
+    if (submittedApp?.applicationNumber) setTrackNumber(submittedApp.applicationNumber);
+    setSubmitted(false);
+    setMode('track');
   };
 
   return (
@@ -675,6 +1100,17 @@ export default function ApplyPage() {
                     </svg>
                     Fill Form
                   </button>
+                  <button
+                    onClick={() => setMode('track')}
+                    className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs ${
+                      mode === 'track' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50'
+                    }`}
+                  >
+                    <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+                    </svg>
+                    Track
+                  </button>
                   {features.AI_CHATBOT && (
                     <button
                       onClick={() => setMode('chat')}
@@ -707,7 +1143,9 @@ export default function ApplyPage() {
 
           {/* Steps */}
           {submitted ? (
-            <SuccessStep isDuplicate={isDuplicate} message={submitMessage} onReset={handleReset} />
+            <SuccessStep isDuplicate={isDuplicate} message={submitMessage} application={submittedApp} onTrack={handleTrackNow} onReset={handleReset} />
+          ) : mode === 'track' ? (
+            <TrackPortal initialNumber={trackNumber} onNewApplication={() => setMode('form')} />
           ) : mode === 'chat' && features.AI_CHATBOT ? (
             <div className="mx-auto max-w-2xl" style={{ animation: 'fadeUp 0.5s ease' }}>
               <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
