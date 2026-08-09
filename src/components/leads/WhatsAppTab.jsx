@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../../services/api';
-import { HiOutlinePaperAirplane } from 'react-icons/hi';
+import { HiOutlinePaperAirplane, HiOutlinePaperClip, HiOutlineDownload } from 'react-icons/hi';
 import { useToast } from '../../context/ToastContext';
 import { renderTemplate } from '../../utils/renderTemplate';
 import { APP_UNIVERSITY_NAME } from '../../constants/app';
+import { config } from '../../config/env';
+
+const API_ROOT = config.apiUrl.replace(/\/api\/?$/, '');
 
 export default function WhatsAppTab({ leadId, lead }) {
   const { toast } = useToast();
@@ -14,6 +17,7 @@ export default function WhatsAppTab({ leadId, lead }) {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const scrollRef = useRef(null);
 
   const fetchThread = useCallback(async () => {
@@ -123,7 +127,11 @@ export default function WhatsAppTab({ leadId, lead }) {
               defaultValue=""
               onChange={(e) => {
                 const t = templates.find((x) => x.id === e.target.value);
-                if (!t) return;
+                if (!t) {
+                  setSelectedTemplate(null);
+                  return;
+                }
+                setSelectedTemplate(t);
                 const vars = {
                   name: lead?.name || '',
                   phone: lead?.phone || '',
@@ -139,6 +147,27 @@ export default function WhatsAppTab({ leadId, lead }) {
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
+          </div>
+        )}
+        {selectedTemplate && selectedTemplate.attachments && selectedTemplate.attachments.length > 0 && (
+          <div className="mb-2 rounded-xl border border-gray-200 bg-white p-3">
+            <p className="mb-2 text-sm font-semibold text-gray-700">Template files</p>
+            <div className="flex flex-col gap-1.5">
+              {selectedTemplate.attachments.map((a) => (
+                <a
+                  key={a.id}
+                  href={`${API_ROOT}${a.url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  title={`Download ${a.originalName}`}
+                >
+                  <HiOutlinePaperClip className="h-4 w-4 shrink-0 text-indigo-500" />
+                  <span className="min-w-0 flex-1 truncate">{a.originalName}</span>
+                  <HiOutlineDownload className="h-4 w-4 shrink-0 text-gray-400" />
+                </a>
+              ))}
+            </div>
           </div>
         )}
         <form onSubmit={handleSend} className="flex items-end gap-2">
