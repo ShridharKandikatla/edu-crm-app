@@ -516,6 +516,15 @@ export const api = {
         method: 'DELETE',
       });
     },
+    uploadAttachment: async (id, file, requestOptions = {}) => {
+      return uploadFile(`/templates/${id}/attachment`, file, {}, requestOptions);
+    },
+    removeAttachment: async (id, attachmentId, requestOptions = {}) => {
+      return request(`/templates/${id}/attachment/${attachmentId}`, {
+        ...requestOptions,
+        method: 'DELETE',
+      });
+    },
   },
 
   // Marketing campaigns endpoints
