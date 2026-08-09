@@ -271,6 +271,7 @@ export default function MessageTemplatesPage() {
                         <HiOutlineDownload />
                       </a>
                       <button
+                        type="button"
                         className="btn btn-ghost btn-sm text-red-600"
                         aria-label={`Remove ${a.originalName}`}
                         onClick={() => handleRemoveAttachment(a.id)}
@@ -284,7 +285,7 @@ export default function MessageTemplatesPage() {
                   <p className="text-sm text-gray-400">No attachments yet.</p>
                 )}
                 <input ref={fileRef} type="file" className="hidden" onChange={handleUploadAttachment} />
-                <button className="btn btn-outline btn-sm self-start" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                <button type="button" className="btn btn-outline btn-sm self-start" onClick={() => fileRef.current?.click()} disabled={uploading}>
                   <HiOutlinePlus /> {uploading ? 'Uploading...' : 'Add File'}
                 </button>
                 <p className="text-xs text-gray-400">PDF, image, Word, Excel, text, or CSV. Max 10MB per file.</p>
