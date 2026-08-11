@@ -8,6 +8,7 @@ import EmptyState from '../components/EmptyState';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
 import ApplicationDetail from '../components/applications/ApplicationDetail';
+import { useCoursesAndIntakes } from '../hooks/useCoursesAndIntakes';
 
 const STATUS_OPTIONS = ['INQUIRY', 'APPLIED', 'OFFERED', 'ENROLLED'];
 const FEE_STATUS_OPTIONS = ['PENDING', 'PARTIAL', 'PAID'];
@@ -35,8 +36,7 @@ export default function ApplicationsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const searchTimer = useRef(null);
 
-  const [courses, setCourses] = useState([]);
-  const [intakes, setIntakes] = useState([]);
+  const { courses, intakes } = useCoursesAndIntakes();
 
   const [selected, setSelected] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -49,6 +49,7 @@ export default function ApplicationsPage() {
   const [createForm, setCreateForm] = useState({ courseId: '', intakeId: '', feeTotal: '', status: 'INQUIRY' });
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const fetchApplications = useCallback(async () => {
     try {
@@ -74,13 +75,6 @@ export default function ApplicationsPage() {
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
-
-  useEffect(() => {
-    Promise.all([api.courses.getAll(), api.courses.getIntakes()]).then(([courseRes, intakeRes]) => {
-      if (courseRes.success && courseRes.data?.courses) setCourses(courseRes.data.courses);
-      if (intakeRes.success && intakeRes.data?.intakes) setIntakes(intakeRes.data.intakes);
-    }).catch(() => {});
-  }, []);
 
   useEffect(() => {
     clearTimeout(searchTimer.current);
@@ -157,14 +151,17 @@ export default function ApplicationsPage() {
   const confirmDelete = async () => {
     if (!selected) return;
     try {
-      setConfirmOpen(false);
+      setConfirmLoading(true);
       await api.applications.remove(selected.id);
+      setConfirmOpen(false);
       toast.success('Application deleted');
       setShowDetail(false);
       setSelected(null);
       fetchApplications();
     } catch (error) {
       toast.error(error.message || 'Failed to delete application');
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
@@ -385,6 +382,7 @@ export default function ApplicationsPage() {
         title="Delete Application"
         message="Are you sure you want to delete this application? This also removes its documents and fee payments."
         confirmText="Delete"
+        loading={confirmLoading}
       />
     </div>
   );

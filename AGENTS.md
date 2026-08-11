@@ -63,6 +63,36 @@ src/
 - Auth token is read from `localStorage` key `token`, sent as `Bearer` header.
 - Route nesting: all protected pages are children of `MainLayout` via nested `<Route>`.
 
+## Coding Standards
+
+### Core Principles
+- **DRY:** Extract shared logic into reusable components (`src/components/`), hooks (`src/hooks/`), and utilities (`src/utils/`) instead of duplicating it.
+- Keep functions and components small, focused on a single responsibility.
+- Avoid deep nesting of loops, conditionals, and ternary chains — return early and split logic into named helpers.
+- Write modular, reusable code; prefer composition over copy-paste.
+
+### Readability & Formatting
+- Use descriptive, meaningful names: `PascalCase` for components, `camelCase` for variables/functions/state, `UPPER_SNAKE_CASE` for constants.
+- 2-space indentation, no trailing whitespace.
+- Keep lines readable (~100 characters max).
+- ESLint is the source of truth for style (`npm run lint`). There is no Prettier config — match existing file conventions.
+
+### Comments
+- Prefer self-explanatory code over comments.
+- Use comments to explain the *why* behind complex or non-obvious decisions, not the *what*.
+- Keep this file and other docs in sync when behavior changes.
+
+### Error Handling & Security
+- Validate and sanitize user input before sending it (required/pattern checks on forms, query params via `buildQueryString`).
+- Never hardcode secrets or tokens — use `.env` and `src/config/env.js` only.
+- Catch specific errors (e.g. `ApiError` / `NetworkError` from `src/services/api.js`) rather than swallowing everything; surface failures to the user via the toast system.
+- Never log or expose credentials, JWTs, or personal data.
+
+### Workflow & Testing
+- Use Git with clear, conventional commit messages; open PRs for review.
+- Run `lint → test → build` in that order before shipping changes.
+- Write/keep unit and integration tests for critical flows (forms, API calls, permissions).
+
 ## Gotchas
 
 - `useWebSocket` hook exists (`src/hooks/useWebSocket.js`) — the app has WebSocket support for real-time updates.

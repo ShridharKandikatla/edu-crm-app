@@ -1,4 +1,35 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  HiExclamationCircle,
+  HiOutlineArrowRight,
+  HiOutlineArrowSmLeft,
+  HiOutlineBeaker,
+  HiOutlineBookOpen,
+  HiOutlineCalendar,
+  HiOutlineChartBar,
+  HiOutlineChat,
+  HiOutlineCheck,
+  HiOutlineChevronDown,
+  HiOutlineClock,
+  HiOutlineCog,
+  HiOutlineCurrencyDollar,
+  HiOutlineDocument,
+  HiOutlineDocumentText,
+  HiOutlineDownload,
+  HiOutlineDuplicate,
+  HiOutlineExclamation,
+  HiOutlineGlobeAlt,
+  HiOutlineInformationCircle,
+  HiOutlineLockClosed,
+  HiOutlineMail,
+  HiOutlinePhone,
+  HiOutlineSearch,
+  HiOutlineShieldCheck,
+  HiOutlineUpload,
+  HiOutlineUser,
+  HiOutlineUserGroup,
+  HiOutlineX,
+} from 'react-icons/hi';
 import { config } from '../config/env';
 import { APP_NAME, APP_INITIAL, APP_UNIVERSITY_NAME } from '../constants/app';
 import ChatBot from '../components/apply/ChatBot';
@@ -21,34 +52,37 @@ const SOURCE_OPTIONS = [
 ];
 
 const DEPT_COLORS = {
-  Engineering: { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/25', ring: 'ring-blue-500/30' },
-  Management: { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/25', ring: 'ring-amber-500/30' },
-  Science: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/25', ring: 'ring-emerald-500/30' },
-  Commerce: { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/25', ring: 'ring-purple-500/30' },
+  Engineering: {
+    bg: 'bg-blue-500/15',
+    text: 'text-blue-400',
+    border: 'border-blue-500/25',
+    ring: 'ring-blue-500/30',
+  },
+  Management: {
+    bg: 'bg-amber-500/15',
+    text: 'text-amber-400',
+    border: 'border-amber-500/25',
+    ring: 'ring-amber-500/30',
+  },
+  Science: {
+    bg: 'bg-emerald-500/15',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/25',
+    ring: 'ring-emerald-500/30',
+  },
+  Commerce: {
+    bg: 'bg-purple-500/15',
+    text: 'text-purple-400',
+    border: 'border-purple-500/25',
+    ring: 'ring-purple-500/30',
+  },
 };
 
 const DEPT_ICONS = {
-  Engineering: (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  Management: (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-    </svg>
-  ),
-  Science: (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-    </svg>
-  ),
-  Commerce: (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
+  Engineering: <HiOutlineCog className="h-4 w-4" />,
+  Management: <HiOutlineChartBar className="h-4 w-4" />,
+  Science: <HiOutlineBeaker className="h-4 w-4" />,
+  Commerce: <HiOutlineCurrencyDollar className="h-4 w-4" />,
 };
 
 const CSS = `
@@ -73,6 +107,26 @@ const formatFee = (n) => {
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILE_SIZE_MB = 10;
 
+const GRADIENT_BTN = [
+  'rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600',
+  'text-sm font-bold text-white shadow-lg shadow-indigo-500/25',
+  'transition-all hover:shadow-xl hover:shadow-indigo-500/30',
+].join(' ');
+const GRADIENT_BTN_DISABLED = `${GRADIENT_BTN} disabled:cursor-not-allowed disabled:opacity-50`;
+const CARD_PANEL = [
+  'rounded-2xl border border-white/[0.08] bg-white/[0.03]',
+  'p-6 backdrop-blur-sm sm:p-7',
+].join(' ');
+const STATUS_BADGE = [
+  'rounded-full px-2.5 py-1',
+  'text-[0.65rem] font-bold uppercase tracking-wide',
+].join(' ');
+const ICON_PILL = [
+  'inline-flex items-center gap-2 rounded-full border px-4 py-1.5',
+  'text-xs font-semibold uppercase tracking-widest',
+].join(' ');
+const cx = (...parts) => parts.filter(Boolean).join(' ');
+
 /* ─── Step indicator ─── */
 function StepBar({ step, onStepClick }) {
   const steps = ['Select Course', 'Your Details', 'Confirmation'];
@@ -87,25 +141,38 @@ function StepBar({ step, onStepClick }) {
             <div className="flex items-center gap-2">
               <div
                 onClick={clickable ? () => onStepClick(i) : undefined}
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
-                  done ? 'bg-indigo-500 text-white cursor-pointer hover:bg-indigo-400' : active ? 'bg-white text-[#0a0a1a] ring-2 ring-indigo-400' : 'bg-white/10 text-white/40'
-                }`}
+                className={cx(
+                  'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300',
+                  done
+                    ? 'bg-indigo-500 text-white cursor-pointer hover:bg-indigo-400'
+                    : active
+                      ? 'bg-white text-[#0a0a1a] ring-2 ring-indigo-400'
+                      : 'bg-white/10 text-white/40',
+                )}
               >
                 {done ? (
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                  <HiOutlineCheck className="h-3.5 w-3.5" strokeWidth={3} />
                 ) : i + 1}
               </div>
               <span
                 onClick={clickable ? () => onStepClick(i) : undefined}
-                className={`hidden text-xs font-semibold sm:inline ${clickable ? 'text-indigo-300 cursor-pointer hover:text-white' : active ? 'text-white' : 'text-white/30'}`}
+                className={`hidden text-xs font-semibold sm:inline ${
+                  clickable
+                    ? 'text-indigo-300 cursor-pointer hover:text-white'
+                    : active
+                      ? 'text-white'
+                      : 'text-white/30'
+                }`}
               >
                 {label}
               </span>
             </div>
             {i < 2 && (
-              <div className={`h-px w-6 sm:w-10 transition-colors duration-300 ${done ? 'bg-indigo-500' : 'bg-white/10'}`} />
+              <div
+                className={`h-px w-6 sm:w-10 transition-colors duration-300 ${
+                  done ? 'bg-indigo-500' : 'bg-white/10'
+                }`}
+              />
             )}
           </div>
         );
@@ -127,10 +194,8 @@ function CourseStep({ courses, selectedId, onSelect, onSkip }) {
     <div style={{ animation: 'fadeUp 0.5s ease both' }}>
       {/* Section title */}
       <div className="mb-8 text-center">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-indigo-400">
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+        <div className={cx(ICON_PILL, 'mb-3 border-indigo-500/20 bg-indigo-500/10 text-indigo-400')}>
+          <HiOutlineBookOpen className="h-3.5 w-3.5" />
           Explore Programmes
         </div>
         <h2 className="mb-2 text-3xl font-extrabold text-white lg:text-4xl">
@@ -151,11 +216,15 @@ function CourseStep({ courses, selectedId, onSelect, onSkip }) {
             <button
               key={d}
               onClick={() => setDeptFilter(d)}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
+              className={cx(
+                [
+                  'flex items-center gap-1.5 rounded-full border px-3 py-1.5',
+                  'text-xs font-semibold transition-all duration-200',
+                ].join(' '),
                 active
                   ? `${dc.bg || 'bg-white/15'} ${dc.text || 'text-white'} ${dc.border || 'border-white/25'}`
-                  : 'border-white/[0.06] bg-white/[0.03] text-white/40 hover:bg-white/[0.06] hover:text-white/60'
-              }`}
+                  : 'border-white/[0.06] bg-white/[0.03] text-white/40 hover:bg-white/[0.06] hover:text-white/60',
+              )}
             >
               {d !== 'All' && DEPT_ICONS[d]}
               {d}
@@ -173,63 +242,92 @@ function CourseStep({ courses, selectedId, onSelect, onSkip }) {
             <button
               key={course.id}
               onClick={() => onSelect(sel ? '' : course.id)}
-              className={`apply-card group relative overflow-hidden rounded-2xl border text-left transition-all duration-300 ${
+              className={cx(
+                'apply-card group relative overflow-hidden rounded-2xl border text-left transition-all duration-300',
                 sel
                   ? `selected border-indigo-500/60 bg-indigo-500/10 ring-2 ${dc.ring || 'ring-indigo-500/30'} shadow-xl`
-                  : 'border-white/[0.07] bg-white/[0.03] hover:border-white/[0.15] hover:bg-white/[0.06]'
-              }`}
+                  : 'border-white/[0.07] bg-white/[0.03] hover:border-white/[0.15] hover:bg-white/[0.06]',
+              )}
               style={{ animation: `fadeUp 0.4s ease ${i * 0.04}s both` }}
             >
               {/* Image */}
               <div className="relative h-40 overflow-hidden">
                 {course.image ? (
-                  <img src={course.image} alt={course.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                  <img
+                    src={course.image}
+                    alt={course.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-white/[0.06] to-transparent">
-                    <svg className="h-14 w-14 text-white/[0.06]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+                  <div
+                    className={cx(
+                      'flex h-full w-full items-center justify-center bg-gradient-to-br',
+                      'from-white/[0.06] to-transparent',
+                    )}
+                  >
+                    <HiOutlineBookOpen className="h-14 w-14 text-white/[0.06]" strokeWidth={1} />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-transparent to-transparent" />
                 {/* Fee badge */}
-                <div className="absolute right-3 top-3 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
+                <div
+                  className={cx(
+                    'absolute right-3 top-3 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-bold',
+                    'text-white backdrop-blur-sm',
+                  )}
+                >
                   ₹{formatFee(course.fee)}
                 </div>
                 {/* Selection indicator */}
                 {sel && (
-                  <div className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500 shadow-lg shadow-indigo-500/40" style={{ animation: 'checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1)' }}>
-                    <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
+                  <div
+                    className={cx(
+                      'absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500',
+                      'shadow-lg shadow-indigo-500/40',
+                    )}
+                    style={{ animation: 'checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1)' }}
+                  >
+                    <HiOutlineCheck className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                   </div>
                 )}
               </div>
 
               {/* Info */}
               <div className="p-4">
-                <div className={`mb-2 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider ${dc.bg || ''} ${dc.text || ''} ${dc.border || ''}`}>
+                <div
+                  className={cx(
+                    [
+                      'mb-2 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5',
+                      'text-[0.65rem] font-bold uppercase tracking-wider',
+                    ].join(' '),
+                    dc.bg || '',
+                    dc.text || '',
+                    dc.border || '',
+                  )}
+                >
                   {DEPT_ICONS[course.department]}
                   {course.department}
                 </div>
                 <h3 className="mb-2 text-sm font-bold leading-tight text-white">{course.name}</h3>
                 <div className="flex items-center gap-3 text-[0.7rem] text-white/35">
                   <span className="flex items-center gap-1">
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <HiOutlineClock className="h-3 w-3" />
                     {course.duration}
                   </span>
                   {course.seats && (
                     <span className="flex items-center gap-1">
-                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <HiOutlineUserGroup className="h-3 w-3" />
                       {course.seats} seats
                     </span>
                   )}
                 </div>
-                <div className={`mt-3 border-t pt-3 text-xs font-semibold ${sel ? 'border-indigo-500/20 text-indigo-400' : 'border-white/[0.05] text-white/25'}`}>
+                <div
+                  className={cx(
+                    'mt-3 border-t pt-3 text-xs font-semibold',
+                    sel ? 'border-indigo-500/20 text-indigo-400' : 'border-white/[0.05] text-white/25',
+                  )}
+                >
                   {sel ? '✓ Selected' : '₹' + course.fee.toLocaleString()}
                 </div>
               </div>
@@ -263,22 +361,72 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
       <div className="space-y-4">
         {/* Name */}
         <Field label="Full Name" required error={errors.name} icon="user">
-          <input id="a-name" type="text" name="name" value={form.name} onChange={onChange} onFocus={() => onFocus('name')} onBlur={() => onBlur('name')} placeholder="John Doe" className={`${inputClass('name')} pl-11`} maxLength={100} autoComplete="name" inputMode="text" required />
+          <input
+            id="a-name"
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={onChange}
+            onFocus={() => onFocus('name')}
+            onBlur={() => onBlur('name')}
+            placeholder="John Doe"
+            className={`${inputClass('name')} pl-11`}
+            maxLength={100}
+            autoComplete="name"
+            inputMode="text"
+            required
+          />
         </Field>
 
         {/* Phone + Email */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Phone" required error={errors.phone} icon="phone">
-            <input id="a-phone" type="tel" name="phone" value={form.phone} onChange={onChange} onFocus={() => onFocus('phone')} onBlur={() => onBlur('phone')} placeholder="98765 43210" className={`${inputClass('phone')} pl-11`} maxLength={10} autoComplete="tel" inputMode="numeric" pattern="[6-9][0-9]{9}" required />
+            <input
+              id="a-phone"
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={onChange}
+              onFocus={() => onFocus('phone')}
+              onBlur={() => onBlur('phone')}
+              placeholder="98765 43210"
+              className={`${inputClass('phone')} pl-11`}
+              maxLength={10}
+              autoComplete="tel"
+              inputMode="numeric"
+              pattern="[6-9][0-9]{9}"
+              required
+            />
           </Field>
           <Field label="Email" optional error={errors.email} icon="email">
-            <input id="a-email" type="email" name="email" value={form.email} onChange={onChange} onFocus={() => onFocus('email')} onBlur={() => onBlur('email')} placeholder="you@example.com" className={`${inputClass('email')} pl-11`} maxLength={100} autoComplete="email" inputMode="email" />
+            <input
+              id="a-email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={onChange}
+              onFocus={() => onFocus('email')}
+              onBlur={() => onBlur('email')}
+              placeholder="you@example.com"
+              className={`${inputClass('email')} pl-11`}
+              maxLength={100}
+              autoComplete="email"
+              inputMode="email"
+            />
           </Field>
         </div>
 
         {/* Source */}
         <Field label="How did you hear about us?" required error={errors.source} icon="globe">
-          <select name="source" value={form.source} onChange={onChange} onFocus={() => onFocus('source')} onBlur={() => onBlur('source')} className={`${inputClass('source')} pl-11 pr-10 appearance-none`} required>
+          <select
+            name="source"
+            value={form.source}
+            onChange={onChange}
+            onFocus={() => onFocus('source')}
+            onBlur={() => onBlur('source')}
+            className={`${inputClass('source')} pl-11 pr-10 appearance-none`}
+            required
+          >
             <option value="" className="bg-[#0a0a1a]">Select a source...</option>
             {SOURCE_OPTIONS.map(s => (
               <option key={s.value} value={s.value} className="bg-[#0a0a1a]">{s.label}</option>
@@ -291,7 +439,19 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
         {form.source === 'OTHER' && (
           <div style={{ animation: 'fadeUp 0.25s ease' }}>
             <Field label="Please Specify" required error={errors.otherSource} icon="info">
-              <input id="a-other" type="text" name="otherSource" value={form.otherSource} onChange={onChange} onFocus={() => onFocus('otherSource')} onBlur={() => onBlur('otherSource')} placeholder="e.g. YouTube, WhatsApp..." className={`${inputClass('otherSource')} pl-11`} maxLength={50} inputMode="text" />
+              <input
+                id="a-other"
+                type="text"
+                name="otherSource"
+                value={form.otherSource}
+                onChange={onChange}
+                onFocus={() => onFocus('otherSource')}
+                onBlur={() => onBlur('otherSource')}
+                placeholder="e.g. YouTube, WhatsApp..."
+                className={`${inputClass('otherSource')} pl-11`}
+                maxLength={50}
+                inputMode="text"
+              />
             </Field>
           </div>
         )}
@@ -299,11 +459,26 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
         {/* Intake */}
         {intakes.length > 0 && (
           <Field label="Preferred Intake" optional error={errors.intakeId} icon="calendar">
-            <select name="intakeId" value={form.intakeId} onChange={onChange} onFocus={() => onFocus('intakeId')} onBlur={() => onBlur('intakeId')} className={`${inputClass('intakeId')} pl-11 pr-10 appearance-none`}>
+            <select
+              name="intakeId"
+              value={form.intakeId}
+              onChange={onChange}
+              onFocus={() => onFocus('intakeId')}
+              onBlur={() => onBlur('intakeId')}
+              className={`${inputClass('intakeId')} pl-11 pr-10 appearance-none`}
+            >
               <option value="" className="bg-[#0a0a1a]">Select an intake...</option>
-              {intakes.map(intake => (
-                <option key={intake.id} value={intake.id} className="bg-[#0a0a1a]">{intake.name} ({new Date(intake.startDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })})</option>
-              ))}
+              {intakes.map(intake => {
+                const start = new Date(intake.startDate).toLocaleDateString('en-IN', {
+                  month: 'short',
+                  year: 'numeric',
+                });
+                return (
+                  <option key={intake.id} value={intake.id} className="bg-[#0a0a1a]">
+                    {intake.name} ({start})
+                  </option>
+                );
+              })}
             </select>
             <Chevron />
           </Field>
@@ -311,7 +486,18 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
 
         {/* Message */}
         <Field label="Message" optional error={errors.notes}>
-          <textarea id="a-notes" name="notes" value={form.notes} rows={3} onChange={onChange} onFocus={() => onFocus('notes')} onBlur={() => onBlur('notes')} placeholder="Any specific questions or requirements..." className={`${inputClass('notes')} resize-none`} maxLength={500} />
+          <textarea
+            id="a-notes"
+            name="notes"
+            value={form.notes}
+            rows={3}
+            onChange={onChange}
+            onFocus={() => onFocus('notes')}
+            onBlur={() => onBlur('notes')}
+            placeholder="Any specific questions or requirements..."
+            className={`${inputClass('notes')} resize-none`}
+            maxLength={500}
+          />
           {charCount(form.notes.length, 500)}
         </Field>
       </div>
@@ -327,20 +513,23 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
                 <img src={selectedCourse.image} alt="" className="h-14 w-14 flex-shrink-0 rounded-xl object-cover" />
               ) : (
                 <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
-                  <svg className="h-6 w-6 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
+                  <HiOutlineBookOpen className="h-6 w-6 text-white/10" strokeWidth={1.5} />
                 </div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-bold text-white">{selectedCourse.name}</div>
-                <div className="mt-0.5 text-xs text-white/35">{selectedCourse.department} &middot; {selectedCourse.duration}</div>
+                <div className="mt-0.5 text-xs text-white/35">
+                  {selectedCourse.department} &middot; {selectedCourse.duration}
+                </div>
                 <div className="mt-1 text-sm font-bold text-indigo-400">₹{selectedCourse.fee.toLocaleString()}</div>
               </div>
-              <button type="button" onClick={onClearCourse} className="rounded-lg p-1 text-white/30 transition-colors hover:bg-white/10 hover:text-white" aria-label="Remove course">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button
+                type="button"
+                onClick={onClearCourse}
+                className="rounded-lg p-1 text-white/30 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="Remove course"
+              >
+                <HiOutlineX className="h-4 w-4" />
               </button>
             </div>
           ) : (
@@ -353,13 +542,18 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
           <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/30">Why {APP_NAME}?</div>
           <div className="space-y-3">
             {[
-              { icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>, text: '100% Confidential' },
-              { icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, text: 'Reply within 24 hours' },
-              { icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>, text: 'Free Counselling' },
-              { icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>, text: 'Data never shared' },
+              { icon: <HiOutlineShieldCheck className="h-4 w-4" />, text: '100% Confidential' },
+              { icon: <HiOutlineClock className="h-4 w-4" />, text: 'Reply within 24 hours' },
+              { icon: <HiOutlinePhone className="h-4 w-4" />, text: 'Free Counselling' },
+              { icon: <HiOutlineLockClosed className="h-4 w-4" />, text: 'Data never shared' },
             ].map(s => (
               <div key={s.text} className="flex items-center gap-2.5 text-xs text-white/40">
-                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
+                <span
+                  className={cx(
+                    'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg',
+                    'bg-indigo-500/10 text-indigo-400',
+                  )}
+                >
                   {s.icon}
                 </span>
                 {s.text}
@@ -401,10 +595,14 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
   };
 
   const shareLink = (() => {
-    const digits = String(phone || '').replace(/\D/g, '').replace(/^0/, '');
+    const digits = String(phone || '')
+      .replace(/\D/g, '')
+      .replace(/^0/, '');
     if (!digits || !application?.applicationNumber) return '';
     const intl = digits.length === 10 ? `91${digits}` : digits;
-    const text = `My application number is ${application.applicationNumber}. I'll use it to track my application status.`;
+    const text =
+      `My application number is ${application.applicationNumber}. ` +
+      "I'll use it to track my application status.";
     return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
   })();
 
@@ -413,13 +611,24 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
       <div className="rounded-3xl border border-white/[0.08] bg-white/[0.04] p-10 backdrop-blur-xl">
         {/* Animated check */}
         <div className="relative mx-auto mb-8 flex h-24 w-24 items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
-          <svg className="relative h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+          <div
+            className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600"
+            style={{ animation: 'pulse 2s ease-in-out infinite' }}
+          />
+          <svg
+            className="relative h-12 w-12 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M5 13l4 4L19 7" style={{ animation: 'checkPop 0.5s ease 0.3s both', transformOrigin: 'center' }} />
           </svg>
         </div>
 
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-400">
+        <div className={cx(ICON_PILL, 'mb-3 border-emerald-500/20 bg-emerald-500/10 text-emerald-400')}>
           {isDuplicate ? 'Already Registered' : 'Inquiry Received'}
         </div>
 
@@ -429,37 +638,55 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
         <p className="mb-6 text-sm leading-relaxed text-white/40">{message}</p>
 
         {application?.applicationNumber && (
-          <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-indigo-500/10 px-6 py-4" style={{ animation: 'fadeUp 0.4s ease 0.2s both' }}>
-            <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-indigo-300/70">Your Application Number</div>
+          <div
+            className="mb-8 rounded-2xl border border-indigo-500/20 bg-indigo-500/10 px-6 py-4"
+            style={{ animation: 'fadeUp 0.4s ease 0.2s both' }}
+          >
+            <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-indigo-300/70">
+              Your Application Number
+            </div>
             <div className="mt-1 flex items-center justify-center gap-3">
-              <div className="text-xl font-extrabold tracking-wide text-white select-all">{application.applicationNumber}</div>
+              <div className="text-xl font-extrabold tracking-wide text-white select-all">
+                {application.applicationNumber}
+              </div>
               <button
                 type="button"
                 onClick={handleCopy}
-                className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[0.65rem] font-semibold text-indigo-300 transition hover:bg-white/[0.12]"
+                className={cx(
+                  'inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.06] px-2.5 py-1',
+                  'text-[0.65rem] font-semibold text-indigo-300 transition hover:bg-white/[0.12]',
+                )}
               >
                 {copied ? (
                   <>
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <HiOutlineCheck className="h-3 w-3" strokeWidth={2.5} />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    <HiOutlineDuplicate className="h-3 w-3" />
                     Copy
                   </>
                 )}
               </button>
             </div>
-            <div className="mt-0.5 text-[0.7rem] text-white/30">Keep this safe — you'll need it to track your application</div>
+            <div className="mt-0.5 text-[0.7rem] text-white/30">
+              Keep this safe — you'll need it to track your application
+            </div>
             {shareLink && (
               <a
                 href={shareLink}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-500/15 px-4 py-2 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/30 transition hover:bg-emerald-500/25"
+                className={cx(
+                  'mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-500/15 px-4 py-2',
+                  [
+                    'text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/30',
+                    'transition hover:bg-emerald-500/25',
+                  ].join(' '),
+                )}
               >
-                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.668-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+                <WhatsAppIcon className="h-3.5 w-3.5" />
                 Save on WhatsApp
               </a>
             )}
@@ -470,18 +697,14 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
         <div className="mb-8 grid grid-cols-2 gap-3 text-left">
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
             <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-400">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
+              <HiOutlinePhone className="h-4 w-4" />
             </div>
             <div className="text-sm font-bold text-white">Next Step</div>
             <div className="mt-0.5 text-xs text-white/30">Our counsellor will call you within 24 hours</div>
           </div>
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
             <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/15 text-purple-400">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+              <HiOutlineMail className="h-4 w-4" />
             </div>
             <div className="text-sm font-bold text-white">Check Email</div>
             <div className="mt-0.5 text-xs text-white/30">Confirmation details sent to your inbox</div>
@@ -490,14 +713,17 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
 
         <button
           onClick={onTrack}
-          className="mb-3 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30"
+          className={`mb-3 w-full py-3.5 ${GRADIENT_BTN}`}
         >
           Track My Application
         </button>
 
         <button
           onClick={onReset}
-          className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] py-3.5 text-sm font-semibold text-white transition-all hover:bg-white/[0.1]"
+          className={cx(
+            'w-full rounded-xl border border-white/[0.1] bg-white/[0.06] py-3.5',
+            'text-sm font-semibold text-white transition-all hover:bg-white/[0.1]',
+          )}
         >
           Submit Another Inquiry
         </button>
@@ -508,14 +734,30 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
 
 /* ─── Reusable building blocks ─── */
 const ICONS = {
-  user: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
-  phone: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>,
-  email: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-  globe: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>,
-  info: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  calendar: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
-  doc: <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
+  user: <HiOutlineUser className="h-[18px] w-[18px]" />,
+  phone: <HiOutlinePhone className="h-[18px] w-[18px]" />,
+  email: <HiOutlineMail className="h-[18px] w-[18px]" />,
+  globe: <HiOutlineGlobeAlt className="h-[18px] w-[18px]" />,
+  info: <HiOutlineInformationCircle className="h-[18px] w-[18px]" />,
+  calendar: <HiOutlineCalendar className="h-[18px] w-[18px]" />,
+  doc: <HiOutlineDocument className="h-[18px] w-[18px]" />,
 };
+
+function WhatsAppIcon({ className }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.668-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
+
+function FeesIcon({ className }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h2m4 0h4m-6 4l3-8m-1.293-1.293a1 1 0 112.586 0l3 3M17 7l1 1" />
+    </svg>
+  );
+}
 
 function Field({ label, required, optional, error, icon, children }) {
   return (
@@ -527,15 +769,23 @@ function Field({ label, required, optional, error, icon, children }) {
       </label>
       <div className="relative">
         {icon && (
-          <span className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-white/25 transition-colors group-focus-within/f:text-indigo-400">
+          <span
+            className={cx(
+              'pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-white/25',
+              'transition-colors group-focus-within/f:text-indigo-400',
+            )}
+          >
             {ICONS[icon]}
           </span>
         )}
         {children}
       </div>
       {error && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400" style={{ animation: 'fadeUp 0.2s ease' }}>
-          <svg className="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+        <p
+          className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400"
+          style={{ animation: 'fadeUp 0.2s ease' }}
+        >
+          <HiExclamationCircle className="h-3.5 w-3.5 flex-shrink-0" />
           {error}
         </p>
       )}
@@ -546,7 +796,7 @@ function Field({ label, required, optional, error, icon, children }) {
 function Chevron() {
   return (
     <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/25">
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+      <HiOutlineChevronDown className="h-4 w-4" />
     </span>
   );
 }
@@ -573,7 +823,14 @@ const FEE_STATUS_COLORS = { PENDING: '#f87171', PARTIAL: '#fbbf24', PAID: '#34d3
 const formatDateTime = (iso) => {
   if (!iso) return '—';
   const d = new Date(iso);
-  return isNaN(d.getTime()) ? '—' : d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 };
 const formatSize = (bytes) => {
   if (!bytes && bytes !== 0) return '';
@@ -593,7 +850,11 @@ function TrackPortal({ initialNumber, onNewApplication }) {
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState(null);
   const fileRef = useRef(null);
-  const trackInput = 'w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[0.9375rem] text-white outline-none transition-all duration-200 placeholder:text-white/20 border-white/[0.08] hover:border-white/[0.15] focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20';
+  const trackInput = [
+    'w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[0.9375rem] text-white',
+    'outline-none transition-all duration-200 placeholder:text-white/20 border-white/[0.08]',
+    'hover:border-white/[0.15] focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20',
+  ].join(' ');
 
   const track = async (e) => {
     e.preventDefault();
@@ -645,20 +906,27 @@ function TrackPortal({ initialNumber, onNewApplication }) {
       {!result ? (
         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10">
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div
+              className={cx(
+                'mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl',
+                'bg-indigo-500/15 text-indigo-400',
+              )}
+            >
+              <HiOutlineDocumentText className="h-6 w-6" />
             </div>
             <h3 className="text-xl font-extrabold text-white">Track Your Application</h3>
-            <p className="mt-1 text-sm text-white/40">Enter the application number you received and the phone number you applied with.</p>
+            <p className="mt-1 text-sm text-white/40">
+              Enter the application number you received and the phone number you applied with.
+            </p>
           </div>
           <form onSubmit={track} className="space-y-4">
             <Field label="Application Number" required icon="doc">
               <input
                 className={trackInput}
                 value={appNumber}
-                onChange={(e) => setAppNumber(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20))}
+                onChange={(e) =>
+                  setAppNumber(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20))
+                }
                 placeholder="e.g. APP-2026-000123"
                 autoComplete="off"
               />
@@ -673,15 +941,21 @@ function TrackPortal({ initialNumber, onNewApplication }) {
               />
             </Field>
             {error && (
-              <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
-                <svg className="mt-0.5 h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+              <div
+                className={cx(
+                  'flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10',
+                  'px-4 py-3 text-sm text-red-300',
+                )}
+                role="alert"
+              >
+                <HiExclamationCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 {error}
               </div>
             )}
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`flex w-full items-center justify-center gap-2 px-6 py-3.5 ${GRADIENT_BTN_DISABLED}`}
             >
               {loading ? (
                 <>
@@ -691,9 +965,7 @@ function TrackPortal({ initialNumber, onNewApplication }) {
               ) : (
                 <>
                   Track Application
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
-                  </svg>
+                  <HiOutlineSearch className="h-4 w-4" />
                 </>
               )}
             </button>
@@ -723,25 +995,47 @@ function TrackPortal({ initialNumber, onNewApplication }) {
   );
 }
 
-function TrackResult({ application, statusIndex, fileRef, docType, setDocType, setFile, uploading, uploadMsg, uploadDoc, onReset }) {
-  const feePct = application.feeTotal > 0 ? Math.min(100, Math.round((application.feePaid / application.feeTotal) * 100)) : 0;
+function TrackResult({
+  application,
+  statusIndex,
+  fileRef,
+  docType,
+  setDocType,
+  setFile,
+  uploading,
+  uploadMsg,
+  uploadDoc,
+  onReset,
+}) {
+  const feePct =
+    application.feeTotal > 0
+      ? Math.min(100, Math.round((application.feePaid / application.feeTotal) * 100))
+      : 0;
   const feeColor = FEE_STATUS_COLORS[application.feeStatus] || '#818cf8';
 
   return (
     <div className="space-y-5">
       {/* Header card */}
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm sm:p-7" style={{ animation: 'fadeUp 0.4s ease' }}>
+      <div className={CARD_PANEL} style={{ animation: 'fadeUp 0.4s ease' }}>
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/30">Application</div>
-            <div className="mt-0.5 text-xl font-extrabold tracking-wide text-white select-all">{application.applicationNumber}</div>
+            <div className="mt-0.5 text-xl font-extrabold tracking-wide text-white select-all">
+              {application.applicationNumber}
+            </div>
             <div className="mt-0.5 text-xs text-white/40">
               {application.lead?.name ? `${application.lead.name} · ` : ''}
               {application.course?.name ? `Applied for ${application.course.name}` : 'Course not selected yet'}
             </div>
           </div>
-          <button onClick={onReset} className="flex items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/60 transition-all hover:bg-white/[0.1] hover:text-white">
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" /></svg>
+          <button
+            onClick={onReset}
+            className={cx(
+              'flex items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.06] px-3 py-1.5',
+              'text-xs font-semibold text-white/60 transition-all hover:bg-white/[0.1] hover:text-white',
+            )}
+          >
+            <HiOutlineArrowSmLeft className="h-3 w-3" />
             Track Another
           </button>
         </div>
@@ -750,7 +1044,13 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
         <div className="mb-5">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/30">Status</span>
-            <span className="rounded-full px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide" style={{ color: STATUS_STEPS[Math.max(0, statusIndex)]?.color, background: `${STATUS_STEPS[Math.max(0, statusIndex)]?.color}1a` }}>
+            <span
+              className={STATUS_BADGE}
+              style={{
+                color: STATUS_STEPS[Math.max(0, statusIndex)]?.color,
+                background: `${STATUS_STEPS[Math.max(0, statusIndex)]?.color}1a`,
+              }}
+            >
               {STATUS_STEPS[Math.max(0, statusIndex)]?.label || application.status}
             </span>
           </div>
@@ -758,7 +1058,8 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
             {STATUS_STEPS.map((s, i) => (
               <div key={s.key} className="flex flex-1 items-center last:flex-none">
                 <div className="flex flex-col items-center">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all"
+                  <div
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all"
                     style={{
                       background: i <= statusIndex ? s.color : 'rgba(255,255,255,0.06)',
                       color: i <= statusIndex ? '#0a0a1a' : 'rgba(255,255,255,0.3)',
@@ -766,15 +1067,23 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
                     }}
                   >
                     {i < statusIndex ? (
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <HiOutlineCheck className="h-3.5 w-3.5" strokeWidth={3} />
                     ) : (
                       i + 1
                     )}
                   </div>
-                  <span className="mt-1.5 text-[0.6rem] font-semibold" style={{ color: i <= statusIndex ? s.color : 'rgba(255,255,255,0.25)' }}>{s.label}</span>
+                  <span
+                    className="mt-1.5 text-[0.6rem] font-semibold"
+                    style={{ color: i <= statusIndex ? s.color : 'rgba(255,255,255,0.25)' }}
+                  >
+                    {s.label}
+                  </span>
                 </div>
                 {i < STATUS_STEPS.length - 1 && (
-                  <div className="mx-2 mb-4 h-0.5 flex-1 rounded-full" style={{ background: i < statusIndex ? s.color : 'rgba(255,255,255,0.08)' }} />
+                  <div
+                    className="mx-2 mb-4 h-0.5 flex-1 rounded-full"
+                    style={{ background: i < statusIndex ? s.color : 'rgba(255,255,255,0.08)' }}
+                  />
                 )}
               </div>
             ))}
@@ -802,7 +1111,9 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
                 <>
                   {application.intake.name}
                   {application.intake.startDate ? (
-                    <span className="text-white/40"> · {formatDateTime(application.intake.startDate).split(',')[0]}</span>
+                    <span className="text-white/40">
+                      {' '}· {formatDateTime(application.intake.startDate).split(',')[0]}
+                    </span>
                   ) : null}
                 </>
               ) : (
@@ -814,33 +1125,47 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
       </div>
 
       {/* Fee card */}
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm sm:p-7" style={{ animation: 'fadeUp 0.4s ease 0.08s both' }}>
+      <div className={CARD_PANEL} style={{ animation: 'fadeUp 0.4s ease 0.08s both' }}>
         <div className="mb-4 flex items-center justify-between">
           <h4 className="flex items-center gap-2 text-sm font-bold text-white">
-            <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h2m4 0h4m-6 4l3-8m-1.293-1.293a1 1 0 112.586 0l3 3M17 7l1 1" /></svg>
+            <FeesIcon className="h-4 w-4 text-emerald-400" />
             Fees
           </h4>
-          <span className="rounded-full px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide" style={{ color: feeColor, background: `${feeColor}1a` }}>
+            <span className={STATUS_BADGE} style={{ color: feeColor, background: `${feeColor}1a` }}>
             {FEE_STATUS_LABELS[application.feeStatus] || application.feeStatus}
           </span>
         </div>
         <div className="mb-2 flex items-end justify-between text-sm">
           <span className="text-white/40">Paid so far</span>
           <span className="font-bold text-white">
-            ₹{formatFee(application.feePaid)} <span className="font-normal text-white/30">of ₹{formatFee(application.feeTotal)}</span>
+            ₹{formatFee(application.feePaid)}
+            <span className="font-normal text-white/30"> of ₹{formatFee(application.feeTotal)}</span>
           </span>
         </div>
         <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.06]">
-          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${feePct}%`, background: `linear-gradient(90deg, ${feeColor}, ${feeColor}cc)` }} />
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${feePct}%`, background: `linear-gradient(90deg, ${feeColor}, ${feeColor}cc)` }}
+          />
         </div>
-        <div className="mt-2 text-right text-[0.7rem] font-semibold" style={{ color: feeColor }}>{feePct}% paid</div>
+        <div className="mt-2 text-right text-[0.7rem] font-semibold" style={{ color: feeColor }}>
+          {feePct}% paid
+        </div>
 
         {application.payments?.length > 0 && (
           <div className="mt-5">
-            <div className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-white/25">Payment History</div>
+            <div className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-white/25">
+              Payment History
+            </div>
             <div className="space-y-2">
               {application.payments.map((p) => (
-                <div key={p.id} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-2.5">
+                <div
+                  key={p.id}
+                  className={cx(
+                    'flex items-center justify-between rounded-xl border',
+                    'border-white/[0.06] bg-white/[0.03] px-4 py-2.5',
+                  )}
+                >
                   <div>
                     <div className="text-sm font-semibold text-white">₹{formatFee(p.amount)}</div>
                     <div className="text-[0.7rem] text-white/30">
@@ -857,18 +1182,29 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
       </div>
 
       {/* Documents card */}
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm sm:p-7" style={{ animation: 'fadeUp 0.4s ease 0.16s both' }}>
+      <div className={CARD_PANEL} style={{ animation: 'fadeUp 0.4s ease 0.16s both' }}>
         <h4 className="mb-4 flex items-center gap-2 text-sm font-bold text-white">
-          <svg className="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+          <HiOutlineDocument className="h-4 w-4 text-indigo-400" />
           Documents
         </h4>
 
         {application.documents?.length > 0 && (
           <div className="mb-5 space-y-2">
-            {application.documents.map((d) => (
-              <div key={d.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+              {application.documents.map((d) => (
+                <div
+                  key={d.id}
+                  className={cx(
+                    'flex items-center justify-between gap-3 rounded-xl border',
+                    'border-white/[0.06] bg-white/[0.03] px-4 py-3',
+                  )}
+                >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-[0.6rem] font-bold text-indigo-300">
+                  <div
+                    className={cx(
+                      'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg',
+                      'bg-indigo-500/15 text-[0.6rem] font-bold text-indigo-300',
+                    )}
+                  >
                     {d.type?.split('_')[0] || 'DOC'}
                   </div>
                   <div className="min-w-0">
@@ -883,9 +1219,15 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
                   href={`${API_BASE}${d.url}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/[0.12] hover:text-white"
+                  className={cx(
+                    [
+                      'flex flex-shrink-0 items-center gap-1.5 rounded-lg border',
+                      'border-white/[0.1] bg-white/[0.06] px-3 py-1.5',
+                    ].join(' '),
+                    'text-xs font-semibold text-white/70 transition-all hover:bg-white/[0.12] hover:text-white',
+                  )}
                 >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  <HiOutlineUpload className="h-3.5 w-3.5" />
                   View
                 </a>
               </div>
@@ -895,12 +1237,17 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
 
         {/* Upload form */}
         <form onSubmit={uploadDoc} className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] p-4">
-          <div className="mb-3 text-[0.65rem] font-semibold uppercase tracking-widest text-white/25">Upload a document</div>
+          <div className="mb-3 text-[0.65rem] font-semibold uppercase tracking-widest text-white/25">
+            Upload a document
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <select
               value={docType}
               onChange={(e) => setDocType(e.target.value)}
-              className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-indigo-500/60"
+              className={cx(
+                'rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 text-sm text-white',
+                'outline-none transition-colors focus:border-indigo-500/60',
+              )}
             >
               {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
                 <option key={k} value={k} className="bg-[#15152b]">{v}</option>
@@ -910,16 +1257,33 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
               ref={fileRef}
               type="file"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="block w-full cursor-pointer rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-xs text-white/60 outline-none file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-indigo-500/20 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-300"
+              className={cx(
+                [
+                  'block w-full cursor-pointer rounded-xl border border-white/[0.08] bg-white/[0.04]',
+                  'px-3 py-2 text-xs text-white/60 outline-none',
+                ].join(' '),
+                [
+                  'file:mr-3 file:cursor-pointer file:rounded-lg file:border-0',
+                  'file:bg-indigo-500/20 file:px-3 file:py-1.5',
+                ].join(' '),
+                'file:text-xs file:font-semibold file:text-indigo-300',
+              )}
             />
-            <p className="col-span-full text-[0.65rem] text-white/25">Max file size: {MAX_FILE_SIZE_MB}MB (PDF, image, Word or text)</p>
+            <p className="col-span-full text-[0.65rem] text-white/25">
+              Max file size: {MAX_FILE_SIZE_MB}MB (PDF, image, Word or text)
+            </p>
           </div>
           {uploadMsg && (
-            <p className={`mt-3 flex items-center gap-1.5 text-xs font-medium ${uploadMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+            <p
+              className={cx(
+                'mt-3 flex items-center gap-1.5 text-xs font-medium',
+                uploadMsg.ok ? 'text-emerald-400' : 'text-red-400',
+              )}
+            >
               {uploadMsg.ok ? (
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                <HiOutlineCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
               ) : (
-                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                <HiExclamationCircle className="h-3.5 w-3.5" />
               )}
               {uploadMsg.text}
             </p>
@@ -927,7 +1291,7 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
           <button
             type="submit"
             disabled={uploading}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+            className={`mt-4 flex w-full items-center justify-center gap-2 px-6 py-3 ${GRADIENT_BTN_DISABLED}`}
           >
             {uploading ? (
               <>
@@ -937,7 +1301,7 @@ function TrackResult({ application, statusIndex, fileRef, docType, setDocType, s
             ) : (
               <>
                 Upload Document
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                <HiOutlineDownload className="h-4 w-4" />
               </>
             )}
           </button>
@@ -954,7 +1318,16 @@ export default function ApplyPage() {
   const [courses, setCourses] = useState([]);
   const [intakes, setIntakes] = useState([]);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    source: '',
+    otherSource: '',
+    courseId: '',
+    intakeId: '',
+    notes: '',
+  });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -1010,7 +1383,13 @@ export default function ApplyPage() {
     if (name === 'email') next = value.replace(/\s/g, '').slice(0, 100);
     setForm(prev => ({ ...prev, [name]: next }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-    if (name === 'source' && value !== 'OTHER') setErrors(prev => { const n = { ...prev }; delete n.otherSource; return n; });
+    if (name === 'source' && value !== 'OTHER') {
+      setErrors(prev => {
+        const n = { ...prev };
+        delete n.otherSource;
+        return n;
+      });
+    }
   };
 
   const validateField = (name) => {
@@ -1033,7 +1412,9 @@ export default function ApplyPage() {
       const v = form.email.trim();
       if (v) {
         if (v.length > 100) errs.email = 'Email must be under 100 characters';
-        else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v)) errs.email = 'Enter a valid email address';
+        else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v)) {
+          errs.email = 'Enter a valid email address';
+        }
       }
     }
     if (name === 'source') {
@@ -1085,9 +1466,17 @@ export default function ApplyPage() {
           ? `Source: ${form.otherSource.trim()}${form.notes ? `\n${form.notes}` : ''}`
           : form.notes || undefined,
       };
-      const res = await fetch(`${API_BASE}/api/public/leads`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
+      const res = await fetch(`${API_BASE}/api/public/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
       const json = await res.json();
-      if (!res.ok) { setErrors({ submit: json.message || 'Something went wrong. Please try again.' }); return; }
+      if (!res.ok) {
+        setErrors({ submit: json.message || 'Something went wrong. Please try again.' });
+        return;
+      }
       const payload_data = json.data || json;
       setIsDuplicate(!!payload_data.isDuplicate);
       setSubmitMessage(payload_data.message || 'Thank you! Your inquiry has been submitted.');
@@ -1101,11 +1490,22 @@ export default function ApplyPage() {
     }
   };
 
-  const inputBase = 'w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[0.9375rem] text-white outline-none transition-all duration-200 placeholder:text-white/20';
+  const inputBase = [
+    'w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[0.9375rem] text-white',
+    'outline-none transition-all duration-200 placeholder:text-white/20',
+  ].join(' ');
   const inputClass = (f) => {
-    if (errors[f]) return `${inputBase} border-red-500/50 bg-red-500/[0.06] focus:border-red-400 focus:ring-2 focus:ring-red-500/20`;
-    if (focusedField === f) return `${inputBase} border-indigo-500/60 bg-white/[0.07] ring-2 ring-indigo-500/20`;
-    return `${inputBase} border-white/[0.08] hover:border-white/[0.15] focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20`;
+    if (errors[f]) {
+      return `${inputBase} border-red-500/50 bg-red-500/[0.06] focus:border-red-400 focus:ring-2 focus:ring-red-500/20`;
+    }
+    if (focusedField === f) {
+      return `${inputBase} border-indigo-500/60 bg-white/[0.07] ring-2 ring-indigo-500/20`;
+    }
+    return cx(
+      inputBase,
+      'border-white/[0.08] hover:border-white/[0.15]',
+      'focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20',
+    );
   };
 
   const handleReset = () => {
@@ -1127,17 +1527,43 @@ export default function ApplyPage() {
       <div className="relative min-h-screen overflow-x-hidden" style={{ background: '#0a0a1a' }}>
         {/* Background */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full opacity-60" style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.2) 0%, transparent 70%)', animation: 'float 20s ease-in-out infinite' }} />
-          <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full opacity-60" style={{ background: 'radial-gradient(circle, rgba(147,51,234,0.16) 0%, transparent 70%)', animation: 'float 16s ease-in-out infinite reverse' }} />
-          <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+          <div
+            className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full opacity-60"
+            style={{
+              background: 'radial-gradient(circle, rgba(79,70,229,0.2) 0%, transparent 70%)',
+              animation: 'float 20s ease-in-out infinite',
+            }}
+          />
+          <div
+            className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full opacity-60"
+            style={{
+              background: 'radial-gradient(circle, rgba(147,51,234,0.16) 0%, transparent 70%)',
+              animation: 'float 16s ease-in-out infinite reverse',
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
         </div>
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
           {/* Header */}
-          <div className="mb-8 flex flex-col items-center gap-6 sm:flex-row sm:justify-between" style={{ animation: 'fadeUp 0.5s ease' }}>
+          <div
+            className="mb-8 flex flex-col items-center gap-6 sm:flex-row sm:justify-between"
+            style={{ animation: 'fadeUp 0.5s ease' }}
+          >
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white shadow-lg shadow-indigo-500/25">
+              <div
+                className={cx(
+                  'flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br',
+                  'from-indigo-500 to-purple-600 text-lg font-bold text-white shadow-lg shadow-indigo-500/25',
+                )}
+              >
                 {APP_INITIAL}
               </div>
               <div>
@@ -1151,59 +1577,80 @@ export default function ApplyPage() {
                 <div className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-white/[0.04] p-1">
                   <button
                     onClick={() => setMode('form')}
-                    className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs ${
-                      mode === 'form' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50'
-                    }`}
+                    className={cx(
+                      'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5',
+                      'text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs',
+                      mode === 'form' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50',
+                    )}
                   >
-                    <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <HiOutlineDocumentText className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     Fill Form
                   </button>
                   <button
                     onClick={() => setMode('track')}
-                    className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs ${
-                      mode === 'track' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50'
-                    }`}
+                    className={cx(
+                      'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5',
+                      'text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs',
+                      mode === 'track' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50',
+                    )}
                   >
-                    <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
-                    </svg>
+                    <HiOutlineSearch className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     Track
                   </button>
                   {chatEnabled && (
                     <button
                       onClick={() => setMode('chat')}
-                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs ${
-                        mode === 'chat' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50'
-                      }`}
+                      className={cx(
+                        'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5',
+                        'text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs',
+                        mode === 'chat' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50',
+                      )}
                     >
-                      <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
+                      <HiOutlineChat className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       Chat with AI
-                      <span className="rounded bg-indigo-500/30 px-1 py-0.5 text-[0.55rem] font-bold text-indigo-300 sm:text-[0.6rem]">NEW</span>
+                      <span
+                        className={cx(
+                          'rounded bg-indigo-500/30 px-1 py-0.5 text-[0.55rem] font-bold',
+                          'text-indigo-300 sm:text-[0.6rem]',
+                        )}
+                      >
+                        NEW
+                      </span>
                     </button>
                   )}
                 </div>
               )}
-              {!submitted && mode === 'form' && <StepBar step={step} onStepClick={(i) => { if (i < step) setStep(i); }} />}
+              {!submitted && mode === 'form' && (
+                <StepBar step={step} onStepClick={(i) => { if (i < step) setStep(i); }} />
+              )}
             </div>
           </div>
 
           {/* Error alert */}
           {errors.submit && (
-            <div className="mx-auto mb-6 max-w-2xl flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert" style={{ animation: 'fadeUp 0.25s ease' }}>
-              <svg className="mt-0.5 h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
+            <div
+              className={cx(
+                'mx-auto mb-6 max-w-2xl flex items-start gap-3 rounded-xl border',
+                'border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300',
+              )}
+              role="alert"
+              style={{ animation: 'fadeUp 0.25s ease' }}
+            >
+              <HiOutlineExclamation className="mt-0.5 h-4 w-4 flex-shrink-0" />
               {errors.submit}
             </div>
           )}
 
           {/* Steps */}
           {submitted ? (
-            <SuccessStep isDuplicate={isDuplicate} message={submitMessage} application={submittedApp} phone={form.phone} onTrack={handleTrackNow} onReset={handleReset} />
+            <SuccessStep
+              isDuplicate={isDuplicate}
+              message={submitMessage}
+              application={submittedApp}
+              phone={form.phone}
+              onTrack={handleTrackNow}
+              onReset={handleReset}
+            />
           ) : mode === 'track' ? (
             <TrackPortal initialNumber={trackNumber} onNewApplication={() => setMode('form')} />
           ) : mode === 'chat' && chatEnabled ? (
@@ -1224,17 +1671,29 @@ export default function ApplyPage() {
             </div>
           ) : step === 0 ? (
             <>
-              <CourseStep courses={courses} selectedId={form.courseId} onSelect={(id) => { setForm(prev => ({ ...prev, courseId: id })); if (id) setStep(1); }} onSkip={() => { setForm(prev => ({ ...prev, courseId: '' })); setStep(1); }} />
+              <CourseStep
+              courses={courses}
+              selectedId={form.courseId}
+              onSelect={(id) => {
+                setForm(prev => ({ ...prev, courseId: id }));
+                if (id) setStep(1);
+              }}
+              onSkip={() => {
+                setForm(prev => ({ ...prev, courseId: '' }));
+                setStep(1);
+              }}
+            />
               <div className="mt-8 flex justify-center" style={{ animation: 'fadeUp 0.5s ease 0.3s both' }}>
                 <button
                   onClick={() => setStep(1)}
-                  className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-10 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30"
+                  className={`group relative overflow-hidden px-10 py-3.5 ${GRADIENT_BTN}`}
                 >
                   <span className="relative flex items-center gap-2">
                     {form.courseId ? 'Continue with Selected Course' : 'Skip — Fill Details Instead'}
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                        <HiOutlineArrowRight
+                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                          strokeWidth={2.5}
+                        />
                   </span>
                 </button>
               </div>
@@ -1249,19 +1708,30 @@ export default function ApplyPage() {
                 onClearCourse={() => setForm(prev => ({ ...prev, courseId: '' }))}
                 intakes={intakes}
               />
-              <div className="mt-8 flex items-center justify-center gap-4" style={{ animation: 'fadeUp 0.4s ease 0.2s both' }}>
+              <div
+                className="mt-8 flex items-center justify-center gap-4"
+                style={{ animation: 'fadeUp 0.4s ease 0.2s both' }}
+              >
                 <button
                   onClick={() => setStep(0)}
-                  className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-6 py-3 text-sm font-semibold text-white/50 transition-all hover:bg-white/[0.08] hover:text-white"
+                  className={cx(
+                    'rounded-xl border border-white/[0.08] bg-white/[0.04] px-6 py-3 text-sm font-semibold',
+                    'text-white/50 transition-all hover:bg-white/[0.08] hover:text-white',
+                  )}
                 >
                   ← Back
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-10 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`group relative overflow-hidden px-10 py-3.5 ${GRADIENT_BTN_DISABLED}`}
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <span
+                    className={cx(
+                      'absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500',
+                      'opacity-0 transition-opacity group-hover:opacity-100',
+                    )}
+                  />
                   <span className="relative flex items-center gap-2">
                     {submitting ? (
                       <>
@@ -1271,9 +1741,10 @@ export default function ApplyPage() {
                     ) : (
                       <>
                         Submit Inquiry
-                        <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
+                    <HiOutlineArrowRight
+                      className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                      strokeWidth={2.5}
+                    />
                       </>
                     )}
                   </span>

@@ -38,6 +38,7 @@ export default function LeadListPage() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedCounselorId, setSelectedCounselorId] = useState('');
   const [bulkAssignLoading, setBulkAssignLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const pageSize = 10;
 
@@ -77,6 +78,7 @@ export default function LeadListPage() {
 
   const handleExport = async () => {
     try {
+      setExporting(true);
       const params = {};
       if (debouncedSearch) params.search = debouncedSearch;
       if (statusFilter !== 'ALL') params.status = statusFilter;
@@ -86,6 +88,8 @@ export default function LeadListPage() {
       toast.success('CSV downloaded successfully!');
     } catch (error) {
       toast.error(error.message || 'Failed to export leads');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -137,8 +141,8 @@ export default function LeadListPage() {
         <button className="btn btn-secondary" onClick={() => setShowFilters(!showFilters)}>
           <HiOutlineFilter /> <span className="hidden sm:inline">Filters</span>
         </button>
-        <button className="btn btn-secondary" onClick={handleExport}>
-          <HiOutlineDownload /> <span className="hidden sm:inline">Export CSV</span>
+        <button className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
+          <HiOutlineDownload /> <span className="hidden sm:inline">{exporting ? 'Exporting...' : 'Export CSV'}</span>
         </button>
         <button className="btn btn-primary" onClick={() => navigate('/leads/new')}>
           <HiOutlinePlus /> <span className="hidden sm:inline">Add Lead</span>

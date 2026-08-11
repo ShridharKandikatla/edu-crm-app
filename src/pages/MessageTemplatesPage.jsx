@@ -31,6 +31,7 @@ export default function MessageTemplatesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
 
@@ -90,13 +91,15 @@ export default function MessageTemplatesPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      setConfirmOpen(false);
+      setConfirmLoading(true);
       await api.templates.remove(deleteTarget);
+      setConfirmOpen(false);
       toast.success('Template deleted');
       fetchTemplates();
     } catch (error) {
       toast.error(error.message || 'Failed to delete template');
     } finally {
+      setConfirmLoading(false);
       setDeleteTarget(null);
     }
   };
@@ -304,6 +307,7 @@ export default function MessageTemplatesPage() {
         title="Delete Template"
         message="Are you sure you want to delete this template?"
         confirmText="Delete"
+        loading={confirmLoading}
       />
     </div>
   );

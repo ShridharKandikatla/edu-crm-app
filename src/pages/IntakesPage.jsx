@@ -20,6 +20,7 @@ export default function IntakesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const fetchIntakes = async () => {
     try {
@@ -91,13 +92,15 @@ export default function IntakesPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      setConfirmOpen(false);
+      setConfirmLoading(true);
       await api.courses.deleteIntake(deleteTarget.id);
+      setConfirmOpen(false);
       toast.success('Intake deleted!');
       fetchIntakes();
     } catch (error) {
       toast.error(error.message || 'Failed to delete intake');
     } finally {
+      setConfirmLoading(false);
       setDeleteTarget(null);
     }
   };
@@ -277,6 +280,7 @@ export default function IntakesPage() {
         message={deleteTarget ? `Delete intake "${deleteTarget.name}"? This cannot be undone.` : ''}
         confirmText="Delete"
         danger
+        loading={confirmLoading}
       />
     </div>
   );

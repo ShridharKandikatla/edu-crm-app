@@ -14,6 +14,7 @@ import AIRecommendation from '../components/leads/AIRecommendation';
 import WhatsAppTab from '../components/leads/WhatsAppTab';
 import ApplicationDetail from '../components/applications/ApplicationDetail';
 import { useFeatures } from '../hooks/useFeatures';
+import { useCoursesAndIntakes } from '../hooks/useCoursesAndIntakes';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
 import { APP_UNIVERSITY_NAME } from '../constants/app';
@@ -32,8 +33,7 @@ export default function LeadDetailPage() {
 
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [courses, setCourses] = useState([]);
-  const [intakes, setIntakes] = useState([]);
+  const { courses, intakes } = useCoursesAndIntakes();
   const [templates, setTemplates] = useState([]);
 
   const [activeTab, setActiveTab] = useState('timeline');
@@ -121,13 +121,6 @@ export default function LeadDetailPage() {
       setSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    Promise.all([api.courses.getAll(), api.courses.getIntakes()]).then(([courseRes, intakeRes]) => {
-      if (courseRes.success && courseRes.data?.courses) setCourses(courseRes.data.courses);
-      if (intakeRes.success && intakeRes.data?.intakes) setIntakes(intakeRes.data.intakes);
-    }).catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!features.CAMPAIGNS) return;

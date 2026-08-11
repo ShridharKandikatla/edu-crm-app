@@ -47,14 +47,18 @@ export default function ReportsPage() {
   const [roiReport, setRoiReport] = useState([]);
   const [roiTotals, setRoiTotals] = useState(null);
   const [forecastData, setForecastData] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   const handleExport = async () => {
     try {
+      setExporting(true);
       const params = ['funnel', 'roi'].includes(activeTab) ? dateRange : {};
       await api.reports.exportReport(activeTab, params);
       toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} report downloaded!`);
     } catch (error) {
       toast.error(error.message || 'Failed to export report');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -122,8 +126,8 @@ export default function ReportsPage() {
           <h2 className="page-title">Reports & Analytics</h2>
           <p className="page-subtitle">Detailed performance analytics</p>
         </div>
-        <button className="btn btn-secondary" aria-label="Export report" onClick={handleExport}>
-          <HiOutlineDownload /> Export Report
+        <button className="btn btn-secondary" aria-label="Export report" onClick={handleExport} disabled={exporting}>
+          <HiOutlineDownload /> {exporting ? 'Exporting...' : 'Export Report'}
         </button>
       </div>
 

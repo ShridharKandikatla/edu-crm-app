@@ -26,6 +26,7 @@ export default function CampaignsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const fetchCampaigns = async () => {
     try {
@@ -100,13 +101,15 @@ export default function CampaignsPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      setConfirmOpen(false);
+      setConfirmLoading(true);
       await api.campaigns.remove(deleteTarget);
+      setConfirmOpen(false);
       toast.success('Campaign deleted');
       fetchCampaigns();
     } catch (error) {
       toast.error(error.message || 'Failed to delete campaign');
     } finally {
+      setConfirmLoading(false);
       setDeleteTarget(null);
     }
   };
@@ -234,6 +237,7 @@ export default function CampaignsPage() {
         title="Delete Campaign"
         message="Are you sure you want to delete this campaign?"
         confirmText="Delete"
+        loading={confirmLoading}
       />
     </div>
   );
