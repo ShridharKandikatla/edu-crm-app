@@ -3,9 +3,18 @@ import { config } from '../config/env';
 const API_BASE_URL = config.apiUrl;
 const REQUEST_TIMEOUT = 30000;
 const MAX_RETRIES = 1;
+const GET_CACHE_TTL = 30000;
 
 let globalErrorHandler = null;
 export function setApiErrorHandler(handler) { globalErrorHandler = handler; }
+
+const pendingRequests = new Map();
+const getCache = new Map();
+
+export function clearApiCache() {
+  pendingRequests.clear();
+  getCache.clear();
+}
 
 function buildQueryString(params = {}) {
   const query = new URLSearchParams();
@@ -78,6 +87,17 @@ async function uploadFile(endpoint, file, extraFields = {}, requestOptions = {})
 
 async function request(endpoint, options = {}, retryCount = 0) {
   const token = localStorage.getItem('token');
+  const isGet = !options.method || options.method === 'GET';
+  const key = `${isGet ? 'GET' : options.method}|${token || ''}|${API_BASE_URL}${endpoint}`;
+
+  if (isGet && retryCount === 0) {
+    const cached = getCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) return cached.data;
+    const pending = pendingRequests.get(key);
+    if (pending) return pending;
+  }
+
+  if (!isGet) getCache.clear();
 
   const headers = {
     'Content-Type': 'application/json',
@@ -94,63 +114,77 @@ async function request(endpoint, options = {}, retryCount = 0) {
     config.body = JSON.stringify(config.body);
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  const doFetch = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-  let callerAbortHandler = null;
-  if (options.signal) {
-    if (options.signal.aborted) {
+    let callerAbortHandler = null;
+    if (options.signal) {
+      if (options.signal.aborted) {
+        clearTimeout(timeoutId);
+        throw new DOMException('The operation was aborted.', 'AbortError');
+      }
+      callerAbortHandler = () => controller.abort();
+      options.signal.addEventListener('abort', callerAbortHandler, { once: true });
+    }
+
+    config.signal = controller.signal;
+
+    let response;
+    try {
+      response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    } catch (err) {
       clearTimeout(timeoutId);
-      throw new DOMException('The operation was aborted.', 'AbortError');
+      if (callerAbortHandler) options.signal.removeEventListener('abort', callerAbortHandler);
+      if (err.name === 'AbortError') {
+        if (options.signal?.aborted) throw err;
+        throw new NetworkError('Request timed out. Please check your connection and try again.');
+      }
+      if (retryCount < MAX_RETRIES && isGet) {
+        return request(endpoint, options, retryCount + 1);
+      }
+      throw new NetworkError('Network error. Please check your connection and try again.');
+    } finally {
+      clearTimeout(timeoutId);
+      if (callerAbortHandler) options.signal?.removeEventListener('abort', callerAbortHandler);
     }
-    callerAbortHandler = () => controller.abort();
-    options.signal.addEventListener('abort', callerAbortHandler, { once: true });
+
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = { message: await response.text() };
+    }
+
+    if (!response.ok) {
+      const message = data.message || `Request failed with status ${response.status}`;
+
+      if (response.status === 429) {
+        globalErrorHandler?.(message);
+      }
+
+      if (response.status !== 429 && response.status >= 500 && retryCount < MAX_RETRIES && isGet) {
+        return request(endpoint, options, retryCount + 1);
+      }
+
+      throw new ApiError(message, response.status, data);
+    }
+
+    return data;
+  };
+
+  if (isGet && retryCount === 0) {
+    const promise = doFetch().finally(() => {
+      if (pendingRequests.get(key) === promise) pendingRequests.delete(key);
+    });
+    pendingRequests.set(key, promise);
+    const data = await promise;
+    getCache.set(key, { expiresAt: Date.now() + GET_CACHE_TTL, data });
+    return data;
   }
 
-  config.signal = controller.signal;
-
-  let response;
-  try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (callerAbortHandler) options.signal.removeEventListener('abort', callerAbortHandler);
-    if (err.name === 'AbortError') {
-      if (options.signal?.aborted) throw err;
-      throw new NetworkError('Request timed out. Please check your connection and try again.');
-    }
-    if (retryCount < MAX_RETRIES && !options.method) {
-      return request(endpoint, options, retryCount + 1);
-    }
-    throw new NetworkError('Network error. Please check your connection and try again.');
-  } finally {
-    clearTimeout(timeoutId);
-    if (callerAbortHandler) options.signal?.removeEventListener('abort', callerAbortHandler);
-  }
-
-  let data = null;
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    data = await response.json();
-  } else {
-    data = { message: await response.text() };
-  }
-
-  if (!response.ok) {
-    const message = data.message || `Request failed with status ${response.status}`;
-
-    if (response.status === 429) {
-      globalErrorHandler?.(message);
-    }
-
-    if (response.status !== 429 && response.status >= 500 && retryCount < MAX_RETRIES && !options.method) {
-      return request(endpoint, options, retryCount + 1);
-    }
-
-    throw new ApiError(message, response.status, data);
-  }
-
-  return data;
+  return doFetch();
 }
 
 export const api = {

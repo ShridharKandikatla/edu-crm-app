@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { api, ApiError, NetworkError, setApiErrorHandler } from '../api';
+import { api, ApiError, NetworkError, setApiErrorHandler, clearApiCache } from '../api';
 import { config } from '../../config/env';
 
 const BASE = config.apiUrl;
@@ -19,6 +19,7 @@ describe('api request layer', () => {
     localStorage.clear();
     setApiErrorHandler(null);
     vi.restoreAllMocks();
+    clearApiCache();
     globalThis.fetch = vi.fn();
   });
 
@@ -183,5 +184,69 @@ describe('api request layer', () => {
 
     expect(res.data.token).toBe('jwt-token');
     expect(localStorage.getItem('token')).toBe('jwt-token');
+  });
+
+  it('deduplicates concurrent identical GET requests', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(200, { success: true, data: [1] }));
+
+    const [a, b] = await Promise.all([api.leads.getAll(), api.leads.getAll()]);
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(a).toEqual(b);
+    expect(a).toEqual({ success: true, data: [1] });
+  });
+
+  it('serves a cached GET response within the TTL', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(200, { success: true, data: [1] }));
+
+    await api.leads.getAll();
+    await api.leads.getAll();
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('refetches after the cache TTL expires', async () => {
+    vi.useFakeTimers();
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(200, { success: true, data: [1] }));
+
+    await api.leads.getAll();
+    await vi.advanceTimersByTimeAsync(30001);
+    await api.leads.getAll();
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('flushes the cache when a mutation is made', async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(200, { success: true, data: [1] }))
+      .mockResolvedValueOnce(jsonResponse(201, { success: true, data: {} }))
+      .mockResolvedValueOnce(jsonResponse(200, { success: true, data: [] }));
+
+    const first = await api.leads.getAll();
+    await api.leads.create({ name: 'Amit' });
+    const second = await api.leads.getAll();
+
+    expect(first).toEqual({ success: true, data: [1] });
+    expect(second).toEqual({ success: true, data: [] });
+    expect(globalThis.fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('keeps distinct cache entries for different query strings', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(200, { success: true, data: [] }));
+
+    await api.leads.getAll({ status: 'INQUIRY' });
+    await api.leads.getAll({ status: 'CONVERTED' });
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not cache failed GET requests', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await api.leads.getAll().catch(() => {});
+    await api.leads.getAll().catch(() => {});
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(4);
   });
 });

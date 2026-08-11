@@ -77,8 +77,13 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 45000);
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchStats, 5 * 60 * 1000);
+    const onFocus = () => fetchStats();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [fetchStats]);
 
   const handleNavClick = () => {
