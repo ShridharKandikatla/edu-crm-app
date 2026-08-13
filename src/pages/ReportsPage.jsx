@@ -11,7 +11,7 @@ import { useFeatures } from '../hooks/useFeatures';
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-[10px] border border-gray-200 bg-white p-3 text-[0.8125rem] shadow-lg">
+      <div className="rounded-[10px] border border-gray-200 bg-white dark:bg-[#1f2530] p-3 text-[0.8125rem] shadow-lg">
         <p className="mb-1 font-bold">{label}</p>
         {payload.map((p, i) => (
           <p key={i} style={{ color: p.color || '#4f46e5' }} className="font-medium">{p.name}: {p.value}</p>
@@ -147,7 +147,7 @@ export default function ReportsPage() {
       </div>
 
       {isDateTab && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white dark:bg-[#1f2530] p-3">
           <span className="text-sm font-semibold text-gray-700">Date Range</span>
           <label className="flex items-center gap-2 text-sm text-gray-600">
             From

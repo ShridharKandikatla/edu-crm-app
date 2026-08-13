@@ -21,7 +21,7 @@ export default function LeadModals({
       {/* Schedule Follow-up Modal */}
       {showFollowUpModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[1000]" onClick={() => setShowFollowUpModal(false)}>
-          <div className="modal bg-white p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
+          <div className="modal bg-white dark:bg-[#1f2530] p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header flex justify-between mb-4">
               <h3 className="modal-title text-xl font-bold">Schedule Follow-up</h3>
               <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowFollowUpModal(false)}>
@@ -92,7 +92,7 @@ export default function LeadModals({
       {/* Complete Follow-up Modal */}
       {showCompleteFUModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[1000]" onClick={() => setShowCompleteFUModal(false)}>
-          <div className="modal bg-white p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
+          <div className="modal bg-white dark:bg-[#1f2530] p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header flex justify-between mb-4">
               <h3 className="modal-title text-xl font-bold">Log Follow-up Outcome</h3>
               <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowCompleteFUModal(false)}>
@@ -138,7 +138,7 @@ export default function LeadModals({
       {/* Convert Lead Modal */}
       {showConvertModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[1000]" onClick={() => setShowConvertModal(false)}>
-          <div className="modal bg-white p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
+          <div className="modal bg-white dark:bg-[#1f2530] p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header flex justify-between mb-4">
               <h3 className="modal-title text-xl font-bold">Convert Lead to Admission</h3>
               <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowConvertModal(false)}>
@@ -190,7 +190,7 @@ export default function LeadModals({
       {/* Fail Lead Modal */}
       {showFailModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[1000]" onClick={() => setShowFailModal(false)}>
-          <div className="modal bg-white p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
+          <div className="modal bg-white dark:bg-[#1f2530] p-6 rounded-2xl w-[90%] max-w-[500px]" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header flex justify-between mb-4">
               <h3 className="modal-title text-xl font-bold text-red-600">Mark Lead as Failed</h3>
               <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowFailModal(false)}>

@@ -92,6 +92,15 @@ src/
 - Use Git with clear, conventional commit messages; open PRs for review.
 - Run `lint → test → build` in that order before shipping changes.
 - Write/keep unit and integration tests for critical flows (forms, API calls, permissions).
+- **Always verify every UI change in BOTH light and dark mode.** Any new or edited page/component must be visually checked with the theme set to dark (and light) before shipping.
+- **Always ensure responsiveness for all devices.** Any new or edited page/component must be checked at mobile (≤480px), tablet (≤768px), and desktop widths before shipping. Reuse existing breakpoint patterns: `@media (max-width: 768px)` in `src/index.css` for layout, Tailwind `sm:`/`md:` prefixes for component-level utilities.
+
+## Dark Mode
+
+- Implemented via `src/context/ThemeContext.jsx` (`ThemeProvider` / `useTheme`). Defaults to system (`prefers-color-scheme`), persisted in `localStorage['theme']` as `'light' | 'dark' | 'system'`; the resolved `dark` class is applied to `<html>`.
+- `src/index.css` `.dark` block **inverts the design tokens** (`--color-gray-*`, `--color-indigo-*`, `--color-red-*`, etc.) so most Tailwind utilities adapt automatically.
+- Pitfall: tokens that are inverted in `.dark` must NOT be used as text color on always-dark pages (Login, Apply, ChatBot). There `text-indigo-100`/`text-indigo-200` become dark → invisible. Use non-inverted tokens (`text-white/70`, `text-indigo-300`, ...) or explicit `dark:text-...` overrides.
+- Pitfall: `bg-white` surfaces do NOT flip automatically — pair them with `dark:bg-[#1f2530]` (matches `--surface`) where the surface must be theme-aware.
 
 ## Gotchas
 

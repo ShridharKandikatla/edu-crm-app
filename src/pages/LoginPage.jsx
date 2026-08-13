@@ -35,8 +35,8 @@ export default function LoginPage() {
   const inputClass = (field) => {
     const base = 'w-full rounded-xl border-[1.5px] bg-gray-50/80 px-4 py-3 pl-11 text-[0.9375rem] text-gray-900 outline-none transition-all duration-200 placeholder:text-gray-400';
     if (error) return `${base} border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-4 focus:ring-red-100`;
-    if (focusedField === field) return `${base} border-indigo-400 bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100`;
-    return `${base} border-gray-200 hover:border-gray-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100`;
+    if (focusedField === field) return `${base} border-indigo-400 bg-white dark:bg-[#1f2530] focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-500/40`;
+    return `${base} border-gray-200 hover:border-gray-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-500/40`;
   };
 
   return (
@@ -55,14 +55,14 @@ export default function LoginPage() {
             U
           </div>
           <h1 className="text-2xl font-bold text-white">{APP_NAME}</h1>
-          <p className="mt-1 text-sm text-indigo-200/50">Education Admission Management</p>
+          <p className="mt-1 text-sm text-indigo-200/50 dark:text-white/50">Education Admission Management</p>
         </div>
 
         {/* Card */}
         <div className="overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.06] shadow-2xl backdrop-blur-xl">
           <div className="px-10 py-7">
             <h2 className="mb-1 text-lg font-bold text-white">Welcome back</h2>
-            <p className="mb-6 text-sm text-indigo-200/50">Sign in to your account</p>
+            <p className="mb-6 text-sm text-indigo-200/50 dark:text-white/50">Sign in to your account</p>
 
             {error && (
               <div id="login-error" className="mb-5 flex items-start gap-3 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-indigo-100/80">Email Address</label>
+                <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-indigo-100/80 dark:text-white/70">Email Address</label>
                 <div className="relative">
                   <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                     <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -91,7 +91,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-indigo-100/80">Password</label>
+                <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-indigo-100/80 dark:text-white/70">Password</label>
                 <div className="relative">
                   <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                     <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>

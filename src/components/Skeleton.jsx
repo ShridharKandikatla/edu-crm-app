@@ -27,7 +27,7 @@ export function SkeletonText({ lines = 3, gap = '8px', lineHeight = '14px' }) {
 export function SkeletonCard({ style = {} }) {
   return (
     <div
-      className="p-5 rounded-xl border border-gray-200 bg-white"
+      className="p-5 rounded-xl border border-gray-200 bg-white dark:bg-[#1f2530]"
       style={style}
     >
       <SkeletonBlock width="40%" height="14px" style={{ marginBottom: '12px' }} />

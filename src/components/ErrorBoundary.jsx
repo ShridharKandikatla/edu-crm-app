@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 p-6" role="alert" aria-live="assertive">
-          <div className="max-w-[480px] text-center bg-white p-12 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div className="max-w-[480px] text-center bg-white dark:bg-[#1f2530] p-12 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
             <div className="text-5xl mb-4">⚠️</div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               Something went wrong
@@ -39,7 +39,7 @@ export default class ErrorBoundary extends Component {
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="px-6 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-lg font-semibold text-sm cursor-pointer"
+                className="px-6 py-2.5 bg-white dark:bg-[#1f2530] text-gray-700 border border-gray-200 rounded-lg font-semibold text-sm cursor-pointer"
               >
                 Refresh Page
               </button>

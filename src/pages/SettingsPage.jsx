@@ -2,10 +2,17 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
+import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff, HiOutlineSun, HiOutlineMoon, HiOutlineDesktopComputer, HiOutlineCheck } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonBlock } from '../components/Skeleton';
 import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
+import { useTheme } from '../context/ThemeContext';
+
+const APPEARANCE_OPTIONS = [
+  { value: 'light', label: 'Light', desc: 'Always use the light theme', Icon: HiOutlineSun },
+  { value: 'dark', label: 'Dark', desc: 'Always use the dark theme', Icon: HiOutlineMoon },
+  { value: 'system', label: 'System', desc: 'Follow your device color scheme', Icon: HiOutlineDesktopComputer },
+];
 
 export default function SettingsPage() {
   const { user, setUser } = useAuth();
@@ -13,7 +20,7 @@ export default function SettingsPage() {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(
-    ['profile', 'notifications', 'security'].includes(initialTab) ? initialTab : 'profile'
+    ['profile', 'appearance', 'notifications', 'security'].includes(initialTab) ? initialTab : 'profile'
   );
   
   // Profile Form States
@@ -33,6 +40,7 @@ export default function SettingsPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const { preferences, updatePreferences } = useNotificationPreferences();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const timer = setTimeout(() => setSettingsLoading(false), 500);
@@ -120,13 +128,13 @@ export default function SettingsPage() {
         <div className="settings-nav card h-fit p-3 flex flex-col" role="tablist" aria-label="Settings sections">
           {[
             { key: 'profile', label: 'Profile', icon: HiOutlineUser },
+            { key: 'appearance', label: 'Appearance', icon: HiOutlineMoon },
             { key: 'notifications', label: 'Notifications', icon: HiOutlineBell },
             { key: 'security', label: 'Security', icon: HiOutlineShieldCheck },
           ].map(item => (
             <button
               key={item.key}
-              className={`sidebar-link w-full border-none text-left ${activeTab === item.key ? 'active' : ''}`}
-              style={{ color: activeTab === item.key ? '#4f46e5' : '#6b7280', background: activeTab === item.key ? '#eef2ff' : 'transparent' }}
+              className={`sidebar-link w-full border-none text-left ${activeTab === item.key ? 'active' : ''} ${activeTab === item.key ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40' : 'text-gray-500'}`}
               role="tab"
               aria-selected={activeTab === item.key}
               onClick={() => setActiveTab(item.key)}
@@ -196,6 +204,38 @@ export default function SettingsPage() {
                 <HiOutlineSave /> {savingProfile ? 'Saving...' : 'Save Changes'}
               </button>
             </form>
+          )}
+
+          {activeTab === 'appearance' && (
+            <div className="card animate-fade-in">
+              <h3 className="mb-2 text-base font-bold text-gray-900">Appearance</h3>
+              <p className="mb-6 text-sm text-gray-500">
+                Choose how UniCRM looks. Defaults to your system setting.
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {APPEARANCE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTheme(opt.value)}
+                    className={`relative flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                      theme === opt.value
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 dark:bg-indigo-950/40'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#1f2530] dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <opt.Icon className="h-6 w-6" />
+                      {theme === opt.value && <HiOutlineCheck className="h-5 w-5 text-indigo-600" />}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">{opt.label}</div>
+                      <div className="mt-0.5 text-xs text-gray-500">{opt.desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           {activeTab === 'notifications' && (

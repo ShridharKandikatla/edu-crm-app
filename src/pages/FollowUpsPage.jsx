@@ -235,7 +235,7 @@ export default function FollowUpsPage() {
       {/* Complete Follow-up Modal */}
       {showCompleteModal && (
         <div className="modal-overlay fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowCompleteModal(false)}>
-          <div className="modal w-[90%] max-w-[500px] rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="modal w-[90%] max-w-[500px] rounded-2xl bg-white dark:bg-[#1f2530] p-6" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header mb-4 flex items-center justify-between">
               <h3 className="modal-title text-xl font-bold">Log Follow-up Outcome</h3>
               <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowCompleteModal(false)}>

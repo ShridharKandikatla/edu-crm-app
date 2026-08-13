@@ -312,7 +312,7 @@ export default function ApplicationsPage() {
               </ul>
             )}
             {selectedLead && (
-              <div className="mt-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-800">
+              <div className="mt-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-800 dark:border-indigo-800/60 dark:bg-indigo-950/40 dark:text-indigo-300">
                 Selected: <strong>{selectedLead.name}</strong> ({selectedLead.phone})
               </div>
             )}

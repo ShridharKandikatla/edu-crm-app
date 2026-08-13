@@ -121,7 +121,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
       <div className="space-y-5 mt-2">
 
         {/* ── Prompt Input ── */}
-        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-100">
+        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-100 dark:from-indigo-950/60 dark:to-violet-950/60 dark:border-indigo-900/60">
           <div className="flex items-center gap-2 mb-3">
             <HiOutlineSparkles className="w-4 h-4 text-indigo-500" />
             <span className="text-xs font-semibold text-indigo-700">Ask about your data</span>
@@ -133,7 +133,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="e.g. Which courses have the best ROI this month?"
-              className="flex-1 px-3 py-2 text-sm bg-white border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-gray-400"
+              className="flex-1 px-3 py-2 text-sm bg-white dark:bg-[#1f2530] border border-indigo-200 dark:border-indigo-800/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-gray-400"
               disabled={queryLoading}
             />
             <button
@@ -156,7 +156,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
                 <button
                   key={i}
                   onClick={() => handleSuggestedPrompt(sp)}
-                  className="px-2.5 py-1 text-[11px] text-indigo-600 bg-white border border-indigo-200 rounded-full hover:bg-indigo-50 transition-colors"
+                  className="px-2.5 py-1 text-[11px] text-indigo-600 bg-white dark:bg-[#1f2530] border border-indigo-200 rounded-full hover:bg-indigo-50 transition-colors"
                 >
                   {sp}
                 </button>
@@ -173,7 +173,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
                 <div className={`max-w-[85%] rounded-xl px-4 py-3 ${
                   entry.role === 'user'
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-200'
+                    : 'bg-white dark:bg-[#1f2530] border border-gray-200'
                 }`}>
                   {entry.role === 'ai' && (
                     <div className="flex items-center gap-1.5 mb-1.5">
@@ -191,7 +191,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
             ))}
             {queryLoading && (
               <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+                <div className="bg-white dark:bg-[#1f2530] border border-gray-200 rounded-xl px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -213,7 +213,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
         <div className="border-t border-gray-100" />
 
         {/* Summary */}
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100">
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100 dark:from-indigo-950/60 dark:to-purple-950/60 dark:border-indigo-900/60">
           <p className="text-sm text-gray-700 leading-relaxed">{insights.summary}</p>
         </div>
 
@@ -256,7 +256,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
               {roleData.metrics?.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {roleData.metrics.map((m, i) => (
-                    <div key={i} className="bg-white rounded-md p-2 border border-gray-100">
+                    <div key={i} className="bg-white dark:bg-[#1f2530] rounded-md p-2 border border-gray-100">
                       <div className="text-[10px] text-gray-400 uppercase tracking-wide">{m.label}</div>
                       <div className="text-sm font-bold text-gray-800 mt-0.5">{m.value}</div>
                     </div>
@@ -306,7 +306,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
             {expandedRecs && (
               <div className="space-y-2">
                 {insights.recommendations.map((rec, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2.5 bg-white rounded-lg border border-gray-100">
+                  <div key={i} className="flex items-start gap-2 p-2.5 bg-white dark:bg-[#1f2530] rounded-lg border border-gray-100">
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 mt-0.5 ${PRIORITY_STYLES[rec.priority] || PRIORITY_STYLES.medium}`}>
                       {rec.priority?.toUpperCase()}
                     </span>
@@ -327,7 +327,7 @@ export default function AIInsightsCard({ insights, loading, onRefresh }) {
             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Suggested Features</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {insights.featureSuggestions.map((fs, i) => (
-                <div key={i} className="bg-white rounded-lg p-3 border border-gray-100 hover:border-indigo-200 transition-colors">
+                <div key={i} className="bg-white dark:bg-[#1f2530] rounded-lg p-3 border border-gray-100 hover:border-indigo-200 transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-xs font-semibold text-gray-800">{fs.feature}</span>
                     <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold ${EFFORT_STYLES[fs.effort] || ''}`}>

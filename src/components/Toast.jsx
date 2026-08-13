@@ -7,10 +7,10 @@ import {
 } from 'react-icons/hi';
 
 const typeConfig = {
-  success: { bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-800', Icon: HiOutlineCheckCircle },
-  error: { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-800', Icon: HiOutlineExclamationCircle },
-  warning: { bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-800', Icon: HiOutlineExclamationCircle },
-  info: { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-800', Icon: HiOutlineInformationCircle },
+  success: { bg: 'bg-emerald-50 dark:bg-emerald-900/70', border: 'border-emerald-500', text: 'text-emerald-800 dark:text-emerald-300', Icon: HiOutlineCheckCircle },
+  error: { bg: 'bg-red-50 dark:bg-red-900/70', border: 'border-red-500', text: 'text-red-800 dark:text-red-300', Icon: HiOutlineExclamationCircle },
+  warning: { bg: 'bg-amber-50 dark:bg-amber-900/70', border: 'border-amber-500', text: 'text-amber-800 dark:text-amber-300', Icon: HiOutlineExclamationCircle },
+  info: { bg: 'bg-blue-50 dark:bg-blue-900/70', border: 'border-blue-500', text: 'text-blue-800 dark:text-blue-300', Icon: HiOutlineInformationCircle },
 };
 
 export default function ToastContainer() {

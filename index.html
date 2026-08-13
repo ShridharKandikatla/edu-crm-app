@@ -7,6 +7,17 @@
     <meta name="description" content="UniCRM - Education Admission CRM for Universities. Manage leads, follow-ups, and admissions efficiently." />
     <meta name="theme-color" content="#6366f1" />
     <meta name="robots" content="noindex, nofollow" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var dark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          root.classList.toggle('dark', dark);
+          root.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) { /* storage unavailable */ }
+      })();
+    </script>
     <meta property="og:title" content="UniCRM — Education Admission CRM" />
     <meta property="og:description" content="Manage leads, follow-ups, and admissions efficiently for universities." />
     <meta property="og:type" content="website" />

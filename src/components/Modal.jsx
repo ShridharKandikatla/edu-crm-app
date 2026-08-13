@@ -63,7 +63,7 @@ export default function Modal({ open, onClose, title, children, footer, danger =
     >
       <div
         ref={modalRef}
-        className={`modal bg-white p-5 sm:p-6 rounded-2xl w-[95%] sm:w-[90%] shadow-xl max-h-[85vh] overflow-y-auto`}
+        className={`modal bg-white dark:bg-[#1f2530] p-5 sm:p-6 rounded-2xl w-[95%] sm:w-[90%] shadow-xl max-h-[85vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

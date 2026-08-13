@@ -201,7 +201,7 @@ export default function IntakesPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="modal w-[90%] max-w-[480px] rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="modal w-[90%] max-w-[480px] rounded-2xl bg-white dark:bg-[#1f2530] p-6" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header mb-4 flex items-center justify-between">
               <h3 className="modal-title text-xl font-bold">
                 {editIntake ? 'Edit Intake' : 'Add New Intake'}

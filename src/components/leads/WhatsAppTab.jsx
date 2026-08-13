@@ -98,11 +98,11 @@ export default function WhatsAppTab({ leadId, lead }) {
                 className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
                   m.direction === 'OUT'
                     ? 'rounded-br-sm bg-indigo-600 text-white'
-                    : 'rounded-bl-sm bg-white text-gray-800'
+                    : 'rounded-bl-sm bg-white dark:bg-[#1f2530] text-gray-800'
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                <div className={`mt-1 text-right text-[0.625rem] ${m.direction === 'OUT' ? 'text-indigo-200' : 'text-gray-400'}`}>
+                <div className={`mt-1 text-right text-[0.625rem] ${m.direction === 'OUT' ? 'text-indigo-200 dark:text-indigo-400' : 'text-gray-400'}`}>
                   {formatTime(m.createdAt)}
                   {m.status && m.direction === 'OUT' ? ` · ${m.status}` : ''}
                 </div>
@@ -150,7 +150,7 @@ export default function WhatsAppTab({ leadId, lead }) {
           </div>
         )}
         {selectedTemplate && selectedTemplate.attachments && selectedTemplate.attachments.length > 0 && (
-          <div className="mb-2 rounded-xl border border-gray-200 bg-white p-3">
+          <div className="mb-2 rounded-xl border border-gray-200 bg-white dark:bg-[#1f2530] p-3">
             <p className="mb-2 text-sm font-semibold text-gray-700">Template files</p>
             <div className="flex flex-col gap-1.5">
               {selectedTemplate.attachments.map((a) => (

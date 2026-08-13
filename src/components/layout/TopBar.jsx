@@ -6,6 +6,7 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import { useToast } from '../../context/ToastContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useNotificationPreferences } from '../../hooks/useNotificationPreferences';
+import { useTheme } from '../../context/ThemeContext';
 import {
   HiOutlineSearch,
   HiOutlineBell,
@@ -14,17 +15,29 @@ import {
   HiOutlineCog,
   HiOutlineMenu,
   HiOutlineX,
+  HiOutlineSun,
+  HiOutlineMoon,
+  HiOutlineDesktopComputer,
+  HiOutlineCheck,
 } from 'react-icons/hi';
 import { APP_INITIAL } from '../../constants/app';
+
+const THEME_OPTIONS = [
+  { value: 'light', label: 'Light', Icon: HiOutlineSun },
+  { value: 'dark', label: 'Dark', Icon: HiOutlineMoon },
+  { value: 'system', label: 'System', Icon: HiOutlineDesktopComputer },
+];
 
 export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuOpen }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const { isAllowed } = useNotificationPreferences();
   const [notificationsList, setNotificationsList] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -32,6 +45,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const notifRef = useRef(null);
   const userRef = useRef(null);
+  const themeRef = useRef(null);
   const searchRef = useRef(null);
   const mobileSearchRef = useRef(null);
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -87,6 +101,9 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
       }
       if (userRef.current && !userRef.current.contains(e.target)) {
         setShowUserMenu(false);
+      }
+      if (themeRef.current && !themeRef.current.contains(e.target)) {
+        setShowThemeMenu(false);
       }
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowResults(false);
@@ -201,7 +218,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
           </div>
 
           {showResults && (
-            <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] overflow-hidden rounded-xl border border-gray-200 bg-white dark:bg-[#1f2530] shadow-xl">
               {searchResults.length === 0 ? (
                 <div className="px-4 py-3 text-sm text-gray-500">No leads found</div>
               ) : (
@@ -256,7 +273,7 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
             <HiOutlineSearch size={20} />
           </button>
           {mobileSearchOpen && (
-            <div className="fixed left-0 top-0 z-[210] w-full bg-white p-3 shadow-lg border-b border-gray-200 md:hidden" style={{ display: 'none' }}>
+            <div className="fixed left-0 top-0 z-[210] w-full bg-white dark:bg-[#1f2530] p-3 shadow-lg border-b border-gray-200 md:hidden" style={{ display: 'none' }}>
               <div className="relative">
                 <HiOutlineSearch className="topbar-search-icon" />
                 <input
@@ -275,6 +292,46 @@ export default function TopBar({ collapsed, pageTitle, onMenuToggle, mobileMenuO
                   <HiOutlineX size={18} />
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Theme */}
+        <div className="relative" ref={themeRef}>
+          <button
+            className="topbar-icon-btn"
+            aria-label={`Appearance: ${theme}`}
+            title={`Appearance: ${theme}`}
+            onClick={() => {
+              setShowThemeMenu(!showThemeMenu);
+              setShowNotifications(false);
+              setShowUserMenu(false);
+            }}
+          >
+            {resolvedTheme === 'dark' ? <HiOutlineMoon size={20} /> : <HiOutlineSun size={20} />}
+          </button>
+
+          {showThemeMenu && (
+            <div className="notification-dropdown right-0">
+              <div className="notification-dropdown-header">
+                <span className="notification-dropdown-title">Appearance</span>
+              </div>
+              {THEME_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  className="notification-item w-full border-none text-left"
+                  onClick={() => {
+                    setTheme(opt.value);
+                    setShowThemeMenu(false);
+                  }}
+                >
+                  <opt.Icon size={18} className={theme === opt.value ? 'text-indigo-600' : 'text-gray-500'} />
+                  <span className={`notification-text flex-1 ${theme === opt.value ? 'text-indigo-600 font-semibold' : ''}`}>
+                    {opt.label}
+                  </span>
+                  {theme === opt.value && <HiOutlineCheck size={18} className="text-indigo-600" />}
+                </button>
+              ))}
             </div>
           )}
         </div>
