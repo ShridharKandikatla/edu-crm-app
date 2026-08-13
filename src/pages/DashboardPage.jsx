@@ -23,8 +23,8 @@ import { StatusDistributionChart, ConversionDonutChart, MonthlyComparisonChart }
 const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'];
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const { hasAnyPermission } = useAuth();
+  const canViewOrgInsights = hasAnyPermission(['view_all_reports', 'view_team_reports']);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [charts, setCharts] = useState(null);
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const insightsControllerRef = useRef(null);
 
   const fetchInsights = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!canViewOrgInsights) return;
     insightsControllerRef.current?.abort();
     const controller = new AbortController();
     insightsControllerRef.current = controller;
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     } finally {
       if (insightsControllerRef.current === controller) setInsightsLoading(false);
     }
-  }, [isAdmin]);
+  }, [canViewOrgInsights]);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -104,10 +104,10 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'ai' && isAdmin && !insights && !insightsLoading) {
+    if (activeTab === 'ai' && canViewOrgInsights && !insights && !insightsLoading) {
       fetchInsights();
     }
-  }, [activeTab, isAdmin, insights, insightsLoading, fetchInsights]);
+  }, [activeTab, canViewOrgInsights, insights, insightsLoading, fetchInsights]);
 
   const funnelData = useMemo(() =>
     (charts?.leadFunnel || []).map((item, idx) => ({ ...item, color: COLORS[idx % COLORS.length] })),
@@ -171,7 +171,7 @@ export default function DashboardPage() {
         >
           Charts
         </button>
-        {isAdmin && (
+        {canViewOrgInsights && (
           <button
             onClick={() => setActiveTab('ai')}
             className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors -mb-px ${
@@ -231,7 +231,7 @@ export default function DashboardPage() {
         </>
       )}
 
-      {activeTab === 'ai' && isAdmin && (
+      {activeTab === 'ai' && canViewOrgInsights && (
         <FeatureGuard feature="AI_INSIGHTS">
           <AIInsightsCard
             insights={insights}

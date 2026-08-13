@@ -6,6 +6,7 @@ import {
 import { api } from '../services/api';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { useFeatures } from '../hooks/useFeatures';
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -33,6 +34,8 @@ function currentMonthRange() {
 
 export default function ReportsPage() {
   const { toast } = useToast();
+  const { hasAnyPermission } = useAuth();
+  const canViewReports = hasAnyPermission(['view_all_reports', 'view_team_reports', 'view_own_reports']);
   const features = useFeatures();
   const [activeTab, setActiveTab] = useState('source');
   const [loading, setLoading] = useState(true);
@@ -126,9 +129,11 @@ export default function ReportsPage() {
           <h2 className="page-title">Reports & Analytics</h2>
           <p className="page-subtitle">Detailed performance analytics</p>
         </div>
-        <button className="btn btn-secondary" aria-label="Export report" onClick={handleExport} disabled={exporting}>
-          <HiOutlineDownload /> {exporting ? 'Exporting...' : 'Export Report'}
-        </button>
+        {canViewReports && (
+          <button className="btn btn-secondary" aria-label="Export report" onClick={handleExport} disabled={exporting}>
+            <HiOutlineDownload /> {exporting ? 'Exporting...' : 'Export Report'}
+          </button>
+        )}
       </div>
 
       {/* Tabs */}

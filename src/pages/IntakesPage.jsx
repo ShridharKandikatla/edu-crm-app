@@ -5,11 +5,14 @@ import {
   HiOutlineCalendar, HiOutlineCheckCircle,
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import EmptyState from '../components/EmptyState';
 import ConfirmModal from '../components/ConfirmModal';
 
 export default function IntakesPage() {
   const { toast } = useToast();
+  const { hasPermission } = useAuth();
+  const canManage = hasPermission('manage_courses');
   const [intakes, setIntakes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -122,9 +125,11 @@ export default function IntakesPage() {
           <h2 className="page-title">Academic Intakes</h2>
           <p className="page-subtitle">{intakes.length} intake{intakes.length !== 1 ? 's' : ''} configured</p>
         </div>
-        <button className="btn btn-primary" onClick={openAddModal}>
-          <HiOutlinePlus /> Add Intake
-        </button>
+        {canManage && (
+          <button className="btn btn-primary" onClick={openAddModal}>
+            <HiOutlinePlus /> Add Intake
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -182,12 +187,16 @@ export default function IntakesPage() {
                     <td className="text-[0.8125rem] font-semibold">{intake._count?.leads || 0}</td>
                     <td>
                       <div className="flex gap-1">
-                        <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Edit ${intake.name}`} onClick={() => openEditModal(intake)}>
-                          <HiOutlinePencil />
-                        </button>
-                        <button className="btn btn-ghost btn-icon btn-sm text-red-600" aria-label={`Delete ${intake.name}`} onClick={() => handleDelete(intake)}>
-                          <HiOutlineTrash />
-                        </button>
+                        {canManage && (
+                          <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Edit ${intake.name}`} onClick={() => openEditModal(intake)}>
+                            <HiOutlinePencil />
+                          </button>
+                        )}
+                        {canManage && (
+                          <button className="btn btn-ghost btn-icon btn-sm text-red-600" aria-label={`Delete ${intake.name}`} onClick={() => handleDelete(intake)}>
+                            <HiOutlineTrash />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -16,8 +16,10 @@ import { STATUS_OPTIONS, SCORE_OPTIONS, SOURCE_OPTIONS } from '../constants/filt
 
 export default function LeadListPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { hasPermission, hasAnyPermission } = useAuth();
   const { toast } = useToast();
+  const canAssign = hasPermission('assign_leads');
+  const canExport = hasAnyPermission(['export_data', 'export_own_data']);
 
   const [leadsList, setLeadsList] = useState([]);
   const [counselorsList, setCounselorsList] = useState([]);
@@ -67,14 +69,14 @@ export default function LeadListPage() {
   useEffect(() => { setCurrentPage(1); }, [debouncedSearch]);
 
   useEffect(() => {
-    if (user && ['ADMIN', 'MANAGER'].includes(user.role)) {
+    if (canAssign) {
       api.users.getAll().then(res => {
         if (res && res.success && res.data) {
           setCounselorsList(res.data.filter(u => u.role === 'COUNSELOR' || u.role === 'TELECALLER'));
         }
       }).catch(() => {});
     }
-  }, [user]);
+  }, [canAssign]);
 
   const handleExport = async () => {
     try {
@@ -141,9 +143,11 @@ export default function LeadListPage() {
         <button className="btn btn-secondary" onClick={() => setShowFilters(!showFilters)}>
           <HiOutlineFilter /> <span className="hidden sm:inline">Filters</span>
         </button>
-        <button className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
-          <HiOutlineDownload /> <span className="hidden sm:inline">{exporting ? 'Exporting...' : 'Export CSV'}</span>
-        </button>
+        {canExport && (
+          <button className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
+            <HiOutlineDownload /> <span className="hidden sm:inline">{exporting ? 'Exporting...' : 'Export CSV'}</span>
+          </button>
+        )}
         <button className="btn btn-primary" onClick={() => navigate('/leads/new')}>
           <HiOutlinePlus /> <span className="hidden sm:inline">Add Lead</span>
         </button>
@@ -159,7 +163,7 @@ export default function LeadListPage() {
         />
       )}
 
-      <div className="data-table-wrapper">
+      <div className="data-table-wrapper overflow-x-auto">
         {loading ? (
           <div className="p-5">
             <SkeletonTable rows={8} cols={5} />
@@ -193,7 +197,7 @@ export default function LeadListPage() {
       {selectedLeads.length > 0 && (
         <div className="bulk-action-bar animate-fade-in-up">
           <span><span className="count">{selectedLeads.length}</span> leads selected</span>
-          {['ADMIN', 'MANAGER'].includes(user?.role) && (
+          {canAssign && (
             <button className="btn btn-secondary btn-sm" onClick={() => setShowAssignModal(true)}>
               Assign Counselor
             </button>

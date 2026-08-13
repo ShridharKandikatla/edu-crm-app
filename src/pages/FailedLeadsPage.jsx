@@ -13,8 +13,9 @@ import ConfirmModal from '../components/ConfirmModal';
 
 export default function FailedLeadsPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const { toast } = useToast();
+  const canReEngagePermission = hasPermission('re_engage');
   
   const [failedLeadsList, setFailedLeadsList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -202,7 +203,7 @@ export default function FailedLeadsPage() {
           </div>
 
           {/* Table */}
-          <div className="data-table-wrapper">
+          <div className="data-table-wrapper overflow-x-auto">
             {filteredLeads.length === 0 ? (
               <div className="empty-state p-16 text-center">
                 <div className="empty-state-icon">👥</div>
@@ -260,7 +261,7 @@ export default function FailedLeadsPage() {
                             <button className="btn btn-ghost btn-icon btn-sm" aria-label={`View lead ${lead.name}`} title="View" onClick={() => navigate(`/leads/${lead.id}`)}>
                               <HiOutlineEye />
                             </button>
-                            {canReEngage && ['ADMIN', 'MANAGER'].includes(user?.role) && (
+                            {canReEngage && canReEngagePermission && (
                               <button
                                 className="btn btn-ghost btn-icon btn-sm text-emerald-600"
                                 aria-label={`Re-engage lead ${lead.name}`}

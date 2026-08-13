@@ -48,23 +48,30 @@ const menuSections = [
       { path: '/intakes', icon: HiOutlineCalendar, label: 'Intakes', permission: null },
       { path: '/applications', icon: HiOutlineDocumentText, label: 'Applications', permission: null },
       { path: '/users', icon: HiOutlineUserGroup, label: 'Users', permission: 'manage_users' },
-      { path: '/templates', icon: HiOutlineChatAlt2, label: 'Message Templates', permission: null, feature: 'CAMPAIGNS' },
-      { path: '/campaigns', icon: HiOutlineSpeakerphone, label: 'Campaigns', permission: null, feature: 'CAMPAIGNS' },
+      { path: '/templates', icon: HiOutlineChatAlt2, label: 'Message Templates', permission: 'manage_campaigns', feature: 'CAMPAIGNS' },
+      { path: '/campaigns', icon: HiOutlineSpeakerphone, label: 'Campaigns', permission: 'manage_campaigns', feature: 'CAMPAIGNS' },
     ],
   },
   {
     title: 'Analytics',
     items: [
-      { path: '/reports', icon: HiOutlineChartBar, label: 'Reports', permission: null },
+      { path: '/reports', icon: HiOutlineChartBar, label: 'Reports', permission: ['view_all_reports', 'view_team_reports', 'view_own_reports'] },
       { path: '/settings', icon: HiOutlineCog, label: 'Settings', permission: null },
     ],
   },
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
-  const { hasPermission } = useAuth();
+  const { hasPermission, hasAnyPermission } = useAuth();
   const features = useFeatures();
   const [pendingFollowUps, setPendingFollowUps] = useState(0);
+
+  const itemVisible = (item) => {
+    const permissionOk = !item.permission
+      || (Array.isArray(item.permission) ? hasAnyPermission(item.permission) : hasPermission(item.permission));
+    const featureOk = !item.feature || features[item.feature];
+    return permissionOk && featureOk;
+  };
 
   const fetchStats = useCallback(async () => {
     try {
@@ -104,9 +111,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
       <nav className="sidebar-nav" role="navigation" aria-label="Main navigation">
         {menuSections.map((section) => {
-          const visibleItems = section.items.filter(
-            (item) => (!item.permission || hasPermission(item.permission)) && (!item.feature || features[item.feature])
-          );
+          const visibleItems = section.items.filter(itemVisible);
           if (visibleItems.length === 0) return null;
 
           return (

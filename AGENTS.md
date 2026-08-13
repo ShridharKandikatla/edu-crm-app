@@ -102,6 +102,14 @@ src/
 - Pitfall: tokens that are inverted in `.dark` must NOT be used as text color on always-dark pages (Login, Apply, ChatBot). There `text-indigo-100`/`text-indigo-200` become dark → invisible. Use non-inverted tokens (`text-white/70`, `text-indigo-300`, ...) or explicit `dark:text-...` overrides.
 - Pitfall: `bg-white` surfaces do NOT flip automatically — pair them with `dark:bg-[#1f2530]` (matches `--surface`) where the surface must be theme-aware.
 
+## Roles & Permissions
+
+- Single source of truth: `src/constants/permissions.js` — `ROLE_PERMISSIONS` (action keys per role), `PERMISSION_LABELS`, and `ROLE_MATRIX` (readable feature×role grid used by the Settings → Roles & Permissions tab).
+- `useAuth()` exposes `hasPermission(key)` and `hasAnyPermission([...])`. Prefer these over hard-coded `user.role === 'ADMIN'` checks.
+- Data scope semantics: `all` (whole org), `team` (manager's team), `own` (assigned to me). Scope is enforced **server-side**; the frontend only gates UI visibility/buttons.
+- Matrix (agreed): TELECALLER = own leads + create + follow-ups only. COUNSELOR = own leads/reports/export + follow-ups + re-engage own. MANAGER = all leads, assign, bulk/export, team reports, manage courses/intakes + campaigns. ADMIN = everything incl. users and delete.
+- Reminder: `delete_leads` and `bulk_import` permissions exist but have no UI buttons yet.
+
 ## Gotchas
 
 - `useWebSocket` hook exists (`src/hooks/useWebSocket.js`) — the app has WebSocket support for real-time updates.

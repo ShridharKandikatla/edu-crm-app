@@ -1,6 +1,8 @@
 import { HiOutlineCheckCircle, HiOutlinePlus, HiOutlineX, HiOutlineFire } from 'react-icons/hi';
+import { useAuth } from '../../context/AuthContext';
 
-export default function QuickActionsSidebar({ lead, counselor, user, onConvert, onFollowUp, onFail, onReEngage }) {
+export default function QuickActionsSidebar({ lead, counselor, onConvert, onFollowUp, onFail, onReEngage }) {
+  const { hasPermission } = useAuth();
   return (
     <div>
       <div className="card mb-4">
@@ -19,7 +21,7 @@ export default function QuickActionsSidebar({ lead, counselor, user, onConvert, 
               <HiOutlineX /> Mark as Failed
             </button>
           )}
-          {lead.status === 'FAILED' && ['ADMIN', 'MANAGER'].includes(user?.role) && (
+          {lead.status === 'FAILED' && hasPermission('re_engage') && (
             <button className="btn btn-primary w-full bg-indigo-500" onClick={onReEngage}>
               <HiOutlineFire /> Re-engage Lead
             </button>

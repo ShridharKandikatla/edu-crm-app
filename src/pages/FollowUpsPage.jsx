@@ -88,11 +88,11 @@ export default function FollowUpsPage() {
   };
 
   const filters = [
-    { key: 'all', label: 'All Pending', count: (stats.overdue || 0) + (stats.today || 0) + (stats.upcoming || 0) },
-    { key: 'overdue', label: 'Overdue', count: stats.overdue || 0, color: '#dc2626' },
-    { key: 'today', label: 'Today', count: stats.today || 0, color: '#d97706' },
-    { key: 'upcoming', label: 'Upcoming', count: stats.upcoming || 0, color: '#059669' },
-    { key: 'completed', label: 'Completed', count: stats.completed || 0, color: '#6b7280' },
+    { key: 'all', label: 'All Pending', count: (stats.overdue || 0) + (stats.today || 0) + (stats.upcoming || 0), textClass: 'text-gray-900 dark:text-gray-950' },
+    { key: 'overdue', label: 'Overdue', count: stats.overdue || 0, textClass: 'text-red-600 dark:text-red-400' },
+    { key: 'today', label: 'Today', count: stats.today || 0, textClass: 'text-amber-600 dark:text-amber-400' },
+    { key: 'upcoming', label: 'Upcoming', count: stats.upcoming || 0, textClass: 'text-emerald-600 dark:text-emerald-400' },
+    { key: 'completed', label: 'Completed', count: stats.completed || 0, textClass: 'text-gray-500 dark:text-gray-400' },
   ];
 
   return (
@@ -112,7 +112,7 @@ export default function FollowUpsPage() {
             className={`kpi-card cursor-pointer border text-left ${activeFilter === f.key ? 'primary !border-indigo-500' : '!border-gray-200'}`}
             onClick={() => setActiveFilter(f.key)}
           >
-            <div className="text-[1.75rem] font-bold" style={{ color: f.color || '#111827' }}>
+            <div className={`text-[1.75rem] font-bold ${f.textClass}`}>
               {f.count}
             </div>
             <div className="kpi-label">{f.label}</div>
@@ -144,8 +144,8 @@ export default function FollowUpsPage() {
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {recs.slice(0, 6).map((r, i) => (
                 <div key={i} className={`flex items-center gap-3 rounded-xl border p-3 ${
-                  r.priority === 'critical' ? 'border-red-300 bg-red-50' :
-                  r.priority === 'high' ? 'border-amber-300 bg-amber-50' :
+                  r.priority === 'critical' ? 'border-red-300 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40' :
+                  r.priority === 'high' ? 'border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40' :
                   'border-gray-200 bg-gray-50'
                 }`}>
                   <div className="text-lg">
@@ -166,7 +166,7 @@ export default function FollowUpsPage() {
       <div className="followup-cards grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
         {loadingList ? (
           <div className="col-span-full py-20 text-center text-gray-500" role="status">
-            <div className="spinner mx-auto mb-4 h-[30px] w-[30px] rounded-full border-[3px] border-black/10 border-l-indigo-600 animate-spin"></div>
+            <div className="spinner mx-auto mb-4 h-[30px] w-[30px] rounded-full border-[3px] border-black/10 dark:border-white/10 border-l-indigo-600 animate-spin"></div>
             <p>Loading follow-ups...</p>
           </div>
         ) : followUpsList.length === 0 ? (

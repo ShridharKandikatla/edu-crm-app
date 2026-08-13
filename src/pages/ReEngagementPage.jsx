@@ -9,7 +9,7 @@ import ConfirmModal from '../components/ConfirmModal';
 
 export default function ReEngagementPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const { toast } = useToast();
   
   const [failedLeads, setFailedLeads] = useState([]);
@@ -145,7 +145,7 @@ export default function ReEngagementPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  {!isReEngaged && ['ADMIN', 'MANAGER'].includes(user?.role) && (
+                  {!isReEngaged && hasPermission('re_engage') && (
                     <button className="btn btn-primary btn-sm flex-1" aria-label={`Re-engage lead ${lead.name}`} onClick={() => handleReEngage(lead.id)}>
                       <HiOutlineRefresh /> Re-engage
                     </button>

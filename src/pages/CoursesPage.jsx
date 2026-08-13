@@ -5,12 +5,15 @@ import {
   HiOutlineAcademicCap, HiOutlineX, HiOutlinePhotograph,
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { SkeletonCard } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
 import ConfirmModal from '../components/ConfirmModal';
 
 export default function CoursesPage() {
   const { toast } = useToast();
+  const { hasPermission } = useAuth();
+  const canManage = hasPermission('manage_courses');
   const [coursesList, setCoursesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -127,9 +130,11 @@ export default function CoursesPage() {
           <h2 className="page-title">Courses</h2>
           <p className="page-subtitle">{coursesList.length} courses offered</p>
         </div>
-        <button className="btn btn-primary" onClick={openAddModal}>
-          <HiOutlinePlus /> Add Course
-        </button>
+        {canManage && (
+          <button className="btn btn-primary" onClick={openAddModal}>
+            <HiOutlinePlus /> Add Course
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -166,12 +171,16 @@ export default function CoursesPage() {
                       </span>
                     </div>
                     <div className="flex gap-1">
-                    <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Edit ${course.name}`} onClick={() => openEditModal(course)}>
-                      <HiOutlinePencil />
-                    </button>
-                    <button className="btn btn-ghost btn-icon btn-sm text-red-600" aria-label={`Delete ${course.name}`} onClick={() => handleDeleteClick(course.id)}>
+                    {canManage && (
+                      <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Edit ${course.name}`} onClick={() => openEditModal(course)}>
+                        <HiOutlinePencil />
+                      </button>
+                    )}
+                    {canManage && (
+                      <button className="btn btn-ghost btn-icon btn-sm text-red-600" aria-label={`Delete ${course.name}`} onClick={() => handleDeleteClick(course.id)}>
                         <HiOutlineTrash />
                       </button>
+                    )}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">

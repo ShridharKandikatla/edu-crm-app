@@ -496,6 +496,22 @@ table {
   border-radius: 0 var(--radius-full) var(--radius-full) 0;
 }
 
+/* Settings nav tabs sit on a card surface (not the dark sidebar), so they need
+   theme-aware colors instead of the sidebar's white-on-dark active/hover style. */
+.settings-nav .sidebar-link {
+  color: var(--gray-500);
+}
+
+.settings-nav .sidebar-link:hover {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.settings-nav .sidebar-link.active {
+  background: var(--color-indigo-50);
+  color: var(--color-indigo-600);
+}
+
 .sidebar-link-icon {
   font-size: 1.25rem;
   flex-shrink: 0;
@@ -1755,7 +1771,9 @@ table {
 }
 
 .bulk-action-bar button {
-  color: var(--gray-300);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
   font-size: var(--font-size-sm);
   font-weight: 500;
   padding: var(--space-2) var(--space-4);
@@ -1764,7 +1782,7 @@ table {
 }
 
 .bulk-action-bar button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.22);
   color: white;
 }
 

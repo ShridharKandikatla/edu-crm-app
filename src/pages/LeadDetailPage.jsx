@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { HiOutlineArrowLeft } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
@@ -27,7 +26,6 @@ const LEAD_SOURCES = [
 export default function LeadDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
   const features = useFeatures()
 
@@ -393,7 +391,7 @@ export default function LeadDetailPage() {
         </div>
 
         <div>
-          <QuickActionsSidebar lead={lead} counselor={counselor} user={user} onConvert={() => setShowConvertModal(true)} onFollowUp={() => setShowFollowUpModal(true)} onFail={() => setShowFailModal(true)} onReEngage={handleReEngage} />
+          <QuickActionsSidebar lead={lead} counselor={counselor} onConvert={() => setShowConvertModal(true)} onFollowUp={() => setShowFollowUpModal(true)} onFail={() => setShowFailModal(true)} onReEngage={handleReEngage} />
         </div>
       </div>
 

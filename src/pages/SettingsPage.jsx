@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff, HiOutlineSun, HiOutlineMoon, HiOutlineDesktopComputer, HiOutlineCheck } from 'react-icons/hi';
+import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff, HiOutlineSun, HiOutlineMoon, HiOutlineDesktopComputer, HiOutlineCheck, HiOutlineKey } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonBlock } from '../components/Skeleton';
 import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
 import { useTheme } from '../context/ThemeContext';
+import { ROLE_MATRIX, ACCESS_LABELS, ROLES } from '../constants/permissions';
 
 const APPEARANCE_OPTIONS = [
   { value: 'light', label: 'Light', desc: 'Always use the light theme', Icon: HiOutlineSun },
@@ -14,13 +15,22 @@ const APPEARANCE_OPTIONS = [
   { value: 'system', label: 'System', desc: 'Follow your device color scheme', Icon: HiOutlineDesktopComputer },
 ];
 
+const ACCESS_BADGE = {
+  '✓': 'badge-converted',
+  '✗': 'badge-failed',
+  'all': 'badge-app-inquiry',
+  'team': 'badge-app-inquiry',
+  'own': 'badge-app-inquiry',
+  'manage': 'badge-app-inquiry',
+};
+
 export default function SettingsPage() {
   const { user, setUser } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(
-    ['profile', 'appearance', 'notifications', 'security'].includes(initialTab) ? initialTab : 'profile'
+    ['profile', 'appearance', 'notifications', 'security', 'permissions'].includes(initialTab) ? initialTab : 'profile'
   );
   
   // Profile Form States
@@ -130,6 +140,7 @@ export default function SettingsPage() {
             { key: 'profile', label: 'Profile', icon: HiOutlineUser },
             { key: 'appearance', label: 'Appearance', icon: HiOutlineMoon },
             { key: 'notifications', label: 'Notifications', icon: HiOutlineBell },
+            { key: 'permissions', label: 'Roles & Permissions', icon: HiOutlineKey },
             { key: 'security', label: 'Security', icon: HiOutlineShieldCheck },
           ].map(item => (
             <button
@@ -345,6 +356,56 @@ export default function SettingsPage() {
                 <HiOutlineSave /> {savingPassword ? 'Updating...' : 'Update Password'}
               </button>
             </form>
+          )}
+
+          {activeTab === 'permissions' && (
+            <div className="card animate-fade-in">
+              <h3 className="mb-2 text-base font-bold text-gray-900">Roles & Permissions</h3>
+              <p className="mb-6 text-sm text-gray-500">
+                Feature access granted to each role. Data scope shows how much data a role can see.
+              </p>
+
+              <div className="overflow-x-auto">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Feature</th>
+                      {ROLES.map(role => (
+                        <th key={role} scope="col">{role}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ROLE_MATRIX.map(row => (
+                      <tr key={row.capability}>
+                        <td>
+                          <div className="font-semibold text-gray-900">{row.capability}</div>
+                          <div className="text-[0.7rem] text-gray-500">{row.detail}</div>
+                        </td>
+                        {ROLES.map(role => (
+                          <td key={role}>
+                            <span className={`badge ${ACCESS_BADGE[row.access[role]] || 'badge-failed'}`}>
+                              {ACCESS_LABELS[row.access[role]] || row.access[role]}
+                            </span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500">
+                {ROLES.map(role => (
+                  <span key={role} className="inline-flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" /> {role}
+                  </span>
+                ))}
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-gray-400" /> Values: Yes · No · All leads · Team leads · Assigned to me · Full access
+                </span>
+              </div>
+            </div>
           )}
         </div>
       </div>

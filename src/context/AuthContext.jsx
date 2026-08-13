@@ -59,6 +59,12 @@ export function AuthProvider({ children }) {
     return ROLE_PERMISSIONS[user.role]?.includes(permission) || false;
   };
 
+  const hasAnyPermission = (permissions) => {
+    if (!user) return false;
+    const granted = ROLE_PERMISSIONS[user.role] || [];
+    return permissions.some((permission) => granted.includes(permission));
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -93,7 +99,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, features, isAuthenticated, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, setUser, features, isAuthenticated, login, logout, hasPermission, hasAnyPermission }}>
       {children}
     </AuthContext.Provider>
   );
