@@ -18,6 +18,13 @@ npm run preview      # preview production build
 
 **Required order:** `lint → test → build`
 
+## Memory Sync (mandatory)
+
+- `memory.md` in this folder is the project's durable context record. **Update it in the same change as any code**, before shipping — it is a required deliverable, not optional.
+- Update `memory.md` whenever you change: dependencies, scripts, env vars, routing/pages, `src/services/api.js` groups, pagination, conventions, the API contract, roles/permissions, or gotchas.
+- When adding a feature/page/hook, add it to the relevant `memory.md` section (pages list, api groups, conventions).
+- Keep `AGENTS.md` (the "do" ruleset) and `memory.md` (the "what is true" record) in sync — a change to one must be reflected in the other when it changes behavior.
+
 ## Environment
 
 Copy `.env.example` to `.env`. Only required var:
@@ -109,6 +116,14 @@ src/
 - Data scope semantics: `all` (whole org), `team` (manager's team), `own` (assigned to me). Scope is enforced **server-side**; the frontend only gates UI visibility/buttons.
 - Matrix (agreed): TELECALLER = own leads + create + follow-ups only. COUNSELOR = own leads/reports/export + follow-ups + re-engage own. MANAGER = all leads, assign, bulk/export, team reports, manage courses/intakes + campaigns. ADMIN = everything incl. users and delete.
 - Reminder: `delete_leads` and `bulk_import` permissions exist but have no UI buttons yet.
+
+## Pagination
+
+- List endpoints return `{ success, data, pagination: { total, page, limit, totalPages, hasMore } }`. Always read totals from `res.pagination.total`, never from `data.length`.
+- Every list UI must send `page`/`limit` query params and render pagination UI (reuse the `.pagination` / `.pagination-btn` styles, or `<LeadPagination>` for leads).
+- Reference implementations: `LeadListPage`, `ApplicationsPage`, `UsersPage`, `FollowUpsPage`, `FailedLeadsPage`, `ReEngagementPage`, `CampaignsPage`, `MessageTemplatesPage` (all server-driven). WhatsApp threads use load-more pagination in `WhatsAppTab` (`page`/`limit`, oldest first, prepended).
+- Do NOT fetch with large hard-coded limits (`limit: 1000`) as a workaround — it silently drops data past the cap. Drive server pagination instead.
+- Known gap: `FailedLeadsPage` reason-count chart reflects the current server page only (server-driven pagination). Re-engagement uses a dedicated paginated endpoint (`GET /api/leads/re-engagement`).
 
 ## Gotchas
 
