@@ -4,7 +4,8 @@ import { api } from '../services/api';
 import {
   HiOutlinePhone, HiOutlineMail, HiOutlineChatAlt2, HiOutlineChat,
   HiOutlineUserGroup, HiOutlineClock, HiOutlineCheckCircle,
-  HiOutlineCalendar, HiOutlineX, HiOutlineLightningBolt
+  HiOutlineCalendar, HiOutlineX, HiOutlineLightningBolt,
+  HiOutlineChevronLeft, HiOutlineChevronRight
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { useFeatures } from '../hooks/useFeatures';
@@ -27,6 +28,9 @@ export default function FollowUpsPage() {
   const [followUpsList, setFollowUpsList] = useState([]);
   const [stats, setStats] = useState({ overdue: 0, today: 0, upcoming: 0, completed: 0 });
   const [loadingList, setLoadingList] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 20;
 
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedFUId, setSelectedFUId] = useState('');
@@ -46,14 +50,17 @@ export default function FollowUpsPage() {
   const fetchFollowUps = useCallback(async () => {
     try {
       setLoadingList(true);
-      const params = { status: activeFilter === 'all' ? 'pending' : activeFilter };
+      const params = { status: activeFilter === 'all' ? 'pending' : activeFilter, page: currentPage, limit: pageSize };
       if (typeFilter !== 'ALL') params.type = typeFilter;
       const res = await api.followUps.getAll(params);
-      if (res && res.success && res.data) setFollowUpsList(res.data || []);
+      if (res && res.success) {
+        setFollowUpsList(res.data || []);
+        setTotal(res.pagination?.total || 0);
+      }
     } catch { /* silent */ } finally {
       setLoadingList(false);
     }
-  }, [activeFilter, typeFilter]);
+  }, [activeFilter, typeFilter, currentPage]);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchFollowUps(); }, [fetchFollowUps]);
@@ -95,6 +102,8 @@ export default function FollowUpsPage() {
     { key: 'completed', label: 'Completed', count: stats.completed || 0, textClass: 'text-gray-500 dark:text-gray-400' },
   ];
 
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
   return (
     <div>
       <div className="page-header">
@@ -110,7 +119,7 @@ export default function FollowUpsPage() {
           <button
             key={f.key}
             className={`kpi-card cursor-pointer border text-left ${activeFilter === f.key ? 'primary !border-indigo-500' : '!border-gray-200'}`}
-            onClick={() => setActiveFilter(f.key)}
+            onClick={() => { setActiveFilter(f.key); setCurrentPage(1); }}
           >
             <div className={`text-[1.75rem] font-bold ${f.textClass}`}>
               {f.count}
@@ -127,7 +136,7 @@ export default function FollowUpsPage() {
           <button
             key={type}
             className={`btn ${typeFilter === type ? 'btn-primary' : 'btn-secondary'} btn-sm shrink-0`}
-            onClick={() => setTypeFilter(type)}
+            onClick={() => { setTypeFilter(type); setCurrentPage(1); }}
           >
             {type === 'ALL' ? 'All' : type.replace(/_/g, ' ')}
           </button>
@@ -231,6 +240,25 @@ export default function FollowUpsPage() {
           })
         )}
       </div>
+
+      {total > 0 && (
+        <div className="data-table-footer mt-6">
+          <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total}</span>
+          <div className="pagination">
+            <button className="pagination-btn" disabled={currentPage === 1} aria-label="Previous page" aria-disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+              <HiOutlineChevronLeft />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i + 1} className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`} aria-current={currentPage === i + 1 ? 'page' : undefined} onClick={() => setCurrentPage(i + 1)}>
+                {i + 1}
+              </button>
+            ))}
+            <button className="pagination-btn" disabled={currentPage === totalPages} aria-label="Next page" aria-disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+              <HiOutlineChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Complete Follow-up Modal */}
       {showCompleteModal && (

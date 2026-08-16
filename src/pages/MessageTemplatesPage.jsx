@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlinePaperClip, HiOutlineDownload, HiOutlineDocument } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlinePaperClip, HiOutlineDownload, HiOutlineDocument, HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonCard } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
@@ -34,13 +34,17 @@ export default function MessageTemplatesPage() {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const res = await api.templates.getAll();
-      if (res && res.success && res.data) {
-        setTemplates(res.data.templates || []);
+      const res = await api.templates.getAll({ page: currentPage, limit: pageSize });
+      if (res && res.success) {
+        setTemplates(res.data || []);
+        setTotal(res.pagination?.total || 0);
       }
     } catch {
       // silent
@@ -51,7 +55,7 @@ export default function MessageTemplatesPage() {
 
   useEffect(() => {
     if (features.CAMPAIGNS) fetchTemplates();
-  }, [features.CAMPAIGNS]);
+  }, [features.CAMPAIGNS, currentPage]);
 
   if (!features.CAMPAIGNS) return <FeatureLocked feature="CAMPAIGNS" />;
 
@@ -78,6 +82,7 @@ export default function MessageTemplatesPage() {
       } else {
         await api.templates.create(form);
         toast.success('Template created');
+        setCurrentPage(1);
       }
       setShowModal(false);
       fetchTemplates();
@@ -95,6 +100,7 @@ export default function MessageTemplatesPage() {
       await api.templates.remove(deleteTarget);
       setConfirmOpen(false);
       toast.success('Template deleted');
+      setCurrentPage(1);
       fetchTemplates();
     } catch (error) {
       toast.error(error.message || 'Failed to delete template');
@@ -111,9 +117,9 @@ export default function MessageTemplatesPage() {
       setUploading(true);
       await api.templates.uploadAttachment(editTemplate.id, file);
       toast.success('Attachment uploaded');
-      const fresh = await api.templates.getAll();
+      const fresh = await api.templates.getAll({ page: currentPage, limit: pageSize });
       if (fresh && fresh.success && fresh.data) {
-        const updated = fresh.data.templates.find((t) => t.id === editTemplate.id);
+        const updated = fresh.data.find((t) => t.id === editTemplate.id);
         if (updated) setEditTemplate(updated);
       }
       fetchTemplates();
@@ -130,9 +136,9 @@ export default function MessageTemplatesPage() {
     try {
       await api.templates.removeAttachment(editTemplate.id, attachmentId);
       toast.success('Attachment removed');
-      const fresh = await api.templates.getAll();
+      const fresh = await api.templates.getAll({ page: currentPage, limit: pageSize });
       if (fresh && fresh.success && fresh.data) {
-        const updated = fresh.data.templates.find((t) => t.id === editTemplate.id);
+        const updated = fresh.data.find((t) => t.id === editTemplate.id);
         if (updated) setEditTemplate(updated);
       }
       fetchTemplates();
@@ -140,6 +146,8 @@ export default function MessageTemplatesPage() {
       toast.error(error.message || 'Failed to remove attachment');
     }
   };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div>
@@ -221,6 +229,24 @@ export default function MessageTemplatesPage() {
               ))}
             </tbody>
           </table>
+          {templates.length > 0 && (
+            <div className="data-table-footer">
+              <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total}</span>
+              <div className="pagination">
+                <button className="pagination-btn" disabled={currentPage === 1} aria-label="Previous page" aria-disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                  <HiOutlineChevronLeft />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button key={i + 1} className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`} aria-current={currentPage === i + 1 ? 'page' : undefined} onClick={() => setCurrentPage(i + 1)}>
+                    {i + 1}
+                  </button>
+                ))}
+                <button className="pagination-btn" disabled={currentPage === totalPages} aria-label="Next page" aria-disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                  <HiOutlineChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { HiOutlineRefresh, HiOutlineEye, HiOutlinePhone } from 'react-icons/hi';
+import { HiOutlineRefresh, HiOutlineEye, HiOutlinePhone, HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonCard } from '../components/Skeleton';
 import ConfirmModal from '../components/ConfirmModal';
@@ -12,9 +12,11 @@ export default function ReEngagementPage() {
   const { hasPermission } = useAuth();
   const { toast } = useToast();
   
-  const [failedLeads, setFailedLeads] = useState([]);
-  const [reEngagedLeads, setReEngagedLeads] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 12;
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reEngageTarget, setReEngageTarget] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -22,39 +24,24 @@ export default function ReEngagementPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [failedRes, reEngagedRes] = await Promise.all([
-        api.leads.getAll({ status: 'FAILED', limit: 1000 }),
-        api.leads.getAll({ status: 'RE_ENGAGED', limit: 1000 })
-      ]);
-      if (failedRes.success) setFailedLeads(failedRes.data || []);
-      if (reEngagedRes.success) setReEngagedLeads(reEngagedRes.data || []);
+      const res = await api.leads.getReEngagement({ page: currentPage, limit: pageSize });
+      if (res && res.success) {
+        setLeads(res.data || []);
+        setTotal(res.pagination?.total || 0);
+      }
     } catch { /* silent */ } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const daysSinceFailed = (dateStr) => {
-    if (!dateStr) return null;
-    const diff = Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
-    return diff;
-  };
-
-  const reEngageableLeads = useMemo(() => {
-    const eligibleFailed = failedLeads.filter(l => {
-      const days = daysSinceFailed(l.failedAt || l.updatedAt);
-      return days >= 30;
-    });
-
-    const combined = [...eligibleFailed, ...reEngagedLeads];
-    return combined.sort((a, b) => new Date(b.failedAt || b.reEngageDate || b.updatedAt) - new Date(a.failedAt || a.reEngageDate || a.updatedAt));
-  }, [failedLeads, reEngagedLeads]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const handleReEngage = async (leadId) => {
     setReEngageTarget(leadId);
@@ -82,7 +69,7 @@ export default function ReEngagementPage() {
       <div className="page-header">
         <div>
           <h2 className="page-title">Re-engagement Pipeline</h2>
-          <p className="page-subtitle">{reEngageableLeads.length} leads eligible for re-engagement</p>
+          <p className="page-subtitle">{total} leads eligible for re-engagement</p>
         </div>
       </div>
 
@@ -107,7 +94,7 @@ export default function ReEngagementPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
-          {reEngageableLeads.map((lead) => {
+          {leads.map((lead) => {
             const isReEngaged = lead.status === 'RE_ENGAGED';
             return (
               <div
@@ -163,11 +150,30 @@ export default function ReEngagementPage() {
         </div>
       )}
 
-      {!loading && reEngageableLeads.length === 0 && (
+      {!loading && total === 0 && (
         <div className="empty-state mt-10">
           <div className="empty-state-icon">🔄</div>
           <div className="empty-state-title">No leads for re-engagement</div>
           <div className="empty-state-text">Failed leads become eligible for re-engagement after 30 days.</div>
+        </div>
+      )}
+
+      {total > 0 && (
+        <div className="data-table-footer mt-6">
+          <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total}</span>
+          <div className="pagination">
+            <button className="pagination-btn" disabled={currentPage === 1} aria-label="Previous page" aria-disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+              <HiOutlineChevronLeft />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i + 1} className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`} aria-current={currentPage === i + 1 ? 'page' : undefined} onClick={() => setCurrentPage(i + 1)}>
+                {i + 1}
+              </button>
+            ))}
+            <button className="pagination-btn" disabled={currentPage === totalPages} aria-label="Next page" aria-disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+              <HiOutlineChevronRight />
+            </button>
+          </div>
         </div>
       )}
 

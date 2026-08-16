@@ -122,8 +122,8 @@ export default function LeadDetailPage() {
 
   useEffect(() => {
     if (!features.CAMPAIGNS) return;
-    api.templates.getAll().then((res) => {
-      if (res && res.success && res.data) setTemplates(res.data.templates || []);
+    api.templates.getAll({ limit: 50 }).then((res) => {
+      if (res && res.success && res.data) setTemplates(res.data || []);
     }).catch(() => {});
   }, [features.CAMPAIGNS]);
 

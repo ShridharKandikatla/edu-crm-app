@@ -276,6 +276,9 @@ export const api = {
         method: 'POST',
       });
     },
+    getReEngagement: async (params = {}, requestOptions = {}) => {
+      return request(`/leads/re-engagement${buildQueryString(params)}`, requestOptions);
+    },
     addComment: async (id, content, requestOptions = {}) => {
       return request(`/leads/${id}/comment`, {
         ...requestOptions,
@@ -450,8 +453,8 @@ export const api = {
 
   // Users endpoints
   users: {
-    getAll: async (requestOptions = {}) => {
-      return request('/users', requestOptions);
+    getAll: async (params = {}, requestOptions = {}) => {
+      return request(`/users${buildQueryString(params)}`, requestOptions);
     },
     getById: async (id, requestOptions = {}) => {
       return request(`/users/${id}`, requestOptions);
@@ -516,6 +519,9 @@ export const api = {
     getAll: async (requestOptions = {}) => {
       return request('/features', requestOptions);
     },
+    getAdmin: async (requestOptions = {}) => {
+      return request('/features/admin', requestOptions);
+    },
     update: async (key, data, requestOptions = {}) => {
       return request(`/features/${key}`, {
         ...requestOptions,
@@ -527,8 +533,8 @@ export const api = {
 
   // Message templates endpoints
   templates: {
-    getAll: async (requestOptions = {}) => {
-      return request('/templates', requestOptions);
+    getAll: async (params = {}, requestOptions = {}) => {
+      return request(`/templates${buildQueryString(params)}`, requestOptions);
     },
     create: async (data, requestOptions = {}) => {
       return request('/templates', {
@@ -563,8 +569,8 @@ export const api = {
 
   // Marketing campaigns endpoints
   campaigns: {
-    getAll: async (requestOptions = {}) => {
-      return request('/campaigns', requestOptions);
+    getAll: async (params = {}, requestOptions = {}) => {
+      return request(`/campaigns${buildQueryString(params)}`, requestOptions);
     },
     create: async (data, requestOptions = {}) => {
       return request('/campaigns', {
@@ -590,8 +596,8 @@ export const api = {
 
   // WhatsApp endpoints
   whatsapp: {
-    getThread: async (leadId, requestOptions = {}) => {
-      return request(`/leads/${leadId}/whatsapp`, requestOptions);
+    getThread: async (leadId, params = {}, requestOptions = {}) => {
+      return request(`/leads/${leadId}/whatsapp${buildQueryString(params)}`, requestOptions);
     },
     sendMessage: async (leadId, data, requestOptions = {}) => {
       return request(`/leads/${leadId}/whatsapp`, {

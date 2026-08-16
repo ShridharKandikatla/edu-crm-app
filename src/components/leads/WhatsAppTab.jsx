@@ -16,16 +16,22 @@ export default function WhatsAppTab({ leadId, lead }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const scrollRef = useRef(null);
+  const suppressScrollRef = useRef(false);
 
-  const fetchThread = useCallback(async () => {
+  const fetchThread = useCallback(async (targetPage = 1, append = false) => {
+    if (append) setLoadingMore(true); else setLoading(true);
     try {
-      setLoading(true);
-      const res = await api.whatsapp.getThread(leadId);
+      const res = await api.whatsapp.getThread(leadId, { page: targetPage, limit: 50 });
       if (res && res.success && res.data) {
-        setMessages(res.data.messages || []);
+        setMessages((prev) => append ? [...(res.data.messages || []), ...prev] : (res.data.messages || []));
+        setHasMore(Boolean(res.data.pagination?.hasMore));
+        setPage(targetPage);
         setConfigured(Boolean(res.data.configured));
         setWhatsappNumber(res.data.whatsappNumber || '');
       }
@@ -33,20 +39,37 @@ export default function WhatsAppTab({ leadId, lead }) {
       // silent
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [leadId]);
 
   useEffect(() => { fetchThread(); }, [fetchThread]);
 
+  const handleLoadMore = async () => {
+    if (loadingMore) return;
+    const el = scrollRef.current;
+    const prevHeight = el ? el.scrollHeight : 0;
+    suppressScrollRef.current = true;
+    try {
+      await fetchThread(page + 1, true);
+    } finally {
+      requestAnimationFrame(() => {
+        if (el) el.scrollTop = el.scrollHeight - prevHeight;
+      });
+      suppressScrollRef.current = false;
+    }
+  };
+
   useEffect(() => {
-    api.templates.getAll().then((res) => {
+    api.templates.getAll({ limit: 50 }).then((res) => {
       if (res && res.success && res.data) {
-        setTemplates((res.data.templates || []).filter((t) => t.isActive));
+        setTemplates((res.data || []).filter((t) => t.isActive));
       }
     }).catch(() => {});
   }, []);
 
   useEffect(() => {
+    if (suppressScrollRef.current) { suppressScrollRef.current = false; return; }
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
@@ -87,6 +110,14 @@ export default function WhatsAppTab({ leadId, lead }) {
           <span className="badge badge-neutral">Integration not configured</span>
         )}
       </div>
+
+      {hasMore && !loading && (
+        <div className="mb-2 text-center">
+          <button className="btn btn-outline btn-sm" onClick={handleLoadMore} disabled={loadingMore} aria-label="Load older messages">
+            {loadingMore ? 'Loading...' : 'Load older messages'}
+          </button>
+        </div>
+      )}
 
       <div ref={scrollRef} className="max-h-[420px] space-y-3 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-4">
         {messages.length === 0 ? (

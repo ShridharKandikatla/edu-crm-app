@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonCard } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
@@ -27,13 +27,17 @@ export default function CampaignsPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
-      const res = await api.campaigns.getAll();
-      if (res && res.success && res.data) {
-        setCampaigns(res.data.campaigns || []);
+      const res = await api.campaigns.getAll({ page: currentPage, limit: pageSize });
+      if (res && res.success) {
+        setCampaigns(res.data || []);
+        setTotal(res.pagination?.total || 0);
       }
     } catch {
       // silent
@@ -44,7 +48,7 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     if (features.CAMPAIGNS) fetchCampaigns();
-  }, [features.CAMPAIGNS]);
+  }, [features.CAMPAIGNS, currentPage]);
 
   if (!features.CAMPAIGNS) return <FeatureLocked feature="CAMPAIGNS" />;
 
@@ -88,6 +92,7 @@ export default function CampaignsPage() {
       } else {
         await api.campaigns.create(payload);
         toast.success('Campaign created');
+        setCurrentPage(1);
       }
       setShowModal(false);
       fetchCampaigns();
@@ -105,6 +110,7 @@ export default function CampaignsPage() {
       await api.campaigns.remove(deleteTarget);
       setConfirmOpen(false);
       toast.success('Campaign deleted');
+      setCurrentPage(1);
       fetchCampaigns();
     } catch (error) {
       toast.error(error.message || 'Failed to delete campaign');
@@ -115,6 +121,8 @@ export default function CampaignsPage() {
   };
 
   const fmtCurrency = (n) => `₹${(n || 0).toLocaleString('en-IN')}`;
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div>
@@ -174,6 +182,24 @@ export default function CampaignsPage() {
               ))}
             </tbody>
           </table>
+          {campaigns.length > 0 && (
+            <div className="data-table-footer">
+              <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total}</span>
+              <div className="pagination">
+                <button className="pagination-btn" disabled={currentPage === 1} aria-label="Previous page" aria-disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                  <HiOutlineChevronLeft />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button key={i + 1} className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`} aria-current={currentPage === i + 1 ? 'page' : undefined} onClick={() => setCurrentPage(i + 1)}>
+                    {i + 1}
+                  </button>
+                ))}
+                <button className="pagination-btn" disabled={currentPage === totalPages} aria-label="Next page" aria-disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                  <HiOutlineChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

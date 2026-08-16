@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import {
   HiOutlinePlus, HiOutlinePencil, HiOutlineBan,
   HiOutlineCheckCircle, HiOutlineX, HiOutlineEye, HiOutlineEyeOff,
+  HiOutlineChevronLeft, HiOutlineChevronRight,
 } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonCard } from '../components/Skeleton';
@@ -25,6 +26,9 @@ export default function UsersPage() {
   const [counselorStats, setCounselorStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 12;
   
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
@@ -41,22 +45,25 @@ export default function UsersPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      const params = { page: currentPage, limit: pageSize };
+      if (roleFilter !== 'ALL') params.role = roleFilter;
       const [usersRes, reportRes] = await Promise.all([
-        api.users.getAll(),
+        api.users.getAll(params),
         api.reports.getCounselorReport().catch(() => ({ success: false, data: { report: [] } }))
       ]);
-      if (usersRes.success) setUsersList(usersRes.data || []);
+      if (usersRes.success) {
+        setUsersList(usersRes.data || []);
+        setTotal(usersRes.pagination?.total || 0);
+      }
       if (reportRes.success) setCounselorStats(reportRes.data.report || []);
     } catch { /* silent */ } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage, roleFilter]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const filteredUsers = roleFilter === 'ALL'
-    ? usersList
-    : usersList.filter(u => u.role === roleFilter);
+  const filteredUsers = usersList;
 
   const getUserStats = (user) => {
     const stat = counselorStats.find(s => s.id === user.id);
@@ -129,6 +136,7 @@ export default function UsersPage() {
         };
         await api.auth.register(payload);
         toast.success('User created successfully!');
+        setCurrentPage(1);
       }
       setShowModal(false);
       loadData();
@@ -161,12 +169,14 @@ export default function UsersPage() {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h2 className="page-title">User Management</h2>
-          <p className="page-subtitle">{usersList.length} users in the system</p>
+          <p className="page-subtitle">{total} users in the system</p>
         </div>
         {currentUser?.role === 'ADMIN' && (
           <button className="btn btn-primary" onClick={openAddModal}>
@@ -183,7 +193,7 @@ export default function UsersPage() {
             className={`btn ${roleFilter === role ? 'btn-primary' : 'btn-secondary'} btn-sm shrink-0`}
             aria-label={`Filter by ${role === 'ALL' ? 'all roles' : role}`}
             aria-pressed={roleFilter === role}
-            onClick={() => setRoleFilter(role)}
+            onClick={() => { setRoleFilter(role); setCurrentPage(1); }}
           >
             {role === 'ALL' ? 'All Roles' : role}
           </button>
@@ -287,6 +297,25 @@ export default function UsersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {total > 0 && (
+        <div className="data-table-footer mt-6">
+          <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total}</span>
+          <div className="pagination">
+            <button className="pagination-btn" disabled={currentPage === 1} aria-label="Previous page" aria-disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+              <HiOutlineChevronLeft />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i + 1} className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`} aria-current={currentPage === i + 1 ? 'page' : undefined} onClick={() => setCurrentPage(i + 1)}>
+                {i + 1}
+              </button>
+            ))}
+            <button className="pagination-btn" disabled={currentPage === totalPages} aria-label="Next page" aria-disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+              <HiOutlineChevronRight />
+            </button>
+          </div>
         </div>
       )}
 

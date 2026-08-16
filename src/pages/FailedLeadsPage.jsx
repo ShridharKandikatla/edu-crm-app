@@ -21,6 +21,7 @@ export default function FailedLeadsPage() {
   const [loading, setLoading] = useState(true);
   const [reasonFilter, setReasonFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
   
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reEngageTarget, setReEngageTarget] = useState(null);
@@ -31,12 +32,17 @@ export default function FailedLeadsPage() {
   const fetchFailedLeads = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.leads.getAll({ status: 'FAILED', limit: 1000 });
-      if (res && res.success && res.data) setFailedLeadsList(res.data || []);
+      const params = { status: 'FAILED', page: currentPage, limit: pageSize };
+      if (reasonFilter !== 'ALL') params.failureReason = reasonFilter;
+      const res = await api.leads.getAll(params);
+      if (res && res.success) {
+        setFailedLeadsList(res.data || []);
+        setTotal(res.pagination?.total || 0);
+      }
     } catch { /* silent */ } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage, reasonFilter]);
 
   useEffect(() => { fetchFailedLeads(); }, [fetchFailedLeads]);
 
@@ -67,8 +73,8 @@ export default function FailedLeadsPage() {
 
   const colors = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#06b6d4', '#8b5cf6', '#ec4899', '#6b7280'];
 
-  const totalPages = Math.ceil(filteredLeads.length / pageSize) || 1;
-  const paginatedLeads = filteredLeads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const paginatedLeads = filteredLeads;
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
@@ -101,7 +107,7 @@ export default function FailedLeadsPage() {
       <div className="page-header">
         <div>
           <h2 className="page-title">Failed Leads</h2>
-          <p className="page-subtitle">{failedLeadsList.length} leads that didn't convert</p>
+          <p className="page-subtitle">{total} leads that didn't convert</p>
         </div>
       </div>
 
@@ -280,9 +286,9 @@ export default function FailedLeadsPage() {
               </table>
             )}
 
-            {filteredLeads.length > 0 && (
+            {total > 0 && (
               <div className="data-table-footer">
-                <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredLeads.length)} of {filteredLeads.length}</span>
+                <span>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total}</span>
                 <div className="pagination">
                   <button className="pagination-btn" disabled={currentPage === 1} aria-label="Previous page" aria-disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
                     <HiOutlineChevronLeft />
