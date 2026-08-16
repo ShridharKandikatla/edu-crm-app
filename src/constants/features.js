@@ -11,14 +11,27 @@ export const DEFAULT_FEATURES = {
   ADVANCED_REPORTS: false,
 };
 
-let loaded = false;
+let cached = null;
 
-export async function loadFeatures() {
-  if (loaded) return DEFAULT_FEATURES;
+export const FEATURE_FLAG_LABELS = {
+  AI_INSIGHTS: 'AI Insights',
+  AI_RECOMMENDATIONS: 'AI Recommendations',
+  AI_SCORE: 'AI Lead Scoring',
+  AI_CHATBOT: 'AI Chatbot',
+  AI_BULK_RECOMMENDATIONS: 'Bulk AI Recommendations',
+  WHATSAPP: 'WhatsApp Integration',
+  CAMPAIGNS: 'Campaigns',
+  ADVANCED_REPORTS: 'Advanced Reports',
+  APPLICATIONS: 'Applications',
+};
+
+export async function loadFeatures({ force = false } = {}) {
+  if (cached && !force) return cached;
   try {
     const res = await api.features.getAll();
     if (res?.success && res.data) {
-      return { ...res.data };
+      cached = { ...res.data };
+      return cached;
     }
   } catch {
     /* keep defaults */

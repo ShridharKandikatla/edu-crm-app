@@ -14,6 +14,7 @@ export const ROLE_PERMISSIONS = {
     'follow_up',
     're_engage',
     'manage_campaigns',
+    'manage_feature_flags',
   ],
   MANAGER: [
     'view_all_leads',
@@ -48,6 +49,7 @@ export const PERMISSION_LABELS = {
   follow_up: 'Manage follow-ups',
   re_engage: 'Re-engage failed leads',
   manage_campaigns: 'Manage campaigns & templates',
+  manage_feature_flags: 'Manage feature flags',
 };
 
 export const ACCESS_LABELS = {
@@ -101,8 +103,8 @@ export const ROLE_MATRIX = [
     access: { ADMIN: '✓', MANAGER: '✓', COUNSELOR: 'own', TELECALLER: '✗' },
   },
   {
-    capability: 'Courses & Intakes',
-    detail: 'View course / intake catalogue',
+    capability: 'Course Catalogue',
+    detail: 'View the course catalogue',
     access: { ADMIN: '✓', MANAGER: '✓', COUNSELOR: '✓', TELECALLER: '✓' },
   },
   {
@@ -124,6 +126,11 @@ export const ROLE_MATRIX = [
     capability: 'Campaigns & Templates',
     detail: 'Marketing campaigns & message templates',
     access: { ADMIN: '✓', MANAGER: '✓', COUNSELOR: '✗', TELECALLER: '✗' },
+  },
+  {
+    capability: 'Feature Flags',
+    detail: 'Toggle feature availability from Settings',
+    access: { ADMIN: '✓', MANAGER: '✗', COUNSELOR: '✗', TELECALLER: '✗' },
   },
   {
     capability: 'Reports',

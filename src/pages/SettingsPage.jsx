@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff, HiOutlineSun, HiOutlineMoon, HiOutlineDesktopComputer, HiOutlineCheck, HiOutlineKey } from 'react-icons/hi';
+import { HiOutlineSave, HiOutlineBell, HiOutlineShieldCheck, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff, HiOutlineSun, HiOutlineMoon, HiOutlineDesktopComputer, HiOutlineCheck, HiOutlineKey, HiOutlineFlag } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
 import { SkeletonBlock } from '../components/Skeleton';
 import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
 import { useTheme } from '../context/ThemeContext';
 import { ROLE_MATRIX, ACCESS_LABELS, ROLES } from '../constants/permissions';
+import { FEATURE_FLAG_LABELS } from '../constants/features';
 
 const APPEARANCE_OPTIONS = [
   { value: 'light', label: 'Light', desc: 'Always use the light theme', Icon: HiOutlineSun },
@@ -25,14 +26,20 @@ const ACCESS_BADGE = {
 };
 
 export default function SettingsPage() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, hasPermission, refreshFeatures } = useAuth();
   const { toast } = useToast();
+  const canManageFlags = hasPermission('manage_feature_flags');
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(
-    ['profile', 'appearance', 'notifications', 'security', 'permissions'].includes(initialTab) ? initialTab : 'profile'
+    ['profile', 'appearance', 'notifications', 'security', 'permissions', 'flags'].includes(initialTab) ? initialTab : 'profile'
   );
   
+  // Feature Flag States
+  const [flags, setFlags] = useState([]);
+  const [flagsLoading, setFlagsLoading] = useState(true);
+  const [savingFlagKey, setSavingFlagKey] = useState(null);
+
   // Profile Form States
   const [profileName, setProfileName] = useState(user?.name || '');
   const [profileEmail, setProfileEmail] = useState(user?.email || '');
@@ -124,6 +131,55 @@ export default function SettingsPage() {
   ];
   const allRulesMet = passwordRules.every(r => r.met);
 
+  const loadFlags = useCallback(async () => {
+    try {
+      setFlagsLoading(true);
+      const res = await api.features.getAdmin();
+      if (res?.success && res.data) setFlags(res.data);
+    } catch {
+      toast.error('Failed to load feature flags');
+    } finally {
+      setFlagsLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (canManageFlags) loadFlags();
+  }, [canManageFlags, loadFlags]);
+
+  const updateFlag = (key, patch) => {
+    setFlags(prev => prev.map(f => (f.key === key ? { ...f, ...patch } : f)));
+  };
+
+  const saveFlag = async (flag) => {
+    try {
+      setSavingFlagKey(flag.key);
+      await api.features.update(flag.key, {
+        enabled: !!flag.enabled,
+        expiresAt: flag.expiresAt ? new Date(flag.expiresAt).toISOString() : null,
+      });
+      toast.success(`${FEATURE_FLAG_LABELS[flag.key] || flag.key} updated`);
+      refreshFeatures();
+      loadFlags();
+    } catch (error) {
+      toast.error(error.message || 'Failed to update feature flag');
+    } finally {
+      setSavingFlagKey(null);
+    }
+  };
+
+  const flagState = (flag) => {
+    if (flag.expiresAt && new Date(flag.expiresAt) <= new Date()) return 'Expired';
+    return flag.enabled ? 'Active' : 'Disabled';
+  };
+
+  const toLocalInput = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -141,8 +197,9 @@ export default function SettingsPage() {
             { key: 'appearance', label: 'Appearance', icon: HiOutlineMoon },
             { key: 'notifications', label: 'Notifications', icon: HiOutlineBell },
             { key: 'permissions', label: 'Roles & Permissions', icon: HiOutlineKey },
+            { key: 'flags', label: 'Feature Flags', icon: HiOutlineFlag, adminOnly: true },
             { key: 'security', label: 'Security', icon: HiOutlineShieldCheck },
-          ].map(item => (
+          ].filter(item => !item.adminOnly || canManageFlags).map(item => (
             <button
               key={item.key}
               className={`sidebar-link w-full border-none text-left ${activeTab === item.key ? 'active' : ''} ${activeTab === item.key ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40' : 'text-gray-500'}`}
@@ -405,6 +462,87 @@ export default function SettingsPage() {
                   <span className="h-2.5 w-2.5 rounded-full bg-gray-400" /> Values: Yes · No · All leads · Team leads · Assigned to me · Full access
                 </span>
               </div>
+            </div>
+          )}
+
+          {canManageFlags && activeTab === 'flags' && (
+            <div className="card animate-fade-in">
+              <h3 className="mb-2 text-base font-bold text-gray-900">Feature Flags</h3>
+              <p className="mb-6 text-sm text-gray-500">
+                Toggle feature availability. Changes take effect immediately across the app.
+              </p>
+
+              {flagsLoading ? (
+                <SkeletonBlock height="40px" />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Feature</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Enabled</th>
+                        <th scope="col">Expires At</th>
+                        <th scope="col">Last Updated</th>
+                        <th scope="col" className="text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {flags.map(flag => {
+                        const state = flagState(flag);
+                        const stateBadge = state === 'Active'
+                          ? 'badge-converted'
+                          : state === 'Expired'
+                            ? 'badge-app-inquiry'
+                            : 'badge-failed';
+                        return (
+                          <tr key={flag.key}>
+                            <td>
+                              <div className="font-semibold text-gray-900">{FEATURE_FLAG_LABELS[flag.key] || flag.key}</div>
+                              <div className="text-[0.7rem] text-gray-500">{flag.description || flag.key}</div>
+                            </td>
+                            <td><span className={`badge ${stateBadge}`}>{state}</span></td>
+                            <td>
+                              <label className="relative inline-block h-6 w-11 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={!!flag.enabled}
+                                  onChange={(e) => updateFlag(flag.key, { enabled: e.target.checked })}
+                                  className="hidden"
+                                />
+                                <span className={`absolute inset-0 rounded-full transition-colors ${flag.enabled ? 'bg-indigo-600' : 'bg-gray-300'}`}>
+                                  <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-[left] ${flag.enabled ? '!left-[22px]' : ''}`} />
+                                </span>
+                              </label>
+                            </td>
+                            <td>
+                              <input
+                                type="datetime-local"
+                                className="form-input px-2 py-1 text-xs"
+                                value={toLocalInput(flag.expiresAt)}
+                                onChange={(e) => updateFlag(flag.key, { expiresAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                              />
+                            </td>
+                            <td className="text-xs text-gray-500">
+                              {flag.updatedAt ? new Date(flag.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                              {flag.updater?.name ? ` · ${flag.updater.name}` : ''}
+                            </td>
+                            <td className="text-right">
+                              <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => saveFlag(flag)}
+                                disabled={savingFlagKey === flag.key}
+                              >
+                                {savingFlagKey === flag.key ? 'Saving...' : 'Save'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>

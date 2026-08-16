@@ -45,7 +45,7 @@ const menuSections = [
     title: 'Management',
     items: [
       { path: '/courses', icon: HiOutlineAcademicCap, label: 'Courses', permission: null },
-      { path: '/intakes', icon: HiOutlineCalendar, label: 'Intakes', permission: null },
+      { path: '/intakes', icon: HiOutlineCalendar, label: 'Intakes', permission: 'manage_courses' },
       { path: '/applications', icon: HiOutlineDocumentText, label: 'Applications', permission: null },
       { path: '/users', icon: HiOutlineUserGroup, label: 'Users', permission: 'manage_users' },
       { path: '/templates', icon: HiOutlineChatAlt2, label: 'Message Templates', permission: 'manage_campaigns', feature: 'CAMPAIGNS' },

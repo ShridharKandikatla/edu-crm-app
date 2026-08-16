@@ -65,6 +65,10 @@ export function AuthProvider({ children }) {
     return permissions.some((permission) => granted.includes(permission));
   };
 
+  const refreshFeatures = () => {
+    return loadFeatures({ force: true }).then(setFeatures).catch(() => {});
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -99,7 +103,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, features, isAuthenticated, login, logout, hasPermission, hasAnyPermission }}>
+    <AuthContext.Provider value={{ user, setUser, features, isAuthenticated, login, logout, hasPermission, hasAnyPermission, refreshFeatures }}>
       {children}
     </AuthContext.Provider>
   );

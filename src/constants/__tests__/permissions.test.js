@@ -8,7 +8,7 @@ describe('ROLE_PERMISSIONS', () => {
 
   it('ADMIN has every capability', () => {
     const admin = ROLE_PERMISSIONS.ADMIN;
-    for (const key of ['view_all_leads', 'create_lead', 'assign_leads', 'view_all_reports', 'manage_users', 'manage_courses', 'delete_leads', 'export_data', 'follow_up', 're_engage', 'manage_campaigns']) {
+    for (const key of ['view_all_leads', 'create_lead', 'assign_leads', 'view_all_reports', 'manage_users', 'manage_courses', 'delete_leads', 'export_data', 'follow_up', 're_engage', 'manage_campaigns', 'manage_feature_flags']) {
       expect(admin).toContain(key);
     }
   });
@@ -22,6 +22,7 @@ describe('ROLE_PERMISSIONS', () => {
     expect(m).toContain('re_engage');
     expect(m).not.toContain('manage_users');
     expect(m).not.toContain('delete_leads');
+    expect(m).not.toContain('manage_feature_flags');
   });
 
   it('COUNSELOR sees own data and can re-engage', () => {
@@ -47,6 +48,7 @@ describe('ROLE_PERMISSIONS', () => {
     expect(t).not.toContain('view_own_reports');
     expect(t).not.toContain('manage_campaigns');
     expect(t).not.toContain('manage_users');
+    expect(t).not.toContain('manage_feature_flags');
   });
 
   it('every permission has at least one role', () => {
