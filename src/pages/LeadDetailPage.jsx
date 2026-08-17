@@ -16,7 +16,7 @@ import { useFeatures } from '../hooks/useFeatures';
 import { useCoursesAndIntakes } from '../hooks/useCoursesAndIntakes';
 import ConfirmModal from '../components/ConfirmModal';
 import Modal from '../components/Modal';
-import { APP_UNIVERSITY_NAME } from '../constants/app';
+import { buildTemplateContext } from '../utils/templateContext';
 
 const LEAD_SOURCES = [
   'WEBSITE', 'FACEBOOK', 'GOOGLE_ADS', 'INSTAGRAM', 'JUSTDIAL',
@@ -150,13 +150,7 @@ export default function LeadDetailPage() {
   const leadComments = lead.comments || [];
   const counselor = lead.counselor;
 
-  const templateContext = {
-    name: lead.name || '',
-    phone: lead.phone || '',
-    course: lead.course?.name || '',
-    intake: lead.intake?.name || '',
-    university: APP_UNIVERSITY_NAME,
-  };
+  const templateContext = buildTemplateContext(lead);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';

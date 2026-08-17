@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { APP_NAME } from '../constants/app';
 import { useAuth } from '../context/AuthContext';
+import { useSeo } from '../utils/seo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,8 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  useSeo({ title: 'Staff Login', noindex: true });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -21,7 +24,7 @@ export default function LoginPage() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setError(result.message || 'Invalid email or password');
       }

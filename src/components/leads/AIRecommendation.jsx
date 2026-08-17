@@ -141,13 +141,13 @@ export function BulkRecommendations() {
   return (
     <div className="space-y-2">
       {recs.map((r, i) => (
-        <div key={i} className={`flex items-center gap-3 rounded-lg border p-3 ${PRIORITY_STYLES[r.priority] || PRIORITY_STYLES.medium}`}>
-          <span className="text-lg">{ACTION_ICONS[r.action] || '💡'}</span>
+        <div key={i} className={`flex items-center gap-3 rounded-lg border p-3 ${PRIORITY_STYLES[r.confidence] || PRIORITY_STYLES.medium}`}>
+          <span className="text-lg">{ACTION_ICONS[r.type] || '💡'}</span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">{r.leadName || 'Unknown Lead'}</div>
-            <div className="truncate text-xs opacity-70">{r.message}</div>
+            <div className="truncate text-xs opacity-70">{r.notes}</div>
           </div>
-          {r.dueIn && <span className="whitespace-nowrap text-[0.65rem] opacity-50">{r.dueIn}</span>}
+          {r.scheduledAt && <span className="whitespace-nowrap text-[0.65rem] opacity-50">{formatDueIn(r.scheduledAt)}</span>}
         </div>
       ))}
     </div>

@@ -20,6 +20,7 @@ import {
   HiOutlineExclamation,
   HiOutlineGlobeAlt,
   HiOutlineInformationCircle,
+  HiOutlineLink,
   HiOutlineLockClosed,
   HiOutlineMail,
   HiOutlinePhone,
@@ -31,9 +32,10 @@ import {
   HiOutlineX,
 } from 'react-icons/hi';
 import { config } from '../config/env';
-import { APP_NAME, APP_INITIAL, APP_UNIVERSITY_NAME } from '../constants/app';
+import { APP_NAME, APP_INITIAL, APP_UNIVERSITY_NAME, APP_DESCRIPTION } from '../constants/app';
 import ChatBot from '../components/apply/ChatBot';
 import { api } from '../services/api';
+import { useSeo } from '../utils/seo';
 
 const API_BASE = config.apiUrl.replace(/\/api\/?$/, '');
 
@@ -584,6 +586,7 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
 /* ─── Success Step ─── */
 function SuccessStep({ isDuplicate, message, application, phone, onTrack, onReset }) {
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopy = async () => {
     if (!application?.applicationNumber) return;
@@ -594,15 +597,28 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
     } catch { /* clipboard unavailable */ }
   };
 
+  const handleCopyLink = async () => {
+    if (!trackLink) return;
+    try {
+      await navigator.clipboard.writeText(trackLink);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch { /* clipboard unavailable */ }
+  };
+
+  const phoneDigits = String(phone || '')
+    .replace(/\D/g, '')
+    .replace(/^0/, '');
+  const trackLink = application?.applicationNumber && phoneDigits
+    ? `${window.location.origin}${window.location.pathname}?track=${encodeURIComponent(application.applicationNumber)}&phone=${phoneDigits}`
+    : '';
+
   const shareLink = (() => {
-    const digits = String(phone || '')
-      .replace(/\D/g, '')
-      .replace(/^0/, '');
-    if (!digits || !application?.applicationNumber) return '';
-    const intl = digits.length === 10 ? `91${digits}` : digits;
-    const text =
-      `My application number is ${application.applicationNumber}. ` +
-      "I'll use it to track my application status.";
+    if (!phoneDigits || !application?.applicationNumber) return '';
+    const intl = phoneDigits.length === 10 ? `91${phoneDigits}` : phoneDigits;
+    const text = trackLink
+      ? `My application number is ${application.applicationNumber}. Track your application status here: ${trackLink}`
+      : `My application number is ${application.applicationNumber}. I'll use it to track my application status.`;
     return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
   })();
 
@@ -689,6 +705,24 @@ function SuccessStep({ isDuplicate, message, application, phone, onTrack, onRese
                 <WhatsAppIcon className="h-3.5 w-3.5" />
                 Save on WhatsApp
               </a>
+            )}
+            {trackLink && (
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className={cx(
+                  'mt-3 inline-flex items-center gap-2 rounded-xl bg-indigo-500/15 px-4 py-2',
+                  'text-xs font-semibold text-indigo-300 ring-1 ring-indigo-500/30',
+                  'transition hover:bg-indigo-500/25',
+                )}
+              >
+                {copiedLink ? (
+                  <HiOutlineCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
+                ) : (
+                  <HiOutlineLink className="h-3.5 w-3.5" />
+                )}
+                {copiedLink ? 'Link Copied!' : 'Copy Tracking Link'}
+              </button>
             )}
           </div>
         )}
@@ -839,9 +873,9 @@ const formatSize = (bytes) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-function TrackPortal({ initialNumber, onNewApplication }) {
+function TrackPortal({ initialNumber, initialPhone, onNewApplication }) {
   const [appNumber, setAppNumber] = useState(initialNumber || '');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(initialPhone || '');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -898,6 +932,16 @@ function TrackPortal({ initialNumber, onNewApplication }) {
       setUploading(false);
     }
   };
+
+  const autoTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (autoTrackedRef.current) return;
+    if (initialNumber && initialPhone) {
+      autoTrackedRef.current = true;
+      track({ preventDefault: () => {} });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const statusIndex = STATUS_STEPS.findIndex((s) => s.key === result?.status);
 
@@ -1335,12 +1379,19 @@ export default function ApplyPage() {
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [submittedApp, setSubmittedApp] = useState(null);
   const [trackNumber, setTrackNumber] = useState('');
+  const [trackPhone, setTrackPhone] = useState('');
   const [focusedField, setFocusedField] = useState('');
   const submitControllerRef = useRef(null);
 
   useEffect(() => {
     return () => { submitControllerRef.current?.abort(); };
   }, []);
+
+  useSeo({
+    title: `Apply for Admission 2026 — Free Online Application at ${APP_UNIVERSITY_NAME}`,
+    description: APP_DESCRIPTION,
+    canonical: `${window.location.origin}/apply`,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -1350,6 +1401,18 @@ export default function ApplyPage() {
       .then(res => { if (!cancelled && res.success && res.data) setPublicFeatures(res.data); })
       .catch(() => {});
     return () => { cancelled = true; controller.abort(); };
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const num = params.get('track');
+    if (num) {
+      setTrackNumber(num.toUpperCase());
+      setTrackPhone((params.get('phone') || '').replace(/\D/g, '').slice(0, 10));
+      setMode('track');
+    } else if (params.get('mode') === 'track') {
+      setMode('track');
+    }
   }, []);
 
   const chatEnabled = Boolean(publicFeatures.AI_CHATBOT);
@@ -1367,6 +1430,25 @@ export default function ApplyPage() {
       .catch(() => {});
     return () => { cancelled = true; controller.abort(); };
   }, []);
+
+  // Deep-link prefill: /apply?course=<id>&intake=<id> (from homepage CTAs).
+  const prefillAppliedRef = useRef(false);
+  useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get('course');
+    const intakeId = params.get('intake');
+    if (!courseId && !intakeId) return;
+    const courseOk = !courseId || courses.some(c => c.id === courseId);
+    const intakeOk = !intakeId || intakes.some(i => i.id === intakeId);
+    if (!courseOk || !intakeOk) return;
+    prefillAppliedRef.current = true;
+    setForm(prev => ({
+      ...prev,
+      courseId: courseId || prev.courseId,
+      intakeId: intakeId || prev.intakeId,
+    }));
+  }, [courses, intakes]);
 
   const selectedCourse = useMemo(() => courses.find(c => c.id === form.courseId), [courses, form.courseId]);
 
@@ -1478,6 +1560,7 @@ export default function ApplyPage() {
         return;
       }
       const payload_data = json.data || json;
+      clearTrackParams();
       setIsDuplicate(!!payload_data.isDuplicate);
       setSubmitMessage(payload_data.message || 'Thank you! Your inquiry has been submitted.');
       setSubmittedApp(payload_data.application || null);
@@ -1508,7 +1591,14 @@ export default function ApplyPage() {
     );
   };
 
+  const clearTrackParams = () => {
+    if (window.location.search.includes('track=')) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  };
+
   const handleReset = () => {
+    clearTrackParams();
     setSubmitted(false);
     setSubmittedApp(null);
     setForm({ name: '', email: '', phone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
@@ -1576,7 +1666,7 @@ export default function ApplyPage() {
               {!submitted && (
                 <div className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-white/[0.04] p-1">
                   <button
-                    onClick={() => setMode('form')}
+                    onClick={() => { clearTrackParams(); setMode('form'); }}
                     className={cx(
                       'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5',
                       'text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs',
@@ -1599,7 +1689,7 @@ export default function ApplyPage() {
                   </button>
                   {chatEnabled && (
                     <button
-                      onClick={() => setMode('chat')}
+                      onClick={() => { clearTrackParams(); setMode('chat'); }}
                       className={cx(
                         'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5',
                         'text-[0.65rem] font-semibold transition-all sm:px-3 sm:text-xs',
@@ -1652,7 +1742,7 @@ export default function ApplyPage() {
               onReset={handleReset}
             />
           ) : mode === 'track' ? (
-            <TrackPortal initialNumber={trackNumber} onNewApplication={() => setMode('form')} />
+            <TrackPortal initialNumber={trackNumber} initialPhone={trackPhone} onNewApplication={() => setMode('form')} />
           ) : mode === 'chat' && chatEnabled ? (
             <div className="mx-auto max-w-2xl" style={{ animation: 'fadeUp 0.5s ease' }}>
               <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
@@ -1664,7 +1754,7 @@ export default function ApplyPage() {
               </div>
               <p className="mt-4 text-center text-xs text-white/20">
                 Prefer to fill out a form?{' '}
-                <button onClick={() => setMode('form')} className="underline transition-colors hover:text-indigo-400">
+                <button onClick={() => { clearTrackParams(); setMode('form'); }} className="underline transition-colors hover:text-indigo-400">
                   Switch to form mode
                 </button>
               </p>

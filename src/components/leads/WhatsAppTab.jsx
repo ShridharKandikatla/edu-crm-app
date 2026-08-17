@@ -3,7 +3,7 @@ import { api } from '../../services/api';
 import { HiOutlinePaperAirplane, HiOutlinePaperClip, HiOutlineDownload } from 'react-icons/hi';
 import { useToast } from '../../context/ToastContext';
 import { renderTemplate } from '../../utils/renderTemplate';
-import { APP_UNIVERSITY_NAME } from '../../constants/app';
+import { buildTemplateContext } from '../../utils/templateContext';
 import { config } from '../../config/env';
 
 const API_ROOT = config.apiUrl.replace(/\/api\/?$/, '');
@@ -163,14 +163,7 @@ export default function WhatsAppTab({ leadId, lead }) {
                   return;
                 }
                 setSelectedTemplate(t);
-                const vars = {
-                  name: lead?.name || '',
-                  phone: lead?.phone || '',
-                  course: lead?.course?.name || '',
-                  intake: lead?.intake?.name || '',
-                  university: APP_UNIVERSITY_NAME,
-                };
-                setText(renderTemplate(t.body, vars));
+                setText(renderTemplate(t.body, buildTemplateContext(lead)));
               }}
             >
               <option value="">Select a template...</option>

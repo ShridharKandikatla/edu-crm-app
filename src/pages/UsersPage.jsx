@@ -18,6 +18,13 @@ const ROLE_COLORS = {
   TELECALLER: '#0ea5e9'
 };
 
+const toLocalInput = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
@@ -34,7 +41,7 @@ export default function UsersPage() {
   const [editUser, setEditUser] = useState(null);
   
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', role: 'COUNSELOR', monthlyTarget: 0, password: ''
+    name: '', email: '', phone: '', role: 'COUNSELOR', monthlyTarget: 0, password: '', subscriptionExpiresAt: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -84,7 +91,7 @@ export default function UsersPage() {
 
   const openAddModal = () => {
     setEditUser(null);
-    setForm({ name: '', email: '', phone: '', role: 'COUNSELOR', monthlyTarget: 0, password: '' });
+    setForm({ name: '', email: '', phone: '', role: 'COUNSELOR', monthlyTarget: 0, password: '', subscriptionExpiresAt: '' });
     setShowModal(true);
   };
 
@@ -96,7 +103,8 @@ export default function UsersPage() {
       phone: user.phone || '',
       role: user.role,
       monthlyTarget: user.monthlyTarget,
-      password: '' // Don't pre-fill password
+      password: '', // Don't pre-fill password
+      subscriptionExpiresAt: user.subscriptionExpiresAt ? toLocalInput(user.subscriptionExpiresAt) : ''
     });
     setShowModal(true);
   };
@@ -120,7 +128,8 @@ export default function UsersPage() {
           email: form.email,
           phone: form.phone,
           role: form.role,
-          monthlyTarget: form.monthlyTarget
+          monthlyTarget: form.monthlyTarget,
+          subscriptionExpiresAt: form.subscriptionExpiresAt ? new Date(form.subscriptionExpiresAt).toISOString() : null
         };
         await api.users.update(editUser.id, payload);
         toast.success('User updated successfully!');
@@ -393,6 +402,29 @@ export default function UsersPage() {
                     />
                   </div>
                 </div>
+                {editUser && (
+                  <div className="form-group">
+                    <label className="form-label">Subscription Expires At</label>
+                    <input
+                      type="datetime-local"
+                      className="form-input"
+                      name="subscriptionExpiresAt"
+                      value={form.subscriptionExpiresAt}
+                      onChange={handleChange}
+                    />
+                    {form.subscriptionExpiresAt ? (
+                      new Date(form.subscriptionExpiresAt) > new Date() ? (
+                        <p className="mt-1 text-xs text-emerald-600">
+                          Active until {new Date(form.subscriptionExpiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-red-600">Subscription expired — premium features are gated</p>
+                      )
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">No subscription set — premium (AI, WhatsApp) features are gated</p>
+                    )}
+                  </div>
+                )}
                 {!editUser && (
                   <div className="form-group">
                     <label className="form-label">Initial Password *</label>

@@ -153,18 +153,18 @@ export default function FollowUpsPage() {
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {recs.slice(0, 6).map((r, i) => (
                 <div key={i} className={`flex items-center gap-3 rounded-xl border p-3 ${
-                  r.priority === 'critical' ? 'border-red-300 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40' :
-                  r.priority === 'high' ? 'border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40' :
+                  r.confidence === 'critical' ? 'border-red-300 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40' :
+                  r.confidence === 'high' ? 'border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40' :
                   'border-gray-200 bg-gray-50'
                 }`}>
                   <div className="text-lg">
-                    {r.action === 'CALL' ? '📞' : r.action === 'WHATSAPP' ? '💬' : r.action === 'EMAIL' ? '✉️' : r.action === 'SMS' ? '📝' : '💡'}
+                    {r.type === 'CALL' ? '📞' : r.type === 'WHATSAPP' ? '💬' : r.type === 'EMAIL' ? '✉️' : r.type === 'SMS' ? '📝' : '💡'}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-xs font-bold text-gray-900">{r.leadName || 'Unknown'}</div>
-                    <div className="truncate text-[0.7rem] text-gray-500">{r.message}</div>
+                    <div className="truncate text-[0.7rem] text-gray-500">{r.notes}</div>
                   </div>
-                  {r.dueIn && <span className="whitespace-nowrap text-[0.6rem] text-gray-400">{r.dueIn}</span>}
+                  {r.scheduledAt && <span className="whitespace-nowrap text-[0.6rem] text-gray-400">{formatDateTime(r.scheduledAt)}</span>}
                 </div>
               ))}
             </div>
@@ -288,10 +288,9 @@ export default function FollowUpsPage() {
                   <label className="form-label">Outcome Notes</label>
                   <textarea
                     className="form-textarea"
-                    placeholder="Enter what was discussed..."
+                    placeholder="Enter what was discussed (optional)"
                     value={fuNotes}
                     onChange={(e) => setFuNotes(e.target.value)}
-                    required
                   ></textarea>
                 </div>
               </div>

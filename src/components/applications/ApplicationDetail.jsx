@@ -273,6 +273,7 @@ export default function ApplicationDetail({ application: initial, courses = [], 
         <div className="form-group">
           <label className="form-label">Total Fee (₹)</label>
           <input
+            key={application.feeTotal}
             className="form-input"
             type="number"
             min="0"

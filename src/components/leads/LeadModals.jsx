@@ -117,10 +117,9 @@ export default function LeadModals({
                   <label className="form-label">Outcome Notes</label>
                   <textarea
                     className="form-textarea"
-                    placeholder="Enter what was discussed..."
+                    placeholder="Enter what was discussed (optional)"
                     value={fuCompleteNotes}
                     onChange={(e) => setFuCompleteNotes(e.target.value)}
-                    required
                   ></textarea>
                 </div>
               </div>

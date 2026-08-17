@@ -53,11 +53,8 @@ export default function FailedLeadsPage() {
   };
 
   const filteredLeads = useMemo(() => {
-    let result = [...failedLeadsList];
-    if (reasonFilter !== 'ALL') {
-      result = result.filter(l => l.failureReason === reasonFilter);
-    }
-    return result.sort((a, b) => new Date(b.failedAt || b.updatedAt) - new Date(a.failedAt || a.updatedAt));
+    if (reasonFilter === 'ALL') return failedLeadsList;
+    return failedLeadsList.filter(l => l.failureReason === reasonFilter);
   }, [failedLeadsList, reasonFilter]);
 
   const failureReasons = useMemo(() => {
@@ -233,6 +230,8 @@ export default function FailedLeadsPage() {
                   {paginatedLeads.map((lead) => {
                     const days = daysSinceFailed(lead.failedAt || lead.updatedAt);
                     const canReEngage = days >= 30;
+                    const daysRemaining = 30 - (days || 0);
+                    const nearEligible = !canReEngage && daysRemaining <= 5;
                     return (
                       <tr key={lead.id}>
                         <td>
@@ -247,7 +246,7 @@ export default function FailedLeadsPage() {
                         <td>
                           <span
                             className="text-[0.75rem] font-semibold"
-                            style={{ color: days >= 30 ? '#059669' : '#dc2626' }}
+                            style={{ color: canReEngage ? '#059669' : nearEligible ? '#d97706' : '#dc2626' }}
                           >
                             {days || 0} days
                           </span>
@@ -256,9 +255,11 @@ export default function FailedLeadsPage() {
                         <td>
                           {canReEngage ? (
                             <span className="badge badge-converted">Eligible</span>
+                          ) : nearEligible ? (
+                            <span className="badge badge-interested">Eligible in {daysRemaining}d</span>
                           ) : (
                             <span className="badge bg-gray-100 text-gray-500">
-                              {30 - (days || 0)}d remaining
+                              {daysRemaining}d remaining
                             </span>
                           )}
                         </td>

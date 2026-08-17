@@ -301,7 +301,13 @@ export default function ApplicationsPage() {
                       onClick={() => {
                         setSelectedLead(lead);
                         setLeadResults([]);
-                        setCreateForm((f) => ({ ...f, courseId: lead.courseId || '', intakeId: lead.intakeId || '' }));
+                        const courseFee = courses.find((c) => c.id === lead.courseId)?.fee ?? '';
+                        setCreateForm((f) => ({
+                          ...f,
+                          courseId: lead.courseId || '',
+                          intakeId: lead.intakeId || '',
+                          feeTotal: courseFee,
+                        }));
                       }}
                     >
                       <div className="text-sm font-medium text-gray-800">{lead.name}</div>
@@ -323,7 +329,11 @@ export default function ApplicationsPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="form-group">
                   <label className="form-label">Course</label>
-                  <select className="form-select" value={createForm.courseId} onChange={(e) => setCreateForm({ ...createForm, courseId: e.target.value })}>
+                  <select className="form-select" value={createForm.courseId} onChange={(e) => {
+                    const courseId = e.target.value;
+                    const courseFee = courses.find((c) => c.id === courseId)?.fee ?? '';
+                    setCreateForm((f) => ({ ...f, courseId, feeTotal: courseFee }));
+                  }}>
                     <option value="">— Select course —</option>
                     {courses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>

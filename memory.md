@@ -21,7 +21,7 @@ npm run test:watch   # vitest watch mode
 npm run preview      # preview production build
 ```
 
-**Required order before shipping: `lint` -> `test` -> `build`.** Frontend lint is currently clean (0 errors); the only warnings are 2 pre-existing React `exhaustive-deps` warnings in `CampaignsPage.jsx` (~line 51) and `MessageTemplatesPage.jsx` (~line 58) — do not "fix" them by adding the missing dependency blindly; the pattern is intentional (server-driven refetch).
+**Required order before shipping: `lint` -> `test` -> `build`.** Frontend lint is currently clean (0 errors, 0 warnings).
 
 ## Environment
 
@@ -31,7 +31,7 @@ npm run preview      # preview production build
 ## Architecture
 
 - **Entry:** `src/main.jsx` -> `ThemeProvider` -> `ToastProvider` -> `App` -> `createRoot`. Wrapped in `StrictMode`.
-- **Routing:** `src/App.jsx` — `BrowserRouter` + `AuthProvider` + `ErrorBoundary` + `ToastContainer`. All pages are `React.lazy()` + `Suspense`. Protected routes are children of `MainLayout` (`src/components/layout/MainLayout.jsx`).
+- **Routing:** `src/App.jsx` — `BrowserRouter` + `AuthProvider` + `ErrorBoundary` + `ToastContainer`. All pages are `React.lazy()` + `Suspense`. Public routes (`/` → `HomePage`, `/apply` → `ApplyPage`, `/login` → `LoginPage`) are outside `ProtectedRoute`. Protected routes are children of `MainLayout` via nested `<Route path="/dashboard">`.
 - **Auth:** `src/context/AuthContext.jsx` — JWT in `localStorage['token']`, sent as `Bearer`. Exposes `useAuth()` -> `{ user, setUser, features, isAuthenticated, login, logout, hasPermission, hasAnyPermission, refreshFeatures }`. On login/refresh it calls `loadFeatures()` and stores feature flags in state.
 - **Feature flags:** `src/constants/features.js` — `DEFAULT_FEATURES` + `FEATURE_FLAG_LABELS` + `loadFeatures({force})` (fetches `api.features.getAll()`, cached in module scope). Consumed via `useFeatures()` hook (`src/hooks/useFeatures.js`).
 - **API layer:** `src/services/api.js` — the ONLY place backend integration happens. Fetch wrapper with 30s timeout, 1 retry on GET network/5xx (never retries POST/PUT/DELETE), auth header injection, `buildQueryString` (skips `undefined`/`null`/`''`). Optional global `setApiErrorHandler()`. Returns the **full JSON** from the server (NOT just `data`).
@@ -41,29 +41,35 @@ npm run preview      # preview production build
 - **WebSocket:** `src/hooks/useWebSocket.js` exists — real-time support wired to backend WebSocket server.
 
 ### api.js endpoint groups (all under `api.<group>`)
-`auth`, `leads` (incl. `getReEngagement`), `followUps` (incl. `getStats`), `dashboard`, `reports`, `courses`, `users`, `notifications`, `notificationPreferences`, `features`, `templates`, `campaigns`, `whatsapp`, `applications`, `portal` (public student self-service), `ai`. When the backend changes a controller, update the matching group here.
+`auth`, `leads` (incl. `getReEngagement`), `followUps` (incl. `getStats`), `dashboard`, `reports`, `courses`, `users`, `notifications`, `notificationPreferences`, `features`, `templates`, `campaigns`, `whatsapp`, `applications`, `portal` (public student self-service), `public` (public homepage: `getCourses`, `getIntakes`, `getTeam`), `ai`. When the backend changes a controller, update the matching group here.
 
 ## Key Directories
 
 ```
 src/
-  components/       # Reusable UI — subfolders: leads/, dashboard/, layout/, apply/
+  components/       # Reusable UI — subfolders: leads/, dashboard/, layout/, apply/, home/ (public homepage sections)
   pages/            # Route-level pages (lazy-loaded)
   services/api.js   # All API calls
   context/          # AuthContext, ThemeContext, ToastContext
   hooks/            # useFeatures, useDebounce, useCoursesAndIntakes, useNotificationPreferences, useKeyboardShortcut, useWebSocket
-  constants/        # app.js (branding), features.js, permissions.js, filterOptions.js
+  constants/        # app.js (branding + SEO copy), features.js, permissions.js, filterOptions.js
   config/env.js     # Env config
-  utils/            # renderTemplate.js (client-side template rendering for WhatsApp/email bodies)
+  utils/            # renderTemplate.js (client-side template rendering), templateContext.js (builds {{variable}} context from a lead), seo.js (useSeo hook — title/meta/OG/JSON-LD/canonical)
+  data/mockData.js  # Mock/fallback data
   test/setup.js     # jest-dom setup
+
+**Message template variables** (`src/utils/templateContext.js` — single source of truth, `TEMPLATE_VARIABLES` constant shown in the template modal): `{{name}} {{phone}} {{email}} {{course}} {{intake}} {{university}} {{fee}} {{intakeDate}} {{counselor}} {{status}} {{score}} {{source}} {{followUp}}`. Built by `buildTemplateContext(lead)` in `LeadDetailPage` (follow-up notes via `LeadModals`) and `WhatsAppTab` (WhatsApp send). Server auto-reply in `whatsapp.controller.js` renders the WELCOME template with `name/phone/email/course/intake/university/counselor`.
   data/mockData.js  # Mock/fallback data
 ```
 
 ### Pages (`src/pages/`)
-`DashboardPage`, `LeadListPage`, `LeadDetailPage`, `AddLeadPage`, `FollowUpsPage`, `FailedLeadsPage`, `ReEngagementPage`, `CoursesPage`, `IntakesPage`, `ApplicationsPage`, `UsersPage`, `MessageTemplatesPage`, `CampaignsPage`, `ReportsPage`, `SettingsPage`, `LoginPage`, `ApplyPage` (public), `NotFoundPage`.
+`DashboardPage` (at `/dashboard`), `LeadListPage`, `LeadDetailPage`, `AddLeadPage`, `FollowUpsPage`, `FailedLeadsPage`, `ReEngagementPage`, `CoursesPage`, `IntakesPage`, `ApplicationsPage`, `UsersPage`, `MessageTemplatesPage`, `CampaignsPage`, `ReportsPage`, `SettingsPage`, `LoginPage`, `ApplyPage` (public), `HomePage` (public homepage at `/`), `NotFoundPage`.
 
 ### Lead detail tabs (`src/components/leads/`)
 `WhatsAppTab`, `FollowUpsTab`, `CommentsTab`, `ActivityTimeline`, `AIRecommendation`, `LeadTable`, `LeadFilters`, `LeadModals`, `LeadProfileCard`, `LeadPagination`, `QuickActionsSidebar`.
+
+### Public homepage sections (`src/components/home/`)
+`homeUi.jsx` (shared: DEPT_COLORS, DEPT_ICONS, formatFee, cx, GRADIENT_BTN, CARD_PANEL, Section, HOME_CSS keyframes), `HomeNav`, `HeroSection`, `ProgramsSection`, `PricingSection`, `IntakesSection`, `ManagersSection`, `WhyUsSection`, `HowToApplySection`, `FaqSection`, `HomeFooter`.
 
 ## Conventions
 
@@ -89,6 +95,7 @@ src/
 - **Reference implementations (server-driven):** `LeadListPage`, `ApplicationsPage`, `UsersPage`, `FollowUpsPage`, `FailedLeadsPage`, `ReEngagementPage`, `CampaignsPage`, `MessageTemplatesPage`. WhatsApp threads use load-more (prepend) pagination in `WhatsAppTab` (`page`/`limit` 50, oldest-first, scroll preserved via `suppressScrollRef` + rAF).
 - **Do NOT** fetch with large hard-coded limits (e.g. `limit: 1000`) as a workaround — it silently drops data past the cap. Drive server pagination instead.
 - Re-engagement uses the dedicated paginated endpoint `GET /api/leads/re-engagement` (limit 12). If a fetch expects `res.data` to be the array directly, guard with `res.data || []` (new pattern; templates endpoints already do this).
+- `GET /api/leads?status=FAILED` (FailedLeadsPage) is sorted **server-side, globally across all failed leads** (across pages): re-engageable (failed 30+ days) first, then the rest by closest to eligibility (fewest days remaining first). The page does NOT re-sort client-side — it renders the server order as-is. It highlights leads within 5 days of eligibility with an amber `badge-interested` badge ("Eligible in Xd").
 
 ## Dark Mode
 
@@ -97,16 +104,28 @@ src/
 - Pitfall: `bg-white` surfaces do NOT flip automatically — pair with `dark:bg-[#1f2530]` where the surface must be theme-aware.
 - **Always verify UI changes in BOTH light and dark mode** and at mobile (≤480px), tablet (≤768px), and desktop widths.
 
+## SEO (Public Pages)
+
+- `src/utils/seo.js` — `useSeo({ title, description, keywords, canonical, jsonLd, noindex })` hook upserts `document.title` (pattern `Page · Eportal`), meta description/keywords/robots/OG/Twitter, canonical link, and a single `<script id="page-jsonld" type="application/ld+json">` node.
+- Used by: `HomePage` (4 JSON-LD types: `CollegeOrUniversity`, `Course[]`, `FAQPage`), `ApplyPage` (title/description/canonical), `LoginPage` (`noindex: true`).
+- `public/robots.txt` — allows crawling of `/` and `/apply`, blocks `/login` and all `/dashboard`/`/leads`/etc. protected routes.
+- `public/sitemap.xml` — `/` and `/apply` (placeholder origin `https://eportal.in`; update for production).
+- `index.html` — no global `noindex` meta tag (was removed); default OG/Twitter tags set; `og:image` uses an Unsplash education photo; preconnects to `images.unsplash.com` for course images.
+- Constants: `APP_TAGLINE`, `APP_DESCRIPTION`, `APP_KEYWORDS`, `APP_URL`, `APP_CONTACT`, `APP_STATS` in `src/constants/app.js`.
+
 ## API Integration Contract (with `../edu-crm-server`)
 
 - Server base URL: `http://localhost:5000/api` (see `VITE_API_URL`). All `/api` routes are behind JWT auth except `auth/*`, `public/*`, `portal/*`.
 - Response shapes: success `{ success: true, data }` (paginated: `{ data: array, pagination: {...} }`); errors `{ success: false, message }` with proper HTTP status; `errors` array for validation.
 - Query params are optional-server-side; the frontend drives `page`/`limit` and filters via `buildQueryString`.
 - When the server adds/changes a route: update the matching `api.<group>` method in `src/services/api.js` first, then the consuming page/component, then run `lint -> test -> build`.
+- Apply page (`ApplyPage.jsx`): every submission (any source) returns `{ application: { applicationNumber, status } }`, so SuccessStep always shows the application number. Shareable track URL: `?track=<APP-…>&phone=<10 digits>` or `?mode=track` opens the Track portal. Deep-link from homepage: `?course=<id>` and/or `?intake=<id>` prefills the form (validated against fetched lists, applied once via `prefillAppliedRef`). Track params are **kept in the URL** so a refresh stays on the Track portal (they are cleared via `clearTrackParams()` only when the user explicitly leaves track mode / submits / resets).
+- AI bulk recommendations (`FollowUpsPage` AI cards, `AIRecommendation.jsx` `BulkRecommendations`) read `confidence` ('critical'|'high'|'medium'), `type`, `notes`, `scheduledAt` (NOT `priority`/`action`/`message`/`dueIn`). Backend `AI_*` flags are no longer subscription-gated, so they resolve for COUNSELOR/TELECALLER too.
+- Applications fee auto-fill: create modal prefills Total Fee from the selected course's `fee` — **always** updates when the course dropdown changes or a lead is prefilled; changing course in `ApplicationDetail` (incl. the Lead page's Application tab) updates fee server-side from the course, and the fee input re-syncs via `key={application.feeTotal}` (explicit fee edit still wins). Creating an application from the Lead page sends no `feeTotal`, so the server derives it from the lead's course.
 
 ## Testing
 
-- Vitest + jsdom + Testing Library; setup `src/test/setup.js` (jest-dom). 66 tests across 10 files currently pass.
+- Vitest + jsdom + Testing Library; setup `src/test/setup.js` (jest-dom). 78 tests across 11 files currently pass.
 - Run `npm run test` (single run) — `npm run test:watch` for development.
 - Mock `api.js` methods or fetch in component tests; cover critical flows (forms, API calls, permissions/role gating).
 

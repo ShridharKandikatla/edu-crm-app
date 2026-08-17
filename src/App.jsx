@@ -7,6 +7,7 @@ import MainLayout from './components/layout/MainLayout';
 import NotFoundPage from './pages/NotFoundPage';
 
 const LoginPage = lazy(() => import(/* webpackChunkName: "login" */ './pages/LoginPage'));
+const HomePage = lazy(() => import(/* webpackChunkName: "home" */ './pages/HomePage'));
 const DashboardPage = lazy(() => import(/* webpackChunkName: "dashboard" */ './pages/DashboardPage'));
 const LeadListPage = lazy(() => import(/* webpackChunkName: "leads" */ './pages/LeadListPage'));
 const LeadDetailPage = lazy(() => import(/* webpackChunkName: "lead-detail" */ './pages/LeadDetailPage'));
@@ -88,8 +89,12 @@ function AppRoutes() {
     <Suspense fallback={<RouteSpinner />}>
       <Routes>
         <Route
+          path="/"
+          element={loading ? null : <HomePage />}
+        />
+        <Route
           path="/login"
-          element={loading ? null : (isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />)}
+          element={loading ? null : (isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />)}
         />
         <Route
           element={
@@ -98,7 +103,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/leads" element={<LeadListPage />} />
           <Route path="/leads/new" element={<AddLeadPage />} />
           <Route path="/leads/failed" element={<FailedLeadsPage />} />

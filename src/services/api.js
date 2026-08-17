@@ -659,6 +659,19 @@ export const api = {
     },
   },
 
+  // Public homepage endpoints (no auth)
+  public: {
+    getCourses: async (requestOptions = {}) => {
+      return request('/public/courses', requestOptions);
+    },
+    getIntakes: async (requestOptions = {}) => {
+      return request('/public/intakes', requestOptions);
+    },
+    getTeam: async (requestOptions = {}) => {
+      return request('/public/team', requestOptions);
+    },
+  },
+
   // AI endpoints
   ai: {
     scoreLead: async (leadId, requestOptions = {}) => {

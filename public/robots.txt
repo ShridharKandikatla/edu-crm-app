@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /dashboard
+Disallow: /leads
+Disallow: /follow-ups
+Disallow: /courses
+Disallow: /intakes
+Disallow: /users
+Disallow: /applications
+Disallow: /reports
+Disallow: /settings
+Disallow: /templates
+Disallow: /campaigns
+
+Sitemap: https://eportal.in/sitemap.xml

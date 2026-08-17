@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../services/api';
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlinePaperClip, HiOutlineDownload, HiOutlineDocument, HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import { useFeatures } from '../hooks/useFeatures';
 import { FeatureLocked } from '../components/FeatureLocked';
 import { config } from '../config/env';
+import { TEMPLATE_VARIABLES } from '../utils/templateContext';
 
 const CATEGORIES = ['GENERAL', 'WELCOME', 'FOLLOW_UP', 'PROMOTION', 'ADMISSION'];
 const API_ROOT = config.apiUrl.replace(/\/api\/?$/, '');
@@ -38,7 +39,7 @@ export default function MessageTemplatesPage() {
   const [total, setTotal] = useState(0);
   const pageSize = 10;
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.templates.getAll({ page: currentPage, limit: pageSize });
@@ -51,11 +52,11 @@ export default function MessageTemplatesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
     if (features.CAMPAIGNS) fetchTemplates();
-  }, [features.CAMPAIGNS, currentPage]);
+  }, [features.CAMPAIGNS, fetchTemplates]);
 
   if (!features.CAMPAIGNS) return <FeatureLocked feature="CAMPAIGNS" />;
 
@@ -277,7 +278,9 @@ export default function MessageTemplatesPage() {
           <div className="form-group">
             <label className="form-label">Message Body</label>
             <textarea className="form-input" rows={4} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required placeholder='Hi {{name}}, welcome to {{university}}. Your {{course}} ({{intake}}) inquiry received. Reach us at {{phone}}.' />
-            <span className="text-xs text-gray-500">Available variables: {`{{name}} {{phone}} {{course}} {{intake}} {{university}}`}</span>
+            <span className="mt-1 block text-xs text-gray-500">
+              Available variables: {TEMPLATE_VARIABLES.map(v => `{{${v}}}`).join(' ')}
+            </span>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />

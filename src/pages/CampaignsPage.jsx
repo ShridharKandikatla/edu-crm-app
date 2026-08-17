@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi';
 import { useToast } from '../context/ToastContext';
@@ -31,7 +31,7 @@ export default function CampaignsPage() {
   const [total, setTotal] = useState(0);
   const pageSize = 10;
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.campaigns.getAll({ page: currentPage, limit: pageSize });
@@ -44,11 +44,11 @@ export default function CampaignsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
     if (features.CAMPAIGNS) fetchCampaigns();
-  }, [features.CAMPAIGNS, currentPage]);
+  }, [features.CAMPAIGNS, fetchCampaigns]);
 
   if (!features.CAMPAIGNS) return <FeatureLocked feature="CAMPAIGNS" />;
 
