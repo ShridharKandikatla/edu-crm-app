@@ -111,7 +111,17 @@ src/
 - `public/robots.txt` — allows crawling of `/` and `/apply`, blocks `/login` and all `/dashboard`/`/leads`/etc. protected routes.
 - `public/sitemap.xml` — `/` and `/apply` (placeholder origin `https://eportal.in`; update for production).
 - `index.html` — no global `noindex` meta tag (was removed); default OG/Twitter tags set; `og:image` uses an Unsplash education photo; preconnects to `images.unsplash.com` for course images.
-- Constants: `APP_TAGLINE`, `APP_DESCRIPTION`, `APP_KEYWORDS`, `APP_URL`, `APP_CONTACT`, `APP_STATS` in `src/constants/app.js`.
+- Constants: `APP_NAME`, `APP_TAGLINE`, `APP_DESCRIPTION`, `APP_KEYWORDS`, `APP_URL`, `APP_CONTACT`, `APP_STATS` in `src/constants/app.js`.
+
+### prerender.io (Edge Middleware for bot SEO)
+
+- `middleware.js` (project root) — Vercel Edge Middleware that intercepts bot requests to `/` and `/apply`.
+- Bot detection: checks `User-Agent` against 30+ crawler patterns (Googlebot, Bingbot, Facebook, Twitter, WhatsApp, Slack, Discord, GPTBot, ClaudeBot, PerplexityBot, etc.).
+- If bot → proxies request to `https://service.prerender.io/` with `X-Prerender-Token` header → returns fully rendered HTML with `Cache-Control: public, max-age=3600`.
+- If human or fetch fails → falls through to SPA normally.
+- Env var: `PRERENDER_TOKEN` (set in Vercel dashboard, never committed).
+- Matcher: only `/`, `/apply`, `/apply/:path*` — skips `/login`, `/dashboard`, static assets.
+- Cost: $0/month (prerender.io free: 250 pages/month, Vercel Edge free: 1000 invocations/day).
 
 ## API Integration Contract (with `../edu-crm-server`)
 
