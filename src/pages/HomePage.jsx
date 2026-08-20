@@ -20,7 +20,7 @@ import WhyUsSection from '../components/home/WhyUsSection';
 import HowToApplySection from '../components/home/HowToApplySection';
 import FaqSection, { FAQS } from '../components/home/FaqSection';
 import HomeFooter from '../components/home/HomeFooter';
-import { HOME_CSS } from '../components/home/homeUi';
+import { HOME_CSS } from '../components/home/design-system';
 
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -30,6 +30,17 @@ export default function HomePage() {
   const [intakes, setIntakes] = useState([]);
   const [team, setTeam] = useState({ completedLeads: 0, topCounselors: [], topTelecallers: [] });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains('dark');
+    if (wasDark) root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+    return () => {
+      if (wasDark) root.classList.add('dark');
+      root.style.colorScheme = '';
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,17 +117,11 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: '#0a0a1a' }}>
-        <div
-          style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid rgba(255,255,255,0.1)',
-            borderLeftColor: '#4f46e5',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC]">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-3 border-slate-200 border-t-[#1E3A5F]" />
+          <p className="text-sm font-medium text-slate-400">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -126,13 +131,11 @@ export default function HomePage() {
   return (
     <>
       <style>{HOME_CSS}</style>
-      <div id="top" className="relative min-h-screen overflow-x-hidden" style={{ background: '#0a0a1a' }}>
+      <div id="top" className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC]">
         <HomeNav />
         {error && (
           <div className="mx-auto mt-6 max-w-6xl px-4">
-            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-xs text-amber-300">
-              {error}
-            </p>
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-xs text-amber-700">{error}</p>
           </div>
         )}
         <main>

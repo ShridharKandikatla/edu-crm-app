@@ -1,112 +1,117 @@
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  HiOutlineArrowRight,
-  HiOutlineCheckCircle,
-  HiOutlineChevronDown,
-  HiOutlineUserGroup,
-} from 'react-icons/hi';
-import { APP_NAME, APP_TAGLINE } from '../../constants/app';
-import { cx, GRADIENT_BTN, ICON_PILL } from './homeUi';
+import { Section } from './design-system';
+import { APP_NAME } from '../../constants/app';
+
+function isOpen(i) {
+  const now = new Date();
+  return now >= new Date(i.startDate) && now <= new Date(i.endDate);
+}
+
+function AnimatedCounter({ end, suffix = '' }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    let start = 0;
+    const duration = 1200;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * end));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [visible, end]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
 
 export default function HeroSection({ courses, intakes, completedLeads }) {
-  const stats = [
-    { label: 'Programs', value: String(courses.length || 0) },
-    { label: 'Completed Admissions', value: completedLeads ? `${completedLeads}+` : '0' },
-    { label: 'Open Intakes', value: String(intakes.length || 0) },
-    { label: 'Placement Rate', value: '95%' },
-  ];
-
   return (
-    <div className="relative overflow-hidden">
-      {/* Background glow blobs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full opacity-60"
-          style={{
-            background: 'radial-gradient(circle, rgba(79,70,229,0.22) 0%, transparent 70%)',
-            animation: 'float 20s ease-in-out infinite',
-          }}
-        />
-        <div
-          className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full opacity-60"
-          style={{
-            background: 'radial-gradient(circle, rgba(147,51,234,0.18) 0%, transparent 70%)',
-            animation: 'float 16s ease-in-out infinite reverse',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }}
-        />
+    <Section id="top" className="overflow-hidden bg-gradient-to-b from-[#f0f4f8] to-white pt-16 lg:pt-24">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#A16207]/5 blur-3xl" />
+        <div className="absolute -left-32 top-1/2 h-[400px] w-[400px] rounded-full bg-[#1E3A5F]/5 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-16 text-center sm:px-6 lg:px-8 lg:pb-24 lg:pt-24">
-        <div
-          className={cx(ICON_PILL, 'mb-6 border-emerald-500/20 bg-emerald-500/10 text-emerald-400')}
-          style={{ animation: 'fadeUp 0.5s ease both' }}
-        >
-          <HiOutlineCheckCircle className="h-3.5 w-3.5" />
-          {APP_TAGLINE}
-        </div>
-
-        <h1
-          className="mx-auto mb-6 max-w-4xl text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl"
-          style={{ animation: 'fadeUp 0.6s ease 0.1s both' }}
-        >
-          Admissions Open 2026 —{' '}
-          <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            B.Tech, BBA, MBA, B.Sc &amp; More
+      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="home-animate">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#A16207]/20 bg-[#A16207]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#A16207]">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#A16207]" />
+            Admissions Open 2026
           </span>
-        </h1>
 
-        <p
-          className="mx-auto mb-8 max-w-2xl text-sm leading-relaxed text-white/45 sm:text-base lg:text-lg"
-          style={{ animation: 'fadeUp 0.6s ease 0.2s both' }}
-        >
-          Apply online at {APP_NAME} in minutes — compare programs and fees, choose your intake, and get your
-          application number instantly. Our top counselors will guide you through admission.
-        </p>
+          <h1 className="mt-6 font-['EB_Garamond',serif] text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl xl:text-7xl">
+            Shape Your Future
+            <br />
+            at <span className="text-[#1E3A5F]">{APP_NAME}</span>
+          </h1>
 
-        <div
-          className="flex flex-col items-center justify-center gap-3 sm:flex-row"
-          style={{ animation: 'fadeUp 0.6s ease 0.3s both' }}
-        >
-          <Link to="/apply" className={`group flex w-full items-center justify-center gap-2 px-8 py-4 text-base sm:w-auto ${GRADIENT_BTN}`}>
-            Apply Now — It's Free
-            <HiOutlineArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" strokeWidth={2.5} />
-          </Link>
-          <a
-            href="#programs"
-            className={cx(
-              'flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.1]',
-              'bg-white/[0.05] px-8 py-4 text-sm font-semibold text-white/70 transition-all',
-              'hover:bg-white/[0.1] hover:text-white sm:w-auto',
-            )}
-          >
-            Explore Programs
-            <HiOutlineChevronDown className="h-4 w-4" />
-          </a>
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-500 lg:text-lg">
+            Explore {courses.length || '10+'} programs across Engineering, Management, Science & Commerce.
+            Apply online, track your admission, and secure your seat today.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link to="/apply" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#A16207] to-[#D97706] px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-amber-500/25 transition-all hover:shadow-xl hover:shadow-amber-500/30 hover:-translate-y-0.5">
+              Apply Now
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </Link>
+            <a href="#programs" className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E3A5F] px-7 py-3.5 text-sm font-bold text-[#1E3A5F] transition-all hover:bg-[#1E3A5F] hover:text-white hover:-translate-y-0.5">
+              Explore Programs
+            </a>
+          </div>
         </div>
 
-        {/* Stats strip */}
-        <div
-          className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4"
-          style={{ animation: 'fadeUp 0.6s ease 0.4s both' }}
-        >
-          {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-white/[0.07] bg-white/[0.04] px-4 py-5 backdrop-blur-sm">
-              <div className="text-2xl font-extrabold text-white lg:text-3xl">{s.value}</div>
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-widest text-white/30">
-                <HiOutlineUserGroup className="h-3.5 w-3.5" />
-                {s.label}
-              </div>
+        <div className="relative hidden lg:block">
+          <div className="relative rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
+            <div className="absolute -left-4 -top-4 rounded-2xl bg-[#A16207]/10 px-4 py-2 font-['EB_Garamond',serif] text-sm font-bold text-[#A16207] shadow-sm">
+              #1 Ranked University
             </div>
-          ))}
+            <div className="space-y-4">
+              {[
+                { label: 'Programs Available', value: courses.length || '10+' },
+                { label: 'Intakes Open', value: intakes.filter(isOpen).length || '3' },
+                { label: 'Students Enrolled', value: `${completedLeads || '500'}+` },
+                { label: 'Placement Rate', value: '94%' },
+              ].map((s) => (
+                <div key={s.label} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-5 py-3.5">
+                  <span className="text-sm font-medium text-slate-500">{s.label}</span>
+                  <span className="font-['EB_Garamond',serif] text-xl font-bold text-[#1E3A5F]">{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute -bottom-6 -right-6 h-32 w-32 rounded-2xl border border-[#A16207]/10 bg-[#A16207]/5" />
+          <div className="absolute -left-6 -top-6 h-24 w-24 rounded-2xl border border-[#1E3A5F]/10 bg-[#1E3A5F]/5" />
         </div>
       </div>
-    </div>
+
+      <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:mt-20">
+        {[
+          { label: 'Programs', value: courses.length || 10, suffix: '+' },
+          { label: 'Completed Admissions', value: completedLeads || 500, suffix: '+' },
+          { label: 'Open Intakes', value: intakes.filter(isOpen).length || 3, suffix: '' },
+          { label: 'Placement Rate', value: 94, suffix: '%' },
+        ].map((s, i) => (
+          <div key={s.label} className={`home-animate-d${i + 1} rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm`}>
+            <div className="font-['EB_Garamond',serif] text-3xl font-bold text-[#1E3A5F] lg:text-4xl">
+              <AnimatedCounter end={s.value} suffix={s.suffix} />
+            </div>
+            <div className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }

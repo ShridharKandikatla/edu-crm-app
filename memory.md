@@ -55,6 +55,7 @@ src/
   constants/        # app.js (branding + SEO copy), features.js, permissions.js, filterOptions.js
   config/env.js     # Env config
   utils/            # renderTemplate.js (client-side template rendering), templateContext.js (builds {{variable}} context from a lead), seo.js (useSeo hook — title/meta/OG/JSON-LD/canonical)
+  lib/              # utils.js (cn() — clsx + tailwind-merge for shadcn)
   data/mockData.js  # Mock/fallback data
   test/setup.js     # jest-dom setup
 
@@ -69,7 +70,11 @@ src/
 `WhatsAppTab`, `FollowUpsTab`, `CommentsTab`, `ActivityTimeline`, `AIRecommendation`, `LeadTable`, `LeadFilters`, `LeadModals`, `LeadProfileCard`, `LeadPagination`, `QuickActionsSidebar`.
 
 ### Public homepage sections (`src/components/home/`)
-`homeUi.jsx` (shared: DEPT_COLORS, DEPT_ICONS, formatFee, cx, GRADIENT_BTN, CARD_PANEL, Section, HOME_CSS keyframes), `HomeNav`, `HeroSection`, `ProgramsSection`, `PricingSection`, `IntakesSection`, `ManagersSection`, `WhyUsSection`, `HowToApplySection`, `FaqSection`, `HomeFooter`.
+`design-system.jsx` (shared tokens: TOKENS, DEPT_COLORS, GRADIENT_BTN, OUTLINE_BTN, CARD, PILL, PILL_GOLD, PILL_NAVY, SECTION_BG_ALT, HOME_CSS keyframes, Section, SectionHeader), `HomeNav`, `HeroSection`, `ProgramsSection`, `PricingSection`, `IntakesSection`, `ManagersSection`, `WhyUsSection`, `HowToApplySection`, `FaqSection`, `HomeFooter`.
+- **Light academic theme** (Swiss Modernism 2.0): navy `#1E3A5F` + gold `#A16207` palette, `#F8FAFC` bg, white cards with subtle shadows. Google Fonts: EB Garamond (headings) + Inter (body).
+- **Dark mode override**: `HomePage.jsx` forces light mode on mount (removes `.dark` class) and restores on unmount. Public homepage is always light-themed.
+- **Intake status** is computed client-side from `startDate`/`endDate` (API has no `status` field): OPEN = today between start/end, UPCOMING = before start, CLOSED = after end.
+- **Course images**: `c.image` from API shown when available; fallback is department-colored letter initial.
 
 ## Conventions
 
