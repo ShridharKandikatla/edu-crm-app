@@ -48,7 +48,7 @@ export default function HeroSection({ courses, intakes, completedLeads }) {
         <div className="home-animate">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#A16207]/20 bg-[#A16207]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#A16207]">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#A16207]" />
-            Admissions Open 2026
+            Admissions Open {new Date().getFullYear()}
           </span>
 
           <h1 className="mt-6 font-['EB_Garamond',serif] text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl xl:text-7xl">

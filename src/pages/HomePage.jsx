@@ -86,7 +86,7 @@ export default function HomePage() {
       ...courses.map((c) => ({
         '@type': 'Course',
         name: c.name,
-        description: `${c.name} (${c.department}) — ${c.duration} program at ${APP_UNIVERSITY_NAME}. Apply online for admission 2026.`,
+        description: `${c.name} (${c.department}) — ${c.duration} program at ${APP_UNIVERSITY_NAME}. Apply online for admission ${new Date().getFullYear()}.`,
         provider: { '@type': 'CollegeOrUniversity', name: APP_UNIVERSITY_NAME, url: ORIGIN },
         offers: {
           '@type': 'Offer',
@@ -108,7 +108,7 @@ export default function HomePage() {
   }), [courses]);
 
   useSeo({
-    title: `Admissions 2026 — Apply Online at ${APP_NAME}`,
+    title: `Admissions ${new Date().getFullYear()} — Apply Online at ${APP_NAME}`,
     description: APP_DESCRIPTION,
     keywords: APP_KEYWORDS,
     canonical: `${ORIGIN}/`,

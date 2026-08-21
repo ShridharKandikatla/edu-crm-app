@@ -42,7 +42,7 @@ export default function PricingSection({ courses }) {
                   </div>
                 ))}
               </div>
-              <Link to={`/apply?course=${list[0].id}`} className="mt-5 flex w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-50">
+              <Link to={`/apply?dept=${encodeURIComponent(dept)}`} className="mt-5 flex w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-50">
                 Apply for {dept}
               </Link>
             </div>
@@ -50,13 +50,6 @@ export default function PricingSection({ courses }) {
         })}
       </div>
 
-      <div className="mt-12 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center sm:p-8">
-        <h3 className="font-['EB_Garamond',serif] text-xl font-bold text-emerald-800">Scholarships Available</h3>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-emerald-600">Merit-based and need-based scholarships covering up to 50% of tuition fees. Check eligibility during the application process.</p>
-        <Link to="/apply" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#A16207] to-[#D97706] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/25 transition-all hover:shadow-xl hover:-translate-y-0.5">
-          Check Eligibility
-        </Link>
-      </div>
     </Section>
   );
 }

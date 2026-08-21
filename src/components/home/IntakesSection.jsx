@@ -51,8 +51,8 @@ export default function IntakesSection({ intakes }) {
                       </div>
                     </div>
                   </div>
-                  <Link to={`/apply?intake=${intake.id}`} className={`mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${isOpen ? 'bg-gradient-to-r from-[#A16207] to-[#D97706] text-white shadow-md shadow-amber-500/20 hover:shadow-lg hover:-translate-y-0.5' : 'border border-slate-200 text-slate-400'}`}>
-                    {isOpen ? 'Apply Now' : status === 'UPCOMING' ? 'Coming Soon' : 'Closed'}
+                  <Link to={`/apply?intake=${intake.id}`} className={`mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${isOpen || status === 'UPCOMING' ? 'bg-gradient-to-r from-[#A16207] to-[#D97706] text-white shadow-md shadow-amber-500/20 hover:shadow-lg hover:-translate-y-0.5' : 'border border-slate-200 text-slate-400'}`}>
+                    {isOpen ? 'Apply Now' : status === 'UPCOMING' ? 'Apply Now' : 'Closed'}
                   </Link>
                 </div>
               </div>

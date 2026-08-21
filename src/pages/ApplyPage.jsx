@@ -184,8 +184,11 @@ function StepBar({ step, onStepClick }) {
 }
 
 /* ─── Course Step ─── */
-function CourseStep({ courses, selectedId, onSelect, onSkip }) {
-  const [deptFilter, setDeptFilter] = useState('All');
+function CourseStep({ courses, selectedId, onSelect, initialDept }) {
+  const [deptFilter, setDeptFilter] = useState(initialDept || 'All');
+  useEffect(() => {
+    if (initialDept) setDeptFilter(initialDept);
+  }, [initialDept]);
   const departments = useMemo(() => ['All', ...new Set(courses.map(c => c.department))], [courses]);
   const filtered = useMemo(
     () => deptFilter === 'All' ? courses : courses.filter(c => c.department === deptFilter),
@@ -338,10 +341,9 @@ function CourseStep({ courses, selectedId, onSelect, onSkip }) {
         })}
       </div>
 
-      {/* Skip hint */}
       <p className="mt-6 text-center text-xs text-white/25">
         You can also{' '}
-        <button onClick={onSkip} className="underline transition-colors hover:text-indigo-400">
+        <button onClick={() => onSelect('')} className="underline transition-colors hover:text-indigo-400">
           skip and fill your details first
         </button>
       </p>
@@ -1362,6 +1364,7 @@ export default function ApplyPage() {
   const [courses, setCourses] = useState([]);
   const [intakes, setIntakes] = useState([]);
   const [step, setStep] = useState(0);
+  const [selectedDept, setSelectedDept] = useState('');
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -1388,7 +1391,7 @@ export default function ApplyPage() {
   }, []);
 
   useSeo({
-    title: `Apply for Admission 2026 — Free Online Application at ${APP_UNIVERSITY_NAME}`,
+    title: `Apply for Admission ${new Date().getFullYear()} — Free Online Application at ${APP_UNIVERSITY_NAME}`,
     description: APP_DESCRIPTION,
     canonical: `${window.location.origin}/apply`,
   });
@@ -1431,14 +1434,15 @@ export default function ApplyPage() {
     return () => { cancelled = true; controller.abort(); };
   }, []);
 
-  // Deep-link prefill: /apply?course=<id>&intake=<id> (from homepage CTAs).
+  // Deep-link prefill: /apply?course=<id>&intake=<id> or /apply?dept=<name>
   const prefillAppliedRef = useRef(false);
   useEffect(() => {
     if (prefillAppliedRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get('course');
     const intakeId = params.get('intake');
-    if (!courseId && !intakeId) return;
+    const dept = params.get('dept');
+    if (!courseId && !intakeId && !dept) return;
     const courseOk = !courseId || courses.some(c => c.id === courseId);
     const intakeOk = !intakeId || intakes.some(i => i.id === intakeId);
     if (!courseOk || !intakeOk) return;
@@ -1448,6 +1452,13 @@ export default function ApplyPage() {
       courseId: courseId || prev.courseId,
       intakeId: intakeId || prev.intakeId,
     }));
+    if (courseId) {
+      const course = courses.find(c => c.id === courseId);
+      if (course) setSelectedDept(course.department);
+      setStep(1);
+    } else if (dept) {
+      setSelectedDept(dept);
+    }
   }, [courses, intakes]);
 
   const selectedCourse = useMemo(() => courses.find(c => c.id === form.courseId), [courses, form.courseId]);
@@ -1602,6 +1613,7 @@ export default function ApplyPage() {
     setSubmitted(false);
     setSubmittedApp(null);
     setForm({ name: '', email: '', phone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
+    setSelectedDept('');
     setStep(0);
   };
 
@@ -1764,13 +1776,10 @@ export default function ApplyPage() {
               <CourseStep
               courses={courses}
               selectedId={form.courseId}
+              initialDept={selectedDept}
               onSelect={(id) => {
                 setForm(prev => ({ ...prev, courseId: id }));
                 if (id) setStep(1);
-              }}
-              onSkip={() => {
-                setForm(prev => ({ ...prev, courseId: '' }));
-                setStep(1);
               }}
             />
               <div className="mt-8 flex justify-center" style={{ animation: 'fadeUp 0.5s ease 0.3s both' }}>
