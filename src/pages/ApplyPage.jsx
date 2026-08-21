@@ -1543,6 +1543,7 @@ export default function ApplyPage() {
 
   const handleSubmit = async () => {
     if (!validateDetails()) return;
+    setErrors(prev => { const n = { ...prev }; delete n.submit; return n; });
     submitControllerRef.current?.abort();
     const controller = new AbortController();
     submitControllerRef.current = controller;
@@ -1614,11 +1615,13 @@ export default function ApplyPage() {
     setSubmittedApp(null);
     setForm({ name: '', email: '', phone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
     setSelectedDept('');
+    setErrors({});
     setStep(0);
   };
 
   const handleTrackNow = () => {
     if (submittedApp?.applicationNumber) setTrackNumber(submittedApp.applicationNumber);
+    if (form.phone) setTrackPhone(form.phone);
     setSubmitted(false);
     setMode('track');
   };

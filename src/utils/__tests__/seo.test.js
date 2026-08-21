@@ -28,14 +28,14 @@ afterEach(() => {
 });
 
 describe('useSeo', () => {
-  it('sets document title with Eportal suffix', () => {
+  it('sets document title with EduCRM suffix', () => {
     renderHook(() => useSeo({ title: 'Home' }));
-    expect(document.title).toBe('Home · Eportal');
+    expect(document.title).toBe('Home · EduCRM');
   });
 
-  it('falls back to Eportal suffix when no title provided', () => {
+  it('falls back to EduCRM suffix when no title provided', () => {
     renderHook(() => useSeo({}));
-    expect(document.title).toBe('Eportal');
+    expect(document.title).toBe('EduCRM');
   });
 
   it('upserts meta description', () => {
@@ -72,7 +72,7 @@ describe('useSeo', () => {
 
   it('sets Open Graph tags', () => {
     renderHook(() => useSeo({ title: 'Test Page', description: 'Test desc', canonical: 'https://eportal.in/test' }));
-    expect(getMetaContent('property', 'og:title')).toBe('Test Page · Eportal');
+    expect(getMetaContent('property', 'og:title')).toBe('Test Page · EduCRM');
     expect(getMetaContent('property', 'og:description')).toBe('Test desc');
     expect(getMetaContent('property', 'og:type')).toBe('website');
     expect(getMetaContent('property', 'og:url')).toBe('https://eportal.in/test');
@@ -95,7 +95,7 @@ describe('useSeo', () => {
   });
 
   it('injects JSON-LD script node', () => {
-    const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Eportal' };
+    const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'EduCRM' };
     renderHook(() => useSeo({ jsonLd }));
     const parsed = getJsonLd();
     expect(parsed).toEqual(jsonLd);
