@@ -402,7 +402,26 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
               required
             />
           </Field>
-          <Field label="Email" optional error={errors.email} icon="email">
+          <Field label="Alternate Phone" optional icon="phone">
+            <input
+              id="a-alt-phone"
+              type="tel"
+              name="alternatePhone"
+              value={form.alternatePhone}
+              onChange={onChange}
+              onFocus={() => onFocus('alternatePhone')}
+              onBlur={() => onBlur('alternatePhone')}
+              placeholder="98765 43210"
+              className={`${inputClass('alternatePhone')} pl-11`}
+              maxLength={10}
+              autoComplete="tel"
+              inputMode="numeric"
+            />
+          </Field>
+        </div>
+
+        {/* Email */}
+        <Field label="Email" optional error={errors.email} icon="email">
             <input
               id="a-email"
               type="email"
@@ -418,7 +437,6 @@ function DetailsStep({ form, errors, inputClass, onChange, onFocus, onBlur, sele
               inputMode="email"
             />
           </Field>
-        </div>
 
         {/* Source */}
         <Field label="How did you hear about us?" required error={errors.source} icon="globe">
@@ -1369,6 +1387,7 @@ export default function ApplyPage() {
     name: '',
     email: '',
     phone: '',
+    alternatePhone: '',
     source: '',
     otherSource: '',
     courseId: '',
@@ -1552,6 +1571,7 @@ export default function ApplyPage() {
       const payload = {
         name: form.name.trim(),
         phone: form.phone.trim(),
+        alternatePhone: form.alternatePhone.trim() || undefined,
         source: form.source,
         email: form.email || undefined,
         courseId: form.courseId || undefined,
@@ -1613,7 +1633,7 @@ export default function ApplyPage() {
     clearTrackParams();
     setSubmitted(false);
     setSubmittedApp(null);
-    setForm({ name: '', email: '', phone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
+    setForm({ name: '', email: '', phone: '', alternatePhone: '', source: '', otherSource: '', courseId: '', intakeId: '', notes: '' });
     setSelectedDept('');
     setErrors({});
     setStep(0);
