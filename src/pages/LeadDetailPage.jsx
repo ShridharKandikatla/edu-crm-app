@@ -60,6 +60,7 @@ export default function LeadDetailPage() {
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editAlternatePhone, setEditAlternatePhone] = useState('');
   const [editSource, setEditSource] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
@@ -265,6 +266,7 @@ export default function LeadDetailPage() {
     setEditName(lead.name || '');
     setEditEmail(lead.email || '');
     setEditPhone(lead.phone || '');
+    setEditAlternatePhone(lead.alternatePhone || '');
     setEditSource(lead.source || '');
     setEditNotes(lead.notes || '');
     setShowEditModal(true);
@@ -278,6 +280,7 @@ export default function LeadDetailPage() {
         name: editName,
         email: editEmail,
         phone: editPhone,
+        alternatePhone: editAlternatePhone || undefined,
         source: editSource,
         notes: editNotes,
       });
@@ -431,6 +434,10 @@ export default function LeadDetailPage() {
           <div className="form-group">
             <label className="form-label">Phone</label>
             <input className="form-input" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Alternate Phone</label>
+            <input className="form-input" value={editAlternatePhone} onChange={(e) => setEditAlternatePhone(e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Source</label>

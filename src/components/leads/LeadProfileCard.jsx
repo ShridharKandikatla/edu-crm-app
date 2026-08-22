@@ -84,6 +84,9 @@ export default function LeadProfileCard({ lead, initials, counselor, formatDate,
           <HiOutlinePhone className="lead-info-icon" />
           <span className="lead-info-label">Phone</span>
           <span className="lead-info-value">{lead.phone}</span>
+          {lead.alternatePhone && (
+            <span className="lead-info-value ml-4 pl-4 border-l border-white/10">{lead.alternatePhone}</span>
+          )}
         </div>
         <div className="lead-info-row">
           <HiOutlineMail className="lead-info-icon" />
