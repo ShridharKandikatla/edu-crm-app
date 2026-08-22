@@ -102,6 +102,17 @@ export default function LeadProfileCard({ lead, initials, counselor, formatDate,
           <span className="lead-info-label">Source</span>
           <span className="lead-info-value">{(lead.source || '').replace(/_/g, ' ')}</span>
         </div>
+        {lead.tags && (
+          <div className="lead-info-row">
+            <HiOutlineTag className="lead-info-icon" />
+            <span className="lead-info-label">Tags</span>
+            <span className="lead-info-value flex flex-wrap gap-1">
+              {lead.tags.split(',').filter(Boolean).map((tag, i) => (
+                <span key={i} className="inline-block rounded-full bg-white/10 px-2 py-0.5 text-[0.7rem] font-medium text-white/70">{tag.trim()}</span>
+              ))}
+            </span>
+          </div>
+        )}
         <div className="lead-info-row">
           <HiOutlineUser className="lead-info-icon" />
           <span className="lead-info-label">Counselor</span>

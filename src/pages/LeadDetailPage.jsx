@@ -63,6 +63,7 @@ export default function LeadDetailPage() {
   const [editAlternatePhone, setEditAlternatePhone] = useState('');
   const [editSource, setEditSource] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editTags, setEditTags] = useState('');
   const [editErrors, setEditErrors] = useState({});
 
   const [application, setApplication] = useState(null);
@@ -270,6 +271,7 @@ export default function LeadDetailPage() {
     setEditAlternatePhone(lead.alternatePhone || '');
     setEditSource(lead.source || '');
     setEditNotes(lead.notes || '');
+    setEditTags(lead.tags || '');
     setShowEditModal(true);
   };
 
@@ -312,6 +314,7 @@ export default function LeadDetailPage() {
         alternatePhone: editAlternatePhone.replace(/\D/g, '') || undefined,
         source: editSource,
         notes: editNotes.trim() || undefined,
+        tags: editTags.trim() || undefined,
       });
     setShowEditModal(false);
     setEditErrors({});
@@ -486,6 +489,11 @@ export default function LeadDetailPage() {
           <div className="form-group">
             <label className="form-label">Notes</label>
             <textarea className="form-input" rows={3} value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Tags</label>
+            <input className="form-input" value={editTags} onChange={(e) => setEditTags(e.target.value)} placeholder="e.g. Scholarship candidate, Sports quota" />
+            <p className="mt-1 text-xs text-gray-500">Comma-separated</p>
           </div>
         </form>
       </Modal>
