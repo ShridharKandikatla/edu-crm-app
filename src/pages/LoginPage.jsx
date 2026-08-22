@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
   const [otpError, setOtpError] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
-  const otpRefs = [useRef(), useRef(), useRef()];
+  const otpRefs = [useRef(), useRef(), useRef(), useRef()];
   const { login } = useAuth();
   const navigate = useNavigate();
 
