@@ -25,9 +25,11 @@ export function AuthProvider({ children }) {
             loadFeatures().then(setFeatures).catch(() => {});
           } else {
             localStorage.removeItem('token');
+            localStorage.removeItem('otpVerified');
           }
         } catch {
           localStorage.removeItem('token');
+          localStorage.removeItem('otpVerified');
         }
       }
       setLoading(false);
@@ -51,6 +53,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     await api.auth.logout();
+    localStorage.removeItem('otpVerified');
     setUser(null);
   };
 
