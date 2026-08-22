@@ -54,6 +54,9 @@ function ProtectedRoute({ children }) {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const d = new Date();
+  const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  if (localStorage.getItem('otpVerified') !== today) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -84,6 +87,11 @@ function RouteSpinner() {
 
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
+  const todayKey = (() => {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  })();
+  const otpDone = localStorage.getItem('otpVerified') === todayKey;
 
   return (
     <Suspense fallback={<RouteSpinner />}>
@@ -94,7 +102,7 @@ function AppRoutes() {
         />
         <Route
           path="/login"
-          element={loading ? null : (isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />)}
+          element={loading ? null : (isAuthenticated && otpDone ? <Navigate to="/dashboard" replace /> : <LoginPage />)}
         />
         <Route
           element={
