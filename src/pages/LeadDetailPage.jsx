@@ -431,13 +431,15 @@ export default function LeadDetailPage() {
             <label className="form-label">Email</label>
             <input className="form-input" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
           </div>
-          <div className="form-group">
-            <label className="form-label">Phone</label>
-            <input className="form-input" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Alternate Phone</label>
-            <input className="form-input" value={editAlternatePhone} onChange={(e) => setEditAlternatePhone(e.target.value)} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="form-group">
+              <label className="form-label">Phone</label>
+              <input className="form-input" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Alternate Phone</label>
+              <input className="form-input" value={editAlternatePhone} onChange={(e) => setEditAlternatePhone(e.target.value)} />
+            </div>
           </div>
           <div className="form-group">
             <label className="form-label">Source</label>
