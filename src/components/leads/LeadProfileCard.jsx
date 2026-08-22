@@ -107,8 +107,8 @@ export default function LeadProfileCard({ lead, initials, counselor, formatDate,
             <HiOutlineTag className="lead-info-icon" />
             <span className="lead-info-label">Tags</span>
             <span className="lead-info-value flex flex-wrap gap-1">
-              {lead.tags.split(',').filter(Boolean).map((tag, i) => (
-                <span key={i} className="inline-block rounded-full bg-white/10 px-2 py-0.5 text-[0.7rem] font-medium text-white/70">{tag.trim()}</span>
+              {(Array.isArray(lead.tags) ? lead.tags : String(lead.tags).split(',')).filter(Boolean).map((tag, i) => (
+                <span key={i} className="inline-block rounded-full bg-white/10 px-2 py-0.5 text-[0.7rem] font-medium text-white/70">{String(tag).trim()}</span>
               ))}
             </span>
           </div>

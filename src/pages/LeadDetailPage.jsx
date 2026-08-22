@@ -271,7 +271,7 @@ export default function LeadDetailPage() {
     setEditAlternatePhone(lead.alternatePhone || '');
     setEditSource(lead.source || '');
     setEditNotes(lead.notes || '');
-    setEditTags(lead.tags || '');
+    setEditTags(Array.isArray(lead.tags) ? lead.tags.join(', ') : (lead.tags || ''));
     setShowEditModal(true);
   };
 
@@ -314,7 +314,7 @@ export default function LeadDetailPage() {
         alternatePhone: editAlternatePhone.replace(/\D/g, '') || undefined,
         source: editSource,
         notes: editNotes.trim() || undefined,
-        tags: editTags.trim() || undefined,
+        tags: editTags.trim() ? editTags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
       });
     setShowEditModal(false);
     setEditErrors({});
