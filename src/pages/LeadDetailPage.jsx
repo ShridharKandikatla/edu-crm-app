@@ -63,6 +63,7 @@ export default function LeadDetailPage() {
   const [editAlternatePhone, setEditAlternatePhone] = useState('');
   const [editSource, setEditSource] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editErrors, setEditErrors] = useState({});
 
   const [application, setApplication] = useState(null);
   const [applicationLoading, setApplicationLoading] = useState(false);
@@ -272,20 +273,48 @@ export default function LeadDetailPage() {
     setShowEditModal(true);
   };
 
+  const validateEditForm = () => {
+    const errs = {};
+    const name = editName.trim();
+    if (!name) errs.name = 'Name is required';
+    else if (name.length < 2) errs.name = 'Name must be at least 2 characters';
+
+    const phone = editPhone.replace(/\D/g, '');
+    if (!phone) errs.phone = 'Phone is required';
+    else if (phone.length !== 10) errs.phone = 'Enter a valid 10-digit phone number';
+    else if (!/^[6-9]/.test(phone)) errs.phone = 'Indian mobile numbers start with 6-9';
+
+    if (editAlternatePhone.trim()) {
+      const alt = editAlternatePhone.replace(/\D/g, '');
+      if (alt.length !== 10) errs.alternatePhone = 'Enter a valid 10-digit number';
+      else if (!/^[6-9]/.test(alt)) errs.alternatePhone = 'Indian mobile numbers start with 6-9';
+    }
+
+    if (editEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail.trim())) {
+      errs.email = 'Enter a valid email address';
+    }
+
+    if (!editSource) errs.source = 'Source is required';
+
+    setEditErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleEditLead = async (e) => {
     e.preventDefault();
+    if (!validateEditForm()) return;
     try {
       setSubmitting(true);
       await api.leads.update(id, {
-        name: editName,
-        email: editEmail,
-        phone: editPhone,
-        alternatePhone: editAlternatePhone || undefined,
+        name: editName.trim(),
+        email: editEmail.trim() || undefined,
+        phone: editPhone.replace(/\D/g, ''),
+        alternatePhone: editAlternatePhone.replace(/\D/g, '') || undefined,
         source: editSource,
-        notes: editNotes,
+        notes: editNotes.trim() || undefined,
       });
-      setShowEditModal(false);
-      toast.success('Lead updated successfully');
+    setShowEditModal(false);
+    setEditErrors({});
       fetchLeadDetails();
     } catch (error) {
       toast.error(error.message || 'Failed to update lead');
@@ -424,30 +453,35 @@ export default function LeadDetailPage() {
       >
         <form onSubmit={handleEditLead} className="flex flex-col gap-4">
           <div className="form-group">
-            <label className="form-label">Name</label>
-            <input className="form-input" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+            <label className="form-label">Name *</label>
+            <input className={`form-input ${editErrors.name ? 'border-red-500' : ''}`} value={editName} onChange={(e) => setEditName(e.target.value)} required />
+            {editErrors.name && <p className="mt-1 text-xs text-red-500">{editErrors.name}</p>}
           </div>
           <div className="form-group">
             <label className="form-label">Email</label>
-            <input className="form-input" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+            <input className={`form-input ${editErrors.email ? 'border-red-500' : ''}`} type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+            {editErrors.email && <p className="mt-1 text-xs text-red-500">{editErrors.email}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
-              <label className="form-label">Phone</label>
-              <input className="form-input" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
+              <label className="form-label">Phone *</label>
+              <input className={`form-input ${editErrors.phone ? 'border-red-500' : ''}`} value={editPhone} onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, '').slice(0, 10))} maxLength={10} inputMode="numeric" required />
+              {editErrors.phone && <p className="mt-1 text-xs text-red-500">{editErrors.phone}</p>}
             </div>
             <div className="form-group">
               <label className="form-label">Alternate Phone</label>
-              <input className="form-input" value={editAlternatePhone} onChange={(e) => setEditAlternatePhone(e.target.value)} />
+              <input className={`form-input ${editErrors.alternatePhone ? 'border-red-500' : ''}`} value={editAlternatePhone} onChange={(e) => setEditAlternatePhone(e.target.value.replace(/\D/g, '').slice(0, 10))} maxLength={10} inputMode="numeric" />
+              {editErrors.alternatePhone && <p className="mt-1 text-xs text-red-500">{editErrors.alternatePhone}</p>}
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Source</label>
-            <select className="form-select" value={editSource} onChange={(e) => setEditSource(e.target.value)}>
+            <label className="form-label">Source *</label>
+            <select className={`form-select ${editErrors.source ? 'border-red-500' : ''}`} value={editSource} onChange={(e) => setEditSource(e.target.value)}>
               {LEAD_SOURCES.map((s) => (
                 <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
               ))}
             </select>
+            {editErrors.source && <p className="mt-1 text-xs text-red-500">{editErrors.source}</p>}
           </div>
           <div className="form-group">
             <label className="form-label">Notes</label>

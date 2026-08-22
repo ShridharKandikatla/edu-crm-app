@@ -15,8 +15,8 @@ export default function AddLeadPage() {
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', alternatePhone: '',
-    source: 'WEBSITE', courseId: '', intakeId: '',
-    score: 'COLD', assignedTo: '', notes: '', tags: '',
+    source: '', courseId: '', intakeId: '',
+    score: '', assignedTo: '', notes: '', tags: '',
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -35,11 +35,6 @@ export default function AddLeadPage() {
         }
         if (intakesRes.success && intakesRes.data && intakesRes.data.intakes) {
           setIntakes(intakesRes.data.intakes);
-          // Auto select first active intake
-          const activeInt = intakesRes.data.intakes.find(i => i.isActive);
-          if (activeInt) {
-            setForm(prev => ({ ...prev, intakeId: activeInt.id }));
-          }
         }
         if (usersRes.success) {
           const activeCounselors = usersRes.data.filter(
@@ -66,6 +61,8 @@ export default function AddLeadPage() {
     if (!form.name.trim()) errors.name = 'Student name is required';
     if (!form.phone.trim()) errors.phone = 'Phone number is required';
     if (!form.courseId) errors.courseId = 'Please select a course';
+    if (!form.source) errors.source = 'Lead source is required';
+    if (!form.score) errors.score = 'Lead score is required';
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Enter a valid email address';
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -153,7 +150,8 @@ export default function AddLeadPage() {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Lead Source *</label>
-              <select className="form-select" name="source" value={form.source} onChange={handleChange}>
+              <select className={`form-select ${formErrors.source ? 'border-red-500' : ''}`} name="source" value={form.source} onChange={handleChange} required aria-invalid={!!formErrors.source}>
+                <option value="">Select source</option>
                 <option value="WEBSITE">Website</option>
                 <option value="FACEBOOK">Facebook</option>
                 <option value="GOOGLE_ADS">Google Ads</option>
@@ -165,14 +163,17 @@ export default function AddLeadPage() {
                 <option value="EMAIL_INQUIRY">Email Inquiry</option>
                 <option value="EVENT">Event</option>
               </select>
+              {formErrors.source && <p className="mt-1 text-xs text-red-600">{formErrors.source}</p>}
             </div>
             <div className="form-group">
-              <label className="form-label">Lead Score</label>
-              <select className="form-select" name="score" value={form.score} onChange={handleChange}>
+              <label className="form-label">Lead Score *</label>
+              <select className={`form-select ${formErrors.score ? 'border-red-500' : ''}`} name="score" value={form.score} onChange={handleChange} required aria-invalid={!!formErrors.score}>
+                <option value="">Select score</option>
                 <option value="HOT">🔴 Hot</option>
                 <option value="WARM">🟡 Warm</option>
                 <option value="COLD">🔵 Cold</option>
               </select>
+              {formErrors.score && <p className="mt-1 text-xs text-red-600">{formErrors.score}</p>}
             </div>
           </div>
           <div className="form-row">
